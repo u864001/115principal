@@ -670,19 +670,21 @@
       
       const meal = (currentAction === '簽退') ? '無' : document.querySelector('input[name="meal"]:checked').value;
       
-      // 非同步批次處理與影像優化：縮小畫布並使用 JPEG，大幅減少 Base64 體積避免卡頓
-      const scaleFactor = 0.5;
+      // 影像極度優化：將畫布縮小到約 3x5 公分大小 (約 180px)，大幅減少 Firebase 負擔
+      const maxWidth = 180;
+      const scaleFactor = Math.min(1, maxWidth / canvas.width);
       const tempCanvas = document.createElement('canvas');
       tempCanvas.width = canvas.width * scaleFactor;
       tempCanvas.height = canvas.height * scaleFactor;
       const ctx = tempCanvas.getContext('2d');
+      
       // 填上白色背景，避免 JPEG 背景變黑
       ctx.fillStyle = "#ffffff";
       ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
       ctx.drawImage(canvas, 0, 0, tempCanvas.width, tempCanvas.height);
       
-      // 使用 JPEG 格式並設定品質為 0.6，Base64 字串長度縮小 90% 以上
-      const signatureBase64 = tempCanvas.toDataURL("image/jpeg", 0.6); 
+      // 使用 JPEG 格式並設定品質為 0.5，將 Base64 壓到最小
+      const signatureBase64 = tempCanvas.toDataURL("image/jpeg", 0.5); 
 
       const finalData = { 
         ...currentSelection, action: currentAction, meal: meal, type: userType, 
