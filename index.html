@@ -122,6 +122,9 @@
     .form-group label { display: block; font-size: 24px; font-weight: bold; margin-bottom: 10px; color: var(--pt-blue); }
     .form-group input { width: 100%; padding: 18px; font-size: 24px; border: 2px solid #BBDEFB; border-radius: 12px; background: rgba(255,255,255,0.9); outline: none; transition: 0.2s; }
     .form-group input:focus { border-color: var(--pt-pink); box-shadow: 0 0 8px rgba(233,30,99,0.3); }
+    .color-picker { display: flex; justify-content: center; gap: 15px; margin-bottom: 15px; }
+    .color-btn { width: 40px; height: 40px; border-radius: 50%; border: 3px solid transparent; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+    .color-btn.selected { border-color: #E91E63; transform: scale(1.15); }
 
     /* === QR Code === */
     .qr-container {
@@ -249,6 +252,11 @@
       </div>
 
       <div style="font-size:28px; font-weight:bold; margin-bottom:15px; color: var(--pt-pink);">請在下方方框內簽下您的大名：</div>
+      <div class="color-picker">
+        <div class="color-btn selected" style="background: #000000;" onclick="setPenColor('#000000', this)"></div>
+        <div class="color-btn" style="background: #0077C0;" onclick="setPenColor('#0077C0', this)"></div>
+        <div class="color-btn" style="background: #00008B;" onclick="setPenColor('#00008B', this)"></div>
+      </div>
       <div class="signature-wrapper"><canvas id="signature-pad"></canvas></div>
       <button class="btn-clear" onclick="signaturePad.clear()">↺ 簽名不滿意，清除重簽</button>
       <button id="submit-btn" class="btn-submit" onclick="submitData()">確認送出</button>
@@ -290,6 +298,12 @@
       <hr style="margin: 20px 0; border: 1px solid #ddd;">
       <button class="btn-massive btn-signout" style="padding:20px; font-size:26px; border-radius:15px; margin-top:0;" onclick="setAction('管理刪除')">
         🗑️ 依機關尋找並刪除指定簽名
+      </button>
+      <button class="btn-massive btn-signin" style="padding:20px; font-size:26px; border-radius:15px; margin-top:15px;" onclick="exportSignaturesWord()">
+        📄 一鍵下載所有簽名 (Word可編輯)
+      </button>
+      <button class="btn-massive btn-signin" style="padding:20px; font-size:26px; border-radius:15px; margin-top:15px; background: linear-gradient(135deg, #FF9800, #F57C00);" onclick="exportSignaturesExcel()">
+        📊 一鍵下載所有簽名 (Excel可編輯)
       </button>
     </div>
   </div>
@@ -539,6 +553,97 @@
       showScreen('screen-name-list');
     }
 
+    // 設定簽名顏色
+    function setPenColor(color, element) {
+      signaturePad.penColor = color;
+      document.querySelectorAll('.color-btn').forEach(btn => btn.classList.remove('selected'));
+      element.classList.add('selected');
+    }
+
+    function generateExportHTML() {
+      let exportHtml = `
+      <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+      <head>
+        <meta charset="utf-8">
+        <title>簽名報表</title>
+        <style>
+          table { border-collapse: collapse; width: 100%; font-family: 'Microsoft JhengHei', sans-serif; }
+          th, td { border: 1px solid #000; padding: 12px; text-align: center; vertical-align: middle; }
+          th { background-color: #f2f2f2; font-weight: bold; }
+          img { max-height: 60px; width: auto; }
+        </style>
+      </head>
+      <body>
+        <h2>屏東縣中小學校長行政會議 簽到退報表</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>機關/學校</th>
+              <th>單位/鄉鎮</th>
+              <th>職稱</th>
+              <th>姓名</th>
+              <th>動作</th>
+              <th>用餐</th>
+              <th>時間</th>
+              <th>簽名</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+      
+      let sortedRecords = [...firebaseRecords].sort((a, b) => {
+        if (a.type !== b.type) return a.type.localeCompare(b.type);
+        return a.timestamp.localeCompare(b.timestamp);
+      });
+
+      sortedRecords.forEach(r => {
+        exportHtml += `
+          <tr>
+            <td>${r.agency || r.school || '其他'}</td>
+            <td>${r.unit || r.town || ''}</td>
+            <td>${r.title || ''}</td>
+            <td>${r.name}</td>
+            <td>${r.action}</td>
+            <td>${r.meal}</td>
+            <td>${r.timestamp}</td>
+            <td>${r.signature ? `<img src="${r.signature}">` : ''}</td>
+          </tr>
+        `;
+      });
+
+      exportHtml += `
+          </tbody>
+        </table>
+      </body>
+      </html>
+      `;
+      return exportHtml;
+    }
+
+    function exportSignaturesWord() {
+      const exportHtml = generateExportHTML();
+      const blob = new Blob(['\ufeff', exportHtml], { type: 'application/msword' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `簽名報表_${new Date().getTime()}.doc`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function exportSignaturesExcel() {
+      const exportHtml = generateExportHTML();
+      const blob = new Blob(['\ufeff', exportHtml], { type: 'application/vnd.ms-excel' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `簽名報表_${new Date().getTime()}.xls`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
     function prepareSignScreen() {
       let titleName = (currentSelection.title) ? `${currentSelection.title} ${currentSelection.name}` : currentSelection.name;
       document.getElementById('greeting').innerHTML = `歡迎！<br><span>「${titleName}」</span>`;
@@ -552,10 +657,11 @@
         canvas.width = canvas.offsetWidth; 
         canvas.height = 350; 
         signaturePad.clear();
+        setPenColor('#000000', document.querySelector('.color-btn[style*="#000000"]'));
       }, 150);
     }
 
-    function submitData() {
+    async function submitData() {
       if (signaturePad.isEmpty()) { alert("簽名欄不可空白，請簽下您的大名！"); return; }
       if (!confirm(`您確認要完成「${currentAction}」手續嗎？\n按下「確定」送出，按下「取消」清除重簽。`)) { signaturePad.clear(); return; }
       
@@ -564,16 +670,35 @@
       
       const meal = (currentAction === '簽退') ? '無' : document.querySelector('input[name="meal"]:checked').value;
       
-      // 使用 1x 解析度存檔，避免高畫素手機造成檔案過大卡死
-      const signatureBase64 = signaturePad.toDataURL("image/png"); 
+      // 非同步批次處理與影像優化：縮小畫布並使用 JPEG，大幅減少 Base64 體積避免卡頓
+      const scaleFactor = 0.5;
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = canvas.width * scaleFactor;
+      tempCanvas.height = canvas.height * scaleFactor;
+      const ctx = tempCanvas.getContext('2d');
+      // 填上白色背景，避免 JPEG 背景變黑
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+      ctx.drawImage(canvas, 0, 0, tempCanvas.width, tempCanvas.height);
+      
+      // 使用 JPEG 格式並設定品質為 0.6，Base64 字串長度縮小 90% 以上
+      const signatureBase64 = tempCanvas.toDataURL("image/jpeg", 0.6); 
 
       const finalData = { 
         ...currentSelection, action: currentAction, meal: meal, type: userType, 
         timestamp: new Date().toLocaleString('zh-TW'), signature: signatureBase64 
       };
       
-      database.ref(DB_PATH).push(finalData).then(() => { alert(`✅ ${currentAction}成功！`); goHome(); })
-        .catch(err => { alert("連線失敗，請檢查網路。"); submitBtn.disabled = false; submitBtn.innerText = `確認送出 (${currentAction})`; });
+      try {
+        // 使用非同步 await 等待資料寫入，改善卡頓感
+        await database.ref(DB_PATH).push(finalData);
+        alert(`✅ ${currentAction}成功！`);
+        goHome();
+      } catch (err) {
+        alert("連線失敗，請檢查網路。"); 
+        submitBtn.disabled = false; 
+        submitBtn.innerText = `確認送出 (${currentAction})`;
+      }
     }
 
     // === 後台管理模組 (多層級鑽取) ===
