@@ -5,20 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>屏東縣中小學校長行政會議</title>
   
-  <!-- === 引入核心套件 === -->
   <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <!-- 引入 Firebase App 與 Database (Compat 版本適合純 HTML 使用) -->
   <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
 
   <style>
-    /* === 視覺主題：海報配色與毛玻璃效果 === */
+    /* === 視覺主題 === */
     :root {
-      --pt-blue: #0077C0;    /* 科技藍 */
-      --pt-light: #80D0F0;   /* 淺藍 */
-      --pt-pink: #E91E63;    /* 希望城市粉 */
-      --pt-green: #2E7D32;   /* 吉祥深綠 */
+      --pt-blue: #0077C0;    
+      --pt-light: #80D0F0;   
+      --pt-pink: #E91E63;    
+      --pt-green: #2E7D32;   
       --glass-bg: rgba(255, 255, 255, 0.75);
       --glass-border: rgba(255, 255, 255, 0.5);
       --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
@@ -27,21 +25,17 @@
     body { 
       font-family: 'Helvetica Neue', '微軟正黑體', Arial, sans-serif; 
       margin: 0; padding: 0; 
-      /* 海報風格漸層背景 */
       background: linear-gradient(135deg, #A1E4FF 0%, #E8F4F8 40%, #F3D2ED 100%);
-      background-attachment: fixed;
-      user-select: none; 
-      color: #333;
+      background-attachment: fixed; user-select: none; color: #333;
     }
     * { box-sizing: border-box; }
 
-    /* === 凍結窗格：固定置頂導覽列 === */
+    /* === 凍結窗格 === */
     .top-bar { 
       background: rgba(255, 255, 255, 0.85); 
       backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
       padding: 15px; text-align: center; position: sticky; top: 0; z-index: 100; 
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
-      border-bottom: 2px solid var(--glass-border);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1); border-bottom: 2px solid var(--glass-border);
       display: flex; justify-content: space-between; align-items: center;
     }
     .top-bar-title { 
@@ -51,13 +45,12 @@
     .btn-nav { 
       background-color: var(--pt-blue); color: white; border: none; 
       padding: 10px 20px; font-size: 20px; border-radius: 12px; 
-      cursor: pointer; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-      transition: all 0.2s ease;
+      cursor: pointer; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: all 0.2s ease;
     }
     .btn-nav:active { transform: scale(0.90); box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
     .btn-nav.hidden { opacity: 0; pointer-events: none; }
 
-    /* === 毛玻璃容器 === */
+    /* === 容器與特效 === */
     .screen { 
       display: none; padding: 25px 20px 80px 20px; min-height: calc(100vh - 80px); 
       flex-direction: column; align-items: center; max-width: 800px; margin: 0 auto; 
@@ -68,11 +61,10 @@
     .glass-panel {
       background: var(--glass-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
       border-radius: 20px; border: 1px solid var(--glass-border);
-      box-shadow: var(--glass-shadow); padding: 30px; width: 100%; text-align: center;
-      transition: all 0.3s ease;
+      box-shadow: var(--glass-shadow); padding: 30px; width: 100%; text-align: center; transition: all 0.3s ease;
     }
 
-    /* === 現代化按鈕設計 === */
+    /* === 按鈕設計 === */
     .list-container { width: 100%; display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
     
     .btn-massive { 
@@ -91,22 +83,18 @@
       background: rgba(255, 255, 255, 0.9); color: #333; transition: all 0.15s ease;
     }
     .btn-list:active { background: #e0f7fa; transform: scale(0.97); }
-    
-    /* VIP 專屬按鈕配色 */
     .btn-vip { background: linear-gradient(135deg, #FFF0F5, #FCE4EC); color: var(--pt-pink); border-color: #F8BBD0; }
     .btn-dept { background: linear-gradient(135deg, #E3F2FD, #BBDEFB); color: var(--pt-blue); }
 
     /* === 簽名與表單區塊 === */
     .info-display { font-size: 32px; font-weight: bold; color: var(--pt-blue); margin-bottom: 20px; line-height: 1.5; }
-    /* 變更為吉祥深綠色 */
     .info-display span { color: var(--pt-green); font-size: 42px; display: block; margin-top: 10px; }
     
     .meal-options { display: flex; justify-content: center; flex-wrap: wrap; gap: 20px; margin-bottom: 30px; }
     .meal-options label { 
       display: flex; align-items: center; gap: 10px; cursor: pointer; 
       background: white; padding: 15px 25px; border-radius: 15px; 
-      border: 2px solid #BBDEFB; font-size: 28px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-      transition: all 0.2s ease;
+      border: 2px solid #BBDEFB; font-size: 28px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: all 0.2s ease;
     }
     .meal-options label:active { transform: scale(0.95); }
     input[type="radio"] { transform: scale(1.8); margin-right: 5px; accent-color: var(--pt-pink); }
@@ -124,32 +112,27 @@
     .form-group input { width: 100%; padding: 18px; font-size: 24px; border: 2px solid #BBDEFB; border-radius: 12px; background: rgba(255,255,255,0.9); outline: none; transition: 0.2s; }
     .form-group input:focus { border-color: var(--pt-pink); box-shadow: 0 0 8px rgba(233,30,99,0.3); }
 
-    /* === 首頁 QR Code 區塊 === */
+    /* === QR Code === */
     .qr-container {
-      margin-top: 30px; padding: 20px; background: rgba(255,255,255,0.9);
-      border-radius: 20px; box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
-      display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
+      margin-top: 30px; padding: 20px; background: rgba(255,255,255,0.9); border-radius: 20px; box-shadow: inset 0 0 10px rgba(0,0,0,0.05); display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
     }
     .qr-text { font-size: 18px; color: #555; font-weight: bold; margin-bottom: 15px; }
-    #qrcode img { border-radius: 10px; }
 
-    /* === 原民圖騰裝飾底邊 === */
+    /* === 底邊 === */
     .totem-footer {
       position: fixed; bottom: 0; left: 0; width: 100%; height: 25px; z-index: 99;
-      background: repeating-linear-gradient( 45deg, #000, #000 10px, #E91E63 10px, #E91E63 20px, #80D0F0 20px, #80D0F0 30px );
-      opacity: 0.8;
+      background: repeating-linear-gradient( 45deg, #000, #000 10px, #E91E63 10px, #E91E63 20px, #80D0F0 20px, #80D0F0 30px ); opacity: 0.8;
     }
 
-    /* === 後台管理面板 (多層級設計) === */
+    /* === 後台管理面板 === */
     .admin-header { font-size: 36px; font-weight: bold; margin-bottom: 20px; color: #E91E63; }
     .admin-stat { 
       background: white; padding: 20px; border-radius: 15px; margin-bottom: 15px; 
-      font-size: 24px; font-weight: bold; box-shadow: var(--glass-shadow);
-      cursor: pointer; transition: 0.2s; display: flex; justify-content: space-between; align-items: center;
-      border: 2px solid transparent;
+      font-size: 24px; font-weight: bold; box-shadow: var(--glass-shadow); cursor: pointer; transition: 0.2s; display: flex; justify-content: space-between; align-items: center; border: 2px solid transparent;
     }
     .admin-stat:active { transform: scale(0.98); border-color: var(--pt-blue); }
     .admin-stat span { font-size: 36px; color: var(--pt-pink); }
+    .sub-hint { font-size:16px; color:#888; margin-left: 5px; }
     
     .record-item { 
       display: flex; justify-content: space-between; align-items: center; 
@@ -169,7 +152,7 @@
     <button class="btn-nav" onclick="goHome()">🏠 首頁</button>
   </div>
 
-  <!-- 畫面 1: 首頁 -->
+  <!-- 首頁 -->
   <div id="screen-home" class="screen active">
     <div class="glass-panel">
       <div style="font-size:36px; font-weight:bold; margin-bottom: 10px; color: var(--pt-blue);">歡迎蒞臨</div>
@@ -184,19 +167,19 @@
     </div>
   </div>
 
-  <!-- 畫面 2: 選擇身分類別 -->
+  <!-- 選擇身分類別 -->
   <div id="screen-type" class="screen">
     <div class="glass-panel">
-      <div style="font-size:34px; font-weight:bold; color: var(--pt-blue);">請選擇服務機關類別</div>
+      <div id="type-title" style="font-size:34px; font-weight:bold; color: var(--pt-blue);">請選擇服務機關類別</div>
       <div class="list-container">
         <button class="btn-list" style="border-left: 8px solid #E91E63;" onclick="selectType('gov')">🏛️ 屏東縣政府</button>
         <button class="btn-list" style="border-left: 8px solid #4CAF50;" onclick="selectType('school')">🏫 各級學校</button>
-        <button class="btn-list" style="border-left: 8px solid #FF9800;" onclick="selectType('other')">✏️ 其他 (來賓/工作人員自填)</button>
+        <button id="btn-type-other" class="btn-list" style="border-left: 8px solid #FF9800;" onclick="selectType('other')">✏️ 其他 (來賓/工作人員自填)</button>
       </div>
     </div>
   </div>
 
-  <!-- 畫面 3: 縣府專屬 VIP 與 教育處 -->
+  <!-- 縣府專屬 -->
   <div id="screen-gov-vip" class="screen">
     <div class="glass-panel">
       <div style="font-size:34px; font-weight:bold; color: var(--pt-blue);">屏東縣政府 長官與單位</div>
@@ -204,7 +187,7 @@
     </div>
   </div>
 
-  <!-- 畫面 4: 學校路線 選鄉鎮 -->
+  <!-- 學校選鄉鎮 -->
   <div id="screen-school-town" class="screen">
     <div class="glass-panel">
       <div style="font-size:34px; font-weight:bold; color: var(--pt-blue);">請選擇鄉鎮市</div>
@@ -212,7 +195,7 @@
     </div>
   </div>
 
-  <!-- 畫面 5: 縣府路線 選單位 -->
+  <!-- 縣府選單位 -->
   <div id="screen-gov-unit" class="screen">
     <div class="glass-panel">
       <div style="font-size:34px; font-weight:bold; color: var(--pt-blue);">請選擇處室/單位</div>
@@ -220,15 +203,15 @@
     </div>
   </div>
 
-  <!-- 畫面 6: 選擇姓名 (通用) -->
+  <!-- 選擇姓名 -->
   <div id="screen-name-list" class="screen">
     <div class="glass-panel">
-      <div style="font-size:34px; font-weight:bold; color: var(--pt-blue);">請選擇姓名</div>
+      <div id="name-list-title" style="font-size:34px; font-weight:bold; color: var(--pt-blue);">請選擇姓名</div>
       <div id="name-list-container" class="list-container"></div>
     </div>
   </div>
 
-  <!-- 畫面 7: 其他路線 自填表單 -->
+  <!-- 其他自填 -->
   <div id="screen-other-form" class="screen">
     <div class="glass-panel">
       <div style="font-size:34px; font-weight:bold; color: var(--pt-blue); margin-bottom: 20px;">請填寫基本資料</div>
@@ -240,7 +223,7 @@
     </div>
   </div>
 
-  <!-- 畫面 8: 簽名與餐點頁 -->
+  <!-- 簽名頁 -->
   <div id="screen-sign" class="screen">
     <div class="glass-panel">
       <div id="greeting" class="info-display">歡迎載入中...</div>
@@ -255,73 +238,68 @@
       </div>
 
       <div style="font-size:28px; font-weight:bold; margin-bottom:15px; color: var(--pt-pink);">請在下方方框內簽下您的大名：</div>
-      <div class="signature-wrapper">
-        <canvas id="signature-pad"></canvas>
-      </div>
+      <div class="signature-wrapper"><canvas id="signature-pad"></canvas></div>
       <button class="btn-clear" onclick="signaturePad.clear()">↺ 簽名不滿意，清除重簽</button>
-      
       <button id="submit-btn" class="btn-submit" onclick="submitData()">確認送出</button>
     </div>
   </div>
 
-  <!-- ==================== 後台管理模組 (3層級) ==================== -->
+  <!-- ==================== 後台管理中心 ==================== -->
   
-  <!-- 後台 L1: 總覽儀表板 -->
+  <!-- 後台 L1: 總覽 -->
   <div id="screen-admin-dashboard" class="screen">
     <div class="glass-panel">
-      <div class="admin-header">⚙️ 報到管理中心 (總覽)</div>
+      <div class="admin-header">⚙️ 報到管理中心</div>
       
       <div class="admin-stat" style="background:#f0f4c3; cursor:default;">
         <div>應到總人數</div><span id="stat-total" style="color:#555;">0</span>
       </div>
       <div class="admin-stat" onclick="openAdminCategory('signed')">
-        <div>已簽到人數 <span style="font-size:16px;color:#888;">(點擊看分類)</span></div><span id="stat-signed">0</span>
+        <div>已簽到人數 <span class="sub-hint">(點擊看分類)</span></div><span id="stat-signed">0</span>
       </div>
-      <div class="admin-stat" style="background:#ffebee; cursor:default;">
-        <div>尚未簽到人數</div><span id="stat-missing" style="color:#D32F2F;">0</span>
+      <div class="admin-stat" style="background:#ffebee;" onclick="openAdminCategory('missing')">
+        <div>尚未簽到人數 <span class="sub-hint">(點擊看分類)</span></div><span id="stat-missing" style="color:#D32F2F;">0</span>
       </div>
       
       <hr style="margin: 20px 0; border: 1px solid #ddd;">
-      <div style="font-size:24px; font-weight:bold; margin-bottom:15px; text-align:left; color:#1976D2;">🍱 餐點統計 (點擊看人員)</div>
       
       <div class="admin-stat" onclick="openAdminCategory('meat')">
-        <div>葷食需求</div><span id="stat-meat" style="color:var(--pt-blue);">0</span>
+        <div>葷食需求 <span class="sub-hint">(點擊看分類)</span></div><span id="stat-meat" style="color:var(--pt-blue);">0</span>
       </div>
       <div class="admin-stat" onclick="openAdminCategory('veg')">
-        <div>素食需求</div><span id="stat-veg" style="color:#4CAF50;">0</span>
+        <div>素食需求 <span class="sub-hint">(點擊看分類)</span></div><span id="stat-veg" style="color:#4CAF50;">0</span>
       </div>
       <div class="admin-stat" onclick="openAdminCategory('none')">
-        <div>不用餐</div><span id="stat-none" style="color:#757575;">0</span>
+        <div>不用餐需求 <span class="sub-hint">(點擊看分類)</span></div><span id="stat-none" style="color:#757575;">0</span>
       </div>
+
+      <hr style="margin: 20px 0; border: 1px solid #ddd;">
+      <button class="btn-massive btn-signout" style="padding:20px; font-size:26px; border-radius:15px; margin-top:0;" onclick="setAction('管理刪除')">
+        🗑️ 依機關尋找並刪除指定簽名
+      </button>
     </div>
   </div>
 
-  <!-- 後台 L2: 分類選單 (縣府 vs 學校) -->
+  <!-- 後台 L2: 分類 -->
   <div id="screen-admin-category" class="screen">
     <div class="glass-panel">
       <div id="admin-category-title" class="admin-header">分類列表</div>
-      <div class="list-container" id="admin-category-list">
-        <!-- 動態生成按鈕 -->
-      </div>
+      <div class="list-container" id="admin-category-list"></div>
     </div>
   </div>
 
-  <!-- 後台 L3: 詳細名單與刪除 -->
+  <!-- 後台 L3: 名單 -->
   <div id="screen-admin-list" class="screen">
     <div class="glass-panel">
       <div id="admin-list-title" class="admin-header">詳細名單</div>
-      <div style="text-align:left; color:#666; margin-bottom:10px;">提示：點擊右側刪除按鈕可讓該員重新簽到</div>
+      <div id="admin-list-hint" style="text-align:left; color:#E91E63; margin-bottom:10px; font-weight:bold;">提示：點擊右側刪除按鈕可讓該員重新簽到</div>
       <div id="admin-record-list" style="max-height: 50vh; overflow-y: auto; padding-right:10px;"></div>
     </div>
   </div>
 
-  <!-- 原民圖騰裝飾 -->
   <div class="totem-footer"></div>
 
   <script>
-    // ==========================================
-    // 1. Firebase 初始化設定 (雲端資料庫)
-    // ==========================================
     const firebaseConfig = {
       apiKey: "AIzaSyAN8iTR4KcypNai1n-Bxrc4MzYKUX5tirg",
       authDomain: "principal-5fe83.firebaseapp.com",
@@ -336,133 +314,75 @@
     const database = firebase.database();
     const DB_PATH = 'Meeting_Records_2026';
 
-    // === 核心資料變數 ===
     const sheet1Url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRvK7PuLJ3dWq8WBY2-WP6sDrTl1II7cKDQoAVmBpi9pDvJ1mlQxXeyd2znvniPQ0Aqc2qhlUaNuKZO/pub?gid=1682828826&single=true&output=csv";
     const sheet2Url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRvK7PuLJ3dWq8WBY2-WP6sDrTl1II7cKDQoAVmBpi9pDvJ1mlQxXeyd2znvniPQ0Aqc2qhlUaNuKZO/pub?gid=1933178382&single=true&output=csv";
     
-    let rawDataGov = [];    
-    let rawDataSchool = []; 
-    let firebaseRecords = []; // 儲存從 Firebase 即時同步下來的簽到名單
+    let rawDataGov = [], rawDataSchool = [], firebaseRecords = [];
+    let currentAction = "", userType = "", currentSelection = {}; 
+    let historyStack = [], currentScreenId = 'screen-home';
+    let idleTimer, secretClickCount = 0, secretClickTimer;
 
-    let currentAction = ""; 
-    let userType = "";      
-    let currentSelection = {}; 
-    
-    // === 歷史導覽狀態 (支援後台多層級) ===
-    let historyStack = [];
-    let currentScreenId = 'screen-home';
-
-    let idleTimer; 
-    let secretClickCount = 0;
-    let secretClickTimer;
-
-    // === 畫布初始化 ===
     const canvas = document.getElementById('signature-pad');
     const signaturePad = new SignaturePad(canvas, { minWidth: 2.5, maxWidth: 6 });
 
     function resizeCanvas() {
-      const ratio =  Math.max(window.devicePixelRatio || 1, 1);
-      canvas.width = canvas.offsetWidth * ratio;
-      canvas.height = canvas.offsetHeight * ratio;
-      canvas.getContext("2d").scale(ratio, ratio);
-      signaturePad.clear();
+      const ratio = Math.max(window.devicePixelRatio || 1, 1);
+      canvas.width = canvas.offsetWidth * ratio; canvas.height = canvas.offsetHeight * ratio;
+      canvas.getContext("2d").scale(ratio, ratio); signaturePad.clear();
     }
     window.addEventListener("resize", resizeCanvas);
 
-    // ==========================================
-    // 2. 資料抓取與 QRCode 生成
-    // ==========================================
-    window.onload = () => { 
-      loadAllData(); 
-      listenToFirebase(); 
-      generateQRCode();
-      setTimeout(resizeCanvas, 500); 
-    };
+    window.onload = () => { loadAllData(); listenToFirebase(); generateQRCode(); setTimeout(resizeCanvas, 500); };
 
     function generateQRCode() {
-      const currentURL = window.location.href.split('?')[0];
       new QRCode(document.getElementById("qrcode"), {
-        text: currentURL,
-        width: 160,
-        height: 160,
-        colorDark : "#0077C0",
-        colorLight : "#ffffff",
-        correctLevel : QRCode.CorrectLevel.L
+        text: window.location.href.split('?')[0], width: 160, height: 160,
+        colorDark : "#0077C0", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.L
       });
     }
 
     async function loadAllData() {
       try {
         const [res1, res2] = await Promise.all([ fetch(sheet1Url), fetch(sheet2Url) ]);
-        parseGovCSV(await res1.text());
-        parseSchoolCSV(await res2.text());
-        
-        document.getElementById('btn-signin-main').disabled = false;
-        document.getElementById('btn-signin-main').innerText = "我要簽到";
-        document.getElementById('btn-signout-main').disabled = false;
-        document.getElementById('btn-signout-main').innerText = "我要簽退";
-      } catch(e) {
-        alert("名單載入失敗，請檢查網路連線。");
-        console.error(e);
-      }
+        parseGovCSV(await res1.text()); parseSchoolCSV(await res2.text());
+        document.getElementById('btn-signin-main').disabled = false; document.getElementById('btn-signin-main').innerText = "我要簽到";
+        document.getElementById('btn-signout-main').disabled = false; document.getElementById('btn-signout-main').innerText = "我要簽退";
+      } catch(e) { alert("名單載入失敗，請檢查網路連線。"); }
     }
 
     function parseGovCSV(csv) {
-      const rows = csv.split('\n');
       rawDataGov = [];
+      const rows = csv.split('\n');
       for (let i = 1; i < rows.length; i++) {
         if (!rows[i].trim()) continue;
         const cols = rows[i].split(',').map(c => c.replace(/(^"|"$)/g, '').trim());
-        if (cols.length >= 5) {
-          rawDataGov.push({ 
-            agency: cols[1] ? cols[1] : '屏東縣政府', 
-            unit: cols[2] ? cols[2] : '', 
-            title: cols[3] ? cols[3] : '', 
-            name: cols[4] ? cols[4] : '' 
-          });
-        }
+        if (cols.length >= 5) rawDataGov.push({ agency: cols[1]||'屏東縣政府', unit: cols[2]||'', title: cols[3]||'', name: cols[4]||'' });
       }
     }
 
     function parseSchoolCSV(csv) {
-      const rows = csv.split('\n');
       rawDataSchool = [];
+      const rows = csv.split('\n');
       for (let i = 1; i < rows.length; i++) {
         if (!rows[i].trim()) continue;
         const cols = rows[i].split(',').map(c => c.replace(/(^"|"$)/g, '').trim());
-        if (cols.length >= 5) {
-          rawDataSchool.push({ 
-            town: cols[1] ? cols[1] : '', 
-            school: cols[2] ? cols[2] : '', 
-            title: cols[3] ? cols[3] : '', 
-            name: cols[4] ? cols[4] : '' 
-          });
-        }
+        if (cols.length >= 5) rawDataSchool.push({ town: cols[1]||'', school: cols[2]||'', title: cols[3]||'', name: cols[4]||'' });
       }
     }
 
-    // ==========================================
-    // 3. 雲端同步與重複檢查
-    // ==========================================
     function listenToFirebase() {
       database.ref(DB_PATH).on('value', (snapshot) => {
         firebaseRecords = [];
-        snapshot.forEach((child) => {
-          firebaseRecords.push({ firebaseId: child.key, ...child.val() });
-        });
-        // 若在後台畫面，即時更新數據
+        snapshot.forEach((child) => { firebaseRecords.push({ firebaseId: child.key, ...child.val() }); });
         if(currentScreenId.startsWith('screen-admin')) updateAdminDashboard();
       });
     }
 
     function isAlreadySigned(name) {
-      // 檢查 Firebase 陣列中，是否有人名與當前動作相符
       return firebaseRecords.some(d => d.name === name && d.action === currentAction);
     }
 
-    // ==========================================
-    // 4. 畫面切換與導覽邏輯
-    // ==========================================
+    // === 畫面切換邏輯 (嚴格控制上一頁) ===
     function showScreen(screenId, isBack = false) {
       if (!isBack && currentScreenId !== screenId && currentScreenId !== 'screen-home' && currentScreenId !== 'screen-admin-dashboard') {
         historyStack.push(currentScreenId);
@@ -470,24 +390,20 @@
       
       document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
       document.getElementById(screenId).classList.add('active');
-      window.scrollTo(0, 0);
-      currentScreenId = screenId;
+      window.scrollTo(0, 0); currentScreenId = screenId;
 
       const backBtn = document.getElementById('btn-back');
       if (screenId === 'screen-home' || screenId === 'screen-admin-dashboard') {
-        historyStack = []; 
-        backBtn.classList.add('hidden');
+        historyStack = []; backBtn.classList.add('hidden'); // 總覽與首頁不顯示上一頁
       } else {
         backBtn.classList.remove('hidden');
       }
-
       resetIdleTimer(screenId);
     }
 
     function goBack() {
       if (historyStack.length > 0) {
-        const prevScreen = historyStack.pop();
-        showScreen(prevScreen, true);
+        showScreen(historyStack.pop(), true);
       } else {
         goHome();
       }
@@ -498,19 +414,21 @@
     function resetIdleTimer(screenId) {
       clearTimeout(idleTimer);
       if (screenId === 'screen-home' || screenId.startsWith('screen-admin')) return;
-      const timeoutTime = (screenId === 'screen-sign') ? 60000 : 30000;
-      idleTimer = setTimeout(() => { goHome(); }, timeoutTime); 
+      idleTimer = setTimeout(() => { goHome(); }, (screenId === 'screen-sign') ? 60000 : 30000); 
     }
     document.addEventListener('touchstart', () => resetIdleTimer(currentScreenId));
-    document.addEventListener('click', () => resetIdleTimer(currentScreenId));
 
-    // ==========================================
-    // 5. 前端操作流程
-    // ==========================================
+    // === 流程控制 ===
     function setAction(action) {
       currentAction = action;
-      // 簽退不需要選餐點
       document.getElementById('meal-section').style.display = (action === '簽退') ? 'none' : 'block';
+      document.getElementById('btn-type-other').style.display = (action === '管理刪除') ? 'none' : 'block';
+      
+      if(action === '管理刪除') {
+        document.getElementById('type-title').innerHTML = "<span style='color:#D32F2F;'>🗑️ 管理員模式：請選擇機關尋找刪除</span>";
+      } else {
+        document.getElementById('type-title').innerText = "請選擇服務機關類別";
+      }
       showScreen('screen-type');
     }
 
@@ -519,276 +437,226 @@
       if (type === 'gov') renderGovVipScreen();
       else if (type === 'school') renderSchoolTowns();
       else if (type === 'other') {
-        document.getElementById('other-agency').value = '';
-        document.getElementById('other-unit').value = '';
-        document.getElementById('other-title').value = '';
-        document.getElementById('other-name').value = '';
+        document.getElementById('other-agency').value = ''; document.getElementById('other-name').value = '';
         showScreen('screen-other-form');
       }
     }
 
+    // 處理點擊名字 (含一般簽到與管理刪除模式)
     function checkAndSign(person) {
-      if (isAlreadySigned(person.name)) {
-        alert("系統顯示您已完成此手續，如有疑問請洽工作人員。");
+      if (currentAction === '管理刪除') {
+        const pRecords = firebaseRecords.filter(d => d.name === person.name);
+        if (pRecords.length === 0) {
+          alert("系統查無此人的任何簽到/簽退紀錄。"); return;
+        }
+        if (confirm(`確定要清除「${person.name}」的所有紀錄嗎？\n(包含簽到與簽退皆會刪除，清除後該員可重新操作)`)) {
+          pRecords.forEach(r => database.ref(DB_PATH + '/' + r.firebaseId).remove());
+          alert("✅ 已成功清除紀錄！");
+          goBack(); // 回上一頁重新整理畫面
+        }
         return;
       }
-      currentSelection = person;
-      prepareSignScreen();
+
+      if (isAlreadySigned(person.name)) { alert(`系統顯示您已完成${currentAction}。`); return; }
+      currentSelection = person; prepareSignScreen();
     }
 
     function checkAndSignOther() {
       const name = document.getElementById('other-name').value.trim();
       if (!name) { alert('請至少填寫您的姓名！'); return; }
-      if (isAlreadySigned(name)) {
-        alert("系統顯示您已完成此手續。");
-        return;
-      }
-      currentSelection = {
-        agency: document.getElementById('other-agency').value || '未填寫機關',
-        unit: document.getElementById('other-unit').value || '',
-        title: document.getElementById('other-title').value || '',
-        name: name, type: 'other'
-      };
+      if (isAlreadySigned(name)) { alert("系統顯示您已完成此手續。"); return; }
+      currentSelection = { agency: document.getElementById('other-agency').value || '未填寫機關', unit: document.getElementById('other-unit').value || '', title: document.getElementById('other-title').value || '', name: name, type: 'other' };
       prepareSignScreen();
     }
 
     function renderGovVipScreen() {
-      const vips = rawDataGov.filter(item => item.unit === '');
-      const container = document.getElementById('vip-list');
-      container.innerHTML = "";
-      vips.forEach(p => {
-        const btn = document.createElement('button');
-        btn.className = 'btn-list btn-vip'; 
-        btn.innerText = `🌟 ${p.title} ${p.name}`;
-        btn.onclick = () => checkAndSign(p);
-        container.appendChild(btn);
+      const container = document.getElementById('vip-list'); container.innerHTML = "";
+      rawDataGov.filter(item => item.unit === '').forEach(p => {
+        const btn = document.createElement('button'); btn.className = 'btn-list btn-vip'; btn.innerText = `🌟 ${p.title} ${p.name}`;
+        btn.onclick = () => checkAndSign(p); container.appendChild(btn);
       });
-      const deptBtn = document.createElement('button');
-      deptBtn.className = 'btn-list btn-dept';
-      deptBtn.innerText = `🏢 屏東縣政府教育處 (及各單位)`;
-      deptBtn.onclick = () => renderGovUnits();
-      container.appendChild(deptBtn);
+      const deptBtn = document.createElement('button'); deptBtn.className = 'btn-list btn-dept'; deptBtn.innerText = `🏢 屏東縣政府教育處 (及各單位)`;
+      deptBtn.onclick = () => renderGovUnits(); container.appendChild(deptBtn);
       showScreen('screen-gov-vip');
     }
 
     function renderGovUnits() {
       const units = [...new Set(rawDataGov.map(item => item.unit).filter(u => u !== ''))];
-      const container = document.getElementById('gov-unit-list');
-      container.innerHTML = "";
+      const container = document.getElementById('gov-unit-list'); container.innerHTML = "";
       units.forEach(unit => {
-        const btn = document.createElement('button');
-        btn.className = 'btn-list'; btn.innerText = unit;
-        btn.onclick = () => renderNames(rawDataGov.filter(item => item.unit === unit));
-        container.appendChild(btn);
+        const btn = document.createElement('button'); btn.className = 'btn-list'; btn.innerText = unit;
+        btn.onclick = () => renderNames(rawDataGov.filter(item => item.unit === unit)); container.appendChild(btn);
       });
       showScreen('screen-gov-unit');
     }
 
     function renderSchoolTowns() {
       const towns = [...new Set(rawDataSchool.map(item => item.town).filter(t => t !== ''))];
-      const container = document.getElementById('town-list');
-      container.innerHTML = "";
+      const container = document.getElementById('town-list'); container.innerHTML = "";
       towns.forEach(town => {
-        const btn = document.createElement('button');
-        btn.className = 'btn-list'; btn.innerText = town;
-        btn.onclick = () => renderNames(rawDataSchool.filter(item => item.town === town), true);
-        container.appendChild(btn);
+        const btn = document.createElement('button'); btn.className = 'btn-list'; btn.innerText = town;
+        btn.onclick = () => renderNames(rawDataSchool.filter(item => item.town === town), true); container.appendChild(btn);
       });
       showScreen('screen-school-town');
     }
 
     function renderNames(peopleList, isSchool = false) {
-      const container = document.getElementById('name-list-container');
-      container.innerHTML = "";
+      const container = document.getElementById('name-list-container'); container.innerHTML = "";
       
-      // 🌟 排序邏輯：高中 > 國中 > 國小
-      if (isSchool) {
-        peopleList.sort((a, b) => {
-            const w = (s) => s.includes('高中') ? 1 : s.includes('國中') ? 2 : s.includes('國小') ? 3 : 4;
-            return w(a.school) - w(b.school);
-        });
-      }
+      document.getElementById('name-list-title').innerText = (currentAction === '管理刪除') ? "🗑️ 點選紅色姓名刪除紀錄" : "請選擇姓名";
+
+      if (isSchool) peopleList.sort((a, b) => { const w = (s) => s.includes('高中') ? 1 : s.includes('國中') ? 2 : s.includes('國小') ? 3 : 4; return w(a.school) - w(b.school); });
 
       peopleList.forEach(p => {
-        const btn = document.createElement('button');
-        btn.className = 'btn-list'; 
+        const btn = document.createElement('button'); btn.className = 'btn-list'; 
         btn.innerText = isSchool ? `${p.school} - ${p.name} ${p.title}` : `${p.title} - ${p.name}`;
         
-        if(isAlreadySigned(p.name)) {
-          btn.style.opacity = '0.5';
-          btn.style.backgroundColor = '#eeeeee';
-          btn.innerText += ` (已${currentAction})`;
+        const hasRecord = firebaseRecords.some(d => d.name === p.name);
+
+        if (currentAction === '管理刪除') {
+          if (hasRecord) {
+             btn.style.backgroundColor = '#FFEBEE'; btn.style.borderColor = '#F44336'; btn.innerText += " 🗑️ (有紀錄)";
+          } else {
+             btn.style.opacity = '0.4'; btn.innerText += " (尚無紀錄)";
+          }
+        } else {
+          if(isAlreadySigned(p.name)) { btn.style.opacity = '0.5'; btn.style.backgroundColor = '#eeeeee'; btn.innerText += ` (已${currentAction})`; }
         }
-        btn.onclick = () => checkAndSign(p);
-        container.appendChild(btn);
+
+        btn.onclick = () => checkAndSign(p); container.appendChild(btn);
       });
       showScreen('screen-name-list');
     }
 
     function prepareSignScreen() {
       let titleName = (currentSelection.title) ? `${currentSelection.title} ${currentSelection.name}` : currentSelection.name;
-      
-      // 這裡的 span 在 CSS 已設定為深綠色
       document.getElementById('greeting').innerHTML = `歡迎！<br><span>「${titleName}」</span>`;
       signaturePad.clear();
-      
-      const submitBtn = document.getElementById('submit-btn');
-      submitBtn.disabled = false; submitBtn.innerText = `確認送出 (${currentAction})`;
-      
-      showScreen('screen-sign');
-      setTimeout(resizeCanvas, 100);
+      const submitBtn = document.getElementById('submit-btn'); submitBtn.disabled = false; submitBtn.innerText = `確認送出 (${currentAction})`;
+      showScreen('screen-sign'); setTimeout(resizeCanvas, 100);
     }
 
-    // 寫入 Firebase
     function submitData() {
-      if (signaturePad.isEmpty()) { 
-        alert("簽名欄不可空白，請簽下您的大名！"); return; 
-      }
+      if (signaturePad.isEmpty()) { alert("簽名欄不可空白，請簽下您的大名！"); return; }
+      if (!confirm(`您確認要完成「${currentAction}」手續嗎？\n按下「確定」送出，按下「取消」清除重簽。`)) { signaturePad.clear(); return; }
       
-      if (!confirm(`您確認要完成「${currentAction}」手續嗎？\n按下「確定」送出，按下「取消」清除重簽。`)) {
-        signaturePad.clear(); 
-        return; 
-      }
-      
-      const submitBtn = document.getElementById('submit-btn');
-      submitBtn.disabled = true; submitBtn.innerText = "資料寫入中請稍候...";
-
+      const submitBtn = document.getElementById('submit-btn'); submitBtn.disabled = true; submitBtn.innerText = "資料寫入中請稍候...";
       const meal = (currentAction === '簽退') ? '無' : document.querySelector('input[name="meal"]:checked').value;
-      const signatureBase64 = signaturePad.toDataURL();
-      const timestamp = new Date().toLocaleString('zh-TW'); // 紀錄詳細時間
-
-      const finalData = { 
-        ...currentSelection, 
-        action: currentAction, 
-        meal: meal, 
-        type: userType, 
-        timestamp: timestamp,
-        signature: signatureBase64
-      };
+      const finalData = { ...currentSelection, action: currentAction, meal: meal, type: userType, timestamp: new Date().toLocaleString('zh-TW'), signature: signaturePad.toDataURL() };
       
-      // 寫入 Firebase
-      database.ref(DB_PATH).push(finalData)
-        .then(() => {
-          alert(`✅ ${currentAction}成功，祝您有個美好的一天！`);
-          goHome();
-        })
-        .catch(err => {
-          console.error(err);
-          alert("連線失敗，請檢查網路連線。");
-          submitBtn.disabled = false; submitBtn.innerText = `確認送出 (${currentAction})`;
-        });
+      database.ref(DB_PATH).push(finalData).then(() => { alert(`✅ ${currentAction}成功！`); goHome(); })
+        .catch(err => { alert("連線失敗，請檢查網路。"); submitBtn.disabled = false; submitBtn.innerText = `確認送出 (${currentAction})`; });
     }
 
-    // ==========================================
-    // 6. 後台管理系統 (多層級鑽取)
-    // ==========================================
+    // === 後台管理模組 (多層級鑽取) ===
     document.getElementById('secret-title').addEventListener('click', () => {
-      secretClickCount++;
-      clearTimeout(secretClickTimer);
-      secretClickTimer = setTimeout(() => { secretClickCount = 0; }, 2000);
-      
+      secretClickCount++; clearTimeout(secretClickTimer); secretClickTimer = setTimeout(() => { secretClickCount = 0; }, 2000);
       if (secretClickCount >= 5) {
-        secretClickCount = 0;
-        const pwd = prompt("請輸入管理員密碼：");
-        if (pwd === "wt7902230") {
-          updateAdminDashboard();
-          showScreen('screen-admin-dashboard');
-        } else if (pwd !== null) alert("密碼錯誤");
+        secretClickCount = 0; if (prompt("請輸入管理員密碼：") === "wt7902230") { updateAdminDashboard(); showScreen('screen-admin-dashboard'); } else { alert("密碼錯誤"); }
       }
     });
 
-    let currentAdminFilterType = ''; // 記錄目前是查 'signed' 還是 'meat' 等
+    let currentAdminFilterType = ''; 
 
     function updateAdminDashboard() {
       const expectedTotal = rawDataGov.length + rawDataSchool.length;
-      const signedPeople = firebaseRecords.filter(d => d.action === '簽到');
+      const signedList = firebaseRecords.filter(d => d.action === '簽到');
+      const officialSignedNames = signedList.filter(d => d.type === 'gov' || d.type === 'school').map(d => d.name);
       
       document.getElementById('stat-total').innerText = expectedTotal;
-      document.getElementById('stat-signed').innerText = signedPeople.length;
+      document.getElementById('stat-signed').innerText = signedList.length;
+      document.getElementById('stat-missing').innerText = expectedTotal - officialSignedNames.length;
       
-      const officialSigned = signedPeople.filter(d => d.type === 'gov' || d.type === 'school').length;
-      document.getElementById('stat-missing').innerText = expectedTotal - officialSigned;
-      
-      document.getElementById('stat-meat').innerText = signedPeople.filter(d => d.meal === '葷食').length;
-      document.getElementById('stat-veg').innerText = signedPeople.filter(d => d.meal === '素食').length;
-      document.getElementById('stat-none').innerText = signedPeople.filter(d => d.meal === '不用餐').length;
+      document.getElementById('stat-meat').innerText = signedList.filter(d => d.meal === '葷食').length;
+      document.getElementById('stat-veg').innerText = signedList.filter(d => d.meal === '素食').length;
+      document.getElementById('stat-none').innerText = signedList.filter(d => d.meal === '不用餐').length;
     }
 
-    // 點擊儀表板卡片進入 L2 (分類)
     function openAdminCategory(filterType) {
       currentAdminFilterType = filterType;
       const signedPeople = firebaseRecords.filter(d => d.action === '簽到');
+      const signedNames = signedPeople.map(d=>d.name);
       
-      let baseList = signedPeople;
-      if (filterType === 'meat') baseList = signedPeople.filter(d => d.meal === '葷食');
-      if (filterType === 'veg') baseList = signedPeople.filter(d => d.meal === '素食');
-      if (filterType === 'none') baseList = signedPeople.filter(d => d.meal === '不用餐');
+      let govCount=0, schoolCount=0, otherCount=0;
+      let titleMap = { 'signed': '已簽到總人數', 'meat': '葷食需求', 'veg': '素食需求', 'none': '不用餐', 'missing': '尚未簽到人數' };
+      
+      if (filterType === 'missing') {
+        govCount = rawDataGov.filter(p => !signedNames.includes(p.name)).length;
+        schoolCount = rawDataSchool.filter(p => !signedNames.includes(p.name)).length;
+      } else {
+        let baseList = signedPeople;
+        if (filterType === 'meat') baseList = signedPeople.filter(d => d.meal === '葷食');
+        if (filterType === 'veg') baseList = signedPeople.filter(d => d.meal === '素食');
+        if (filterType === 'none') baseList = signedPeople.filter(d => d.meal === '不用餐');
+        govCount = baseList.filter(d => d.type === 'gov').length;
+        schoolCount = baseList.filter(d => d.type === 'school').length;
+        otherCount = baseList.filter(d => d.type === 'other').length;
+      }
 
-      const govCount = baseList.filter(d => d.type === 'gov').length;
-      const schoolCount = baseList.filter(d => d.type === 'school').length;
-      const otherCount = baseList.filter(d => d.type === 'other').length;
-
-      const titleMap = { 'signed': '已簽到總人數', 'meat': '葷食需求', 'veg': '素食需求', 'none': '不用餐' };
       document.getElementById('admin-category-title').innerText = `分類列表 (${titleMap[filterType]})`;
-
       const container = document.getElementById('admin-category-list');
+      
+      // 若是看尚未簽到，隱藏「其他來賓」
+      const otherBtnHTML = (filterType === 'missing') ? "" : `<button class="btn-list" style="border-left:8px solid #FF9800;" onclick="openAdminList('other')">✏️ 其他來賓 (${otherCount} 人)</button>`;
+      
       container.innerHTML = `
         <button class="btn-list btn-dept" onclick="openAdminList('gov')">🏛️ 屏東縣政府 (${govCount} 人)</button>
         <button class="btn-list" style="border-left:8px solid #4CAF50;" onclick="openAdminList('school')">🏫 各級學校 (${schoolCount} 人)</button>
-        <button class="btn-list" style="border-left:8px solid #FF9800;" onclick="openAdminList('other')">✏️ 其他來賓 (${otherCount} 人)</button>
+        ${otherBtnHTML}
       `;
       showScreen('screen-admin-category');
     }
 
-    // 點擊分類進入 L3 (詳細名單)
     function openAdminList(userTypeFilter) {
       const signedPeople = firebaseRecords.filter(d => d.action === '簽到');
-      
-      let baseList = signedPeople;
-      if (currentAdminFilterType === 'meat') baseList = signedPeople.filter(d => d.meal === '葷食');
-      if (currentAdminFilterType === 'veg') baseList = signedPeople.filter(d => d.meal === '素食');
-      if (currentAdminFilterType === 'none') baseList = signedPeople.filter(d => d.meal === '不用餐');
+      const signedNames = signedPeople.map(d=>d.name);
+      let finalList = [];
+      let isMissingMode = (currentAdminFilterType === 'missing');
 
-      const finalList = baseList.filter(d => d.type === userTypeFilter);
+      if (isMissingMode) {
+        if (userTypeFilter === 'gov') finalList = rawDataGov.filter(p => !signedNames.includes(p.name));
+        if (userTypeFilter === 'school') finalList = rawDataSchool.filter(p => !signedNames.includes(p.name));
+        document.getElementById('admin-list-hint').innerText = "提示：以下為尚未簽到名單，供大會查閱";
+      } else {
+        let baseList = signedPeople;
+        if (currentAdminFilterType === 'meat') baseList = signedPeople.filter(d => d.meal === '葷食');
+        if (currentAdminFilterType === 'veg') baseList = signedPeople.filter(d => d.meal === '素食');
+        if (currentAdminFilterType === 'none') baseList = signedPeople.filter(d => d.meal === '不用餐');
+        finalList = baseList.filter(d => d.type === userTypeFilter);
+        document.getElementById('admin-list-hint').innerText = "提示：點擊右側刪除按鈕可讓該員重新簽到";
+      }
       
-      // 根據身分給予標題
       const typeName = userTypeFilter === 'gov' ? '屏東縣政府' : (userTypeFilter === 'school' ? '各級學校' : '其他來賓');
       document.getElementById('admin-list-title').innerText = `${typeName} (${finalList.length}人)`;
 
-      const container = document.getElementById('admin-record-list');
-      container.innerHTML = "";
+      const container = document.getElementById('admin-record-list'); container.innerHTML = "";
       if (finalList.length === 0) {
-        container.innerHTML = "<div style='color:#666;'>尚無名單</div>";
+        container.innerHTML = "<div style='color:#666;'>無資料</div>";
       } else {
         finalList.forEach(r => {
-          const div = document.createElement('div');
-          div.className = 'record-item';
-          div.innerHTML = `
-            <div>
-              <span style="color:#1976D2; font-size:14px;">${r.timestamp}</span><br>
-              ${r.agency || r.school || ''} ${r.unit || ''} <br>
-              <b style="font-size:22px;">${r.name}</b> <span style="color:#E91E63;">(${r.meal})</span>
-            </div>
-            <button class="btn-delete" onclick="deleteRecord('${r.firebaseId}')">刪除</button>
-          `;
+          const div = document.createElement('div'); div.className = 'record-item';
+          
+          if (isMissingMode) {
+            div.innerHTML = `<div>${r.agency || r.town || ''} ${r.school || r.unit || ''} <br><b style="font-size:22px; color:#D32F2F;">${r.name}</b> ${r.title}</div>`;
+          } else {
+            div.innerHTML = `
+              <div>
+                <span style="color:#1976D2; font-size:14px;">${r.timestamp}</span><br>
+                ${r.agency || r.school || ''} ${r.unit || ''} <br>
+                <b style="font-size:22px;">${r.name}</b> <span style="color:#E91E63;">(${r.meal})</span>
+              </div>
+              <button class="btn-delete" onclick="deleteRecord('${r.firebaseId}')">刪除</button>
+            `;
+          }
           container.appendChild(div);
         });
       }
       showScreen('screen-admin-list');
     }
 
-    // 刪除 Firebase 雲端紀錄
     function deleteRecord(firebaseId) {
-      if(confirm("確定要刪除這筆簽到紀錄嗎？\n刪除後該員可在前台重新進行簽到。")) {
-        database.ref(DB_PATH + '/' + firebaseId).remove()
-          .then(() => {
-            alert("刪除成功！");
-            goBack(); // 回上一頁自動更新數字
-          })
-          .catch(err => {
-            console.error(err);
-            alert("刪除失敗，請檢查網路連線。");
-          });
+      if(confirm("確定要刪除這筆紀錄嗎？\n刪除後該員可在前台重新進行簽到/簽退。")) {
+        database.ref(DB_PATH + '/' + firebaseId).remove().then(() => { alert("刪除成功！"); goBack(); });
       }
     }
   </script>
