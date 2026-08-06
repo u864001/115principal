@@ -8,7 +8,7 @@
   <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
 
   <style>
     /* === 視覺主題 === */
@@ -339,9 +339,11 @@
       databaseURL: "https://principal-5fe83-default-rtdb.firebaseio.com"
     };
     firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
-    const STATUS_PATH = 'Meeting_Status_2026';
-    const RECORDS_PATH = 'Meeting_Records_2026';
+    // ★ 使用 Cloud Firestore（規則已在主控台開放到 2026/9/5）
+    // ★ 不再使用 Realtime Database（databaseURL 設定留著無害，但不會被呼叫）
+    const db = firebase.firestore();
+    const DB_PATH = 'Meeting_Records_2026';   // Firestore 集合：完整紀錄 (含簽名圖片)，只在匯出時才下載
+    const STATUS_PATH = 'Meeting_Status_2026'; // Firestore 集合：輕量狀態 (不含圖片)，所有裝置常駐監聽
 
     const sheet1Url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRvK7PuLJ3dWq8WBY2-WP6sDrTl1II7cKDQoAVmBpi9pDvJ1mlQxXeyd2znvniPQ0Aqc2qhlUaNuKZO/pub?gid=1682828826&single=true&output=csv";
     const sheet2Url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRvK7PuLJ3dWq8WBY2-WP6sDrTl1II7cKDQoAVmBpi9pDvJ1mlQxXeyd2znvniPQ0Aqc2qhlUaNuKZO/pub?gid=1933178382&single=true&output=csv";
@@ -353,6 +355,9 @@
 
     const canvas = document.getElementById('signature-pad');
     const signaturePad = new SignaturePad(canvas, { minWidth: 2.5, maxWidth: 6 });
+    // 簽名過程中持續有動作，就不應該被閒置計時器強制跳回首頁
+    signaturePad.addEventListener('beginStroke', () => resetIdleTimer(currentScreenId));
+    signaturePad.addEventListener('endStroke', () => resetIdleTimer(currentScreenId));
 
     window.onload = () => { loadAllData(); listenToFirebase(); generateQRCode(); };
 
@@ -391,15 +396,17 @@
     }
 
     function listenToFirebase() {
-      // 僅常駐監聽輕量化的狀態節點 (不含圖片)，確保即時同步零卡頓
-      database.ref(STATUS_PATH).on('value', (snapshot) => {
+      // 只監聽「輕量狀態集合」(不含圖片)，避免大量簽名圖片拖慢每台裝置的即時同步速度
+      db.collection(STATUS_PATH).onSnapshot((snapshot) => {
         firebaseRecords = [];
-        snapshot.forEach((child) => { firebaseRecords.push({ firebaseId: child.key, ...child.val() }); });
+        snapshot.forEach((doc) => { firebaseRecords.push({ firebaseId: doc.id, ...doc.data() }); });
         if(currentScreenId.startsWith('screen-admin')) updateAdminDashboard();
-      }, (err) => {
-        console.error("Firebase 讀取失敗:", err);
-        alert("⚠️ Firebase 讀取失敗！請至主控台檢查 Realtime Database Rules 權限是否設為 true：
-" + err.message);
+      }, (error) => {
+        // Firestore 規則拒絕 or 網路問題，明確告知使用者
+        console.error('Firestore 讀取失敗:', error);
+        alert('⚠️ 無法連接資料庫 (錯誤：' + error.code + ')。\n' +
+              '請到 Firebase 主控台 → Firestore Database → Rules，確認規則允許讀寫。\n' +
+              '（目前規則應開放到 2026/9/5，若已過期請重新設定）');
       });
     }
 
@@ -442,8 +449,6 @@
       idleTimer = setTimeout(() => { goHome(); }, (screenId === 'screen-sign') ? 60000 : 30000); 
     }
     document.addEventListener('touchstart', () => resetIdleTimer(currentScreenId));
-    canvas.addEventListener('touchstart', () => resetIdleTimer(currentScreenId));
-    canvas.addEventListener('mousedown', () => resetIdleTimer(currentScreenId));
 
     // === 流程控制 ===
     function setAction(action) {
@@ -475,16 +480,14 @@
         const pRecords = firebaseRecords.filter(d => d.name === person.name);
         if (pRecords.length === 0) { alert("系統查無此人的任何簽到/簽退紀錄。"); return; }
         if (confirm(`確定要清除「${person.name}」的所有紀錄嗎？\n(包含簽到與簽退皆會刪除，清除後該員可重新操作)`)) {
-          const updates = {};
+          const batch = db.batch();
           pRecords.forEach(r => {
-            updates[`/${STATUS_PATH}/${r.firebaseId}`] = null;
-            updates[`/${RECORDS_PATH}/${r.firebaseId}`] = null;
+            batch.delete(db.collection(DB_PATH).doc(r.firebaseId));
+            batch.delete(db.collection(STATUS_PATH).doc(r.firebaseId));
           });
-          database.ref().update(updates).then(() => {
+          batch.commit().then(() => {
             alert("✅ 已成功清除紀錄！"); goBack();
-          }).catch(err => {
-            alert("刪除失敗：" + err.message);
-          });
+          }).catch(() => alert("刪除失敗，請檢查網路連線後再試一次。"));
         }
         return;
       }
@@ -576,15 +579,7 @@
       element.classList.add('selected');
     }
 
-    async function generateExportHTML() {
-      // 後台匯出時才一次性從 RECORDS_PATH 讀取完整的簽名圖片資料
-      const snapshot = await database.ref(RECORDS_PATH).once('value');
-      const fullDataMap = snapshot.val() || {};
-      const fullRecords = Object.keys(fullDataMap).map(key => ({
-        firebaseId: key,
-        ...fullDataMap[key]
-      }));
-
+    function generateExportHTML(records) {
       let exportHtml = `
       <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
       <head>
@@ -592,13 +587,13 @@
         <title>簽名報表</title>
         <style>
           table { border-collapse: collapse; width: 100%; font-family: 'Microsoft JhengHei', sans-serif; }
-          th, td { border: 1px solid #000; padding: 10px; text-align: center; vertical-align: middle; }
+          th, td { border: 1px solid #000; padding: 12px; text-align: center; vertical-align: middle; }
           th { background-color: #f2f2f2; font-weight: bold; }
-          img { max-height: 50px; width: auto; }
+          img { max-height: 60px; width: auto; }
         </style>
       </head>
       <body>
-        <h2 style="text-align:center;">屏東縣中小學校長行政會議 簽到退報表</h2>
+        <h2>屏東縣中小學校長行政會議 簽到退報表</h2>
         <table>
           <thead>
             <tr>
@@ -615,9 +610,9 @@
           <tbody>
       `;
       
-      let sortedRecords = [...fullRecords].sort((a, b) => {
-        if (a.type !== b.type) return (a.type || '').localeCompare(b.type || '');
-        return (a.timestamp || '').localeCompare(b.timestamp || '');
+      let sortedRecords = [...records].sort((a, b) => {
+        if (a.type !== b.type) return a.type.localeCompare(b.type);
+        return a.timestamp.localeCompare(b.timestamp);
       });
 
       sortedRecords.forEach(r => {
@@ -626,10 +621,10 @@
             <td>${r.agency || r.school || '其他'}</td>
             <td>${r.unit || r.town || ''}</td>
             <td>${r.title || ''}</td>
-            <td>${r.name || ''}</td>
-            <td>${r.action || ''}</td>
-            <td>${r.meal || ''}</td>
-            <td>${r.timestamp || ''}</td>
+            <td>${r.name}</td>
+            <td>${r.action}</td>
+            <td>${r.meal}</td>
+            <td>${r.timestamp}</td>
             <td>${r.signature ? `<img src="${r.signature}">` : ''}</td>
           </tr>
         `;
@@ -644,43 +639,51 @@
       return exportHtml;
     }
 
+    // 完整紀錄 (含簽名圖片) 只在按下匯出時才下載一次，平時不佔用即時同步流量
+    async function fetchFullRecords() {
+      const snapshot = await db.collection(DB_PATH).get();
+      let list = [];
+      snapshot.forEach((doc) => list.push({ firebaseId: doc.id, ...doc.data() }));
+      return list;
+    }
+
+    function downloadBlob(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url; link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+
     async function exportSignaturesWord(btn) {
-      const origText = btn ? btn.innerText : '';
-      if (btn) { btn.disabled = true; btn.innerText = "⏳ 正在讀取簽名檔並匯出 Word..."; }
+      const originalText = btn ? btn.innerText : null;
+      if (btn) { btn.disabled = true; btn.innerText = "匯出中，下載簽名圖片請稍候..."; }
       try {
-        const exportHtml = await generateExportHTML();
+        const fullRecords = await fetchFullRecords();
+        const exportHtml = generateExportHTML(fullRecords);
         const blob = new Blob(['\ufeff', exportHtml], { type: 'application/msword' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `簽名報表_${new Date().getTime()}.doc`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      } catch (err) {
-        alert("匯出失敗：" + err.message);
+        downloadBlob(blob, `簽名報表_${new Date().getTime()}.doc`);
+      } catch (e) {
+        alert("匯出失敗，請檢查網路連線後再試一次。");
       } finally {
-        if (btn) { btn.disabled = false; btn.innerText = origText; }
+        if (btn) { btn.disabled = false; btn.innerText = originalText; }
       }
     }
 
     async function exportSignaturesExcel(btn) {
-      const origText = btn ? btn.innerText : '';
-      if (btn) { btn.disabled = true; btn.innerText = "⏳ 正在讀取簽名檔並匯出 Excel..."; }
+      const originalText = btn ? btn.innerText : null;
+      if (btn) { btn.disabled = true; btn.innerText = "匯出中，下載簽名圖片請稍候..."; }
       try {
-        const exportHtml = await generateExportHTML();
+        const fullRecords = await fetchFullRecords();
+        const exportHtml = generateExportHTML(fullRecords);
         const blob = new Blob(['\ufeff', exportHtml], { type: 'application/vnd.ms-excel' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `簽名報表_${new Date().getTime()}.xls`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      } catch (err) {
-        alert("匯出失敗：" + err.message);
+        downloadBlob(blob, `簽名報表_${new Date().getTime()}.xls`);
+      } catch (e) {
+        alert("匯出失敗，請檢查網路連線後再試一次。");
       } finally {
-        if (btn) { btn.disabled = false; btn.innerText = origText; }
+        if (btn) { btn.disabled = false; btn.innerText = originalText; }
       }
     }
 
@@ -706,61 +709,55 @@
       if (!confirm(`您確認要完成「${currentAction}」手續嗎？\n按下「確定」送出，按下「取消」清除重簽。`)) { signaturePad.clear(); return; }
       
       const submitBtn = document.getElementById('submit-btn'); 
-      submitBtn.disabled = true; 
-      submitBtn.innerText = "資料寫入中請稍候...";
+      submitBtn.disabled = true; submitBtn.innerText = "資料寫入中請稍候...";
       
       const meal = (currentAction === '簽退') ? '無' : document.querySelector('input[name="meal"]:checked').value;
       
-      // 影像處理：固定比例 5:3 (約 240px x 144px，代表 5cm x 3cm)，簽名等比例縮放補白
-      const targetW = 240;
-      const targetH = 144;
+      // 輸出固定比例的畫布 (寬5cm:高3cm = 5:3)，不管簽名時用手機還是平板、螢幕多寬，
+      // 存出來的簽名圖片比例都一致，貼到報表的簽名欄位時才不會忽寬忽窄、變形。
+      // 用「等比縮放置中」的方式貼上，多出來的邊補白色，簽名本身絕不會被拉伸變形。
+      const outputW = 240, outputH = 144; // 240:144 = 5:3
       const tempCanvas = document.createElement('canvas');
-      tempCanvas.width = targetW;
-      tempCanvas.height = targetH;
+      tempCanvas.width = outputW; tempCanvas.height = outputH;
       const ctx = tempCanvas.getContext('2d');
-      
-      // 填上白色背景
       ctx.fillStyle = "#ffffff";
-      ctx.fillRect(0, 0, targetW, targetH);
-      
-      // 等比例縮放置中
-      const scale = Math.min(targetW / canvas.width, targetH / canvas.height);
-      const drawW = canvas.width * scale;
-      const drawH = canvas.height * scale;
-      const offsetX = (targetW - drawW) / 2;
-      const offsetY = (targetH - drawH) / 2;
-      ctx.drawImage(canvas, offsetX, offsetY, drawW, drawH);
-      
-      const signatureBase64 = tempCanvas.toDataURL("image/jpeg", 0.6); 
+      ctx.fillRect(0, 0, outputW, outputH);
 
-      const statusData = { 
-        ...currentSelection, action: currentAction, meal: meal, type: userType, 
-        timestamp: new Date().toLocaleString('zh-TW')
-      };
+      const srcRatio = canvas.width / canvas.height;
+      const dstRatio = outputW / outputH;
+      let drawW, drawH, dx, dy;
+      if (srcRatio > dstRatio) { drawW = outputW; drawH = outputW / srcRatio; dx = 0; dy = (outputH - drawH) / 2; }
+      else { drawH = outputH; drawW = outputH * srcRatio; dx = (outputW - drawW) / 2; dy = 0; }
+      ctx.drawImage(canvas, dx, dy, drawW, drawH);
 
-      const fullData = {
-        ...statusData,
-        signature: signatureBase64
-      };
-      
+      // JPEG 品質 0.7：畫布本身已經很小 (240x144)，品質稍微提高簽名線條依然清晰，檔案仍然只有幾KB
+      const signatureBase64 = tempCanvas.toDataURL("image/jpeg", 0.7); 
+
+      const timestamp = new Date().toLocaleString('zh-TW');
+      const fullRecord   = { ...currentSelection, action: currentAction, meal: meal, type: userType, timestamp, signature: signatureBase64 };
+      const statusRecord = { ...currentSelection, action: currentAction, meal: meal, type: userType, timestamp }; // 不含圖片，供即時監聽用
+
+      // 用 Firestore batch write 同時寫入「完整紀錄」與「輕量狀態」兩個集合，原子性一次完成
+      const batch = db.batch();
+      const newDocRef = db.collection(DB_PATH).doc();  // 自動產生唯一 ID
+      const newKey = newDocRef.id;
+      batch.set(newDocRef, fullRecord);
+      batch.set(db.collection(STATUS_PATH).doc(newKey), statusRecord);
+
+      // 逾時保護：若15秒內伺服器沒有回應（常見於網路不穩或校內Wi-Fi限制），
+      // 明確告知使用者並恢復按鈕，而不是讓畫面永遠停在「資料寫入中」
+      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 15000));
+
       try {
-        const newRecordKey = database.ref(STATUS_PATH).push().key;
-        const updates = {};
-        updates[`/${STATUS_PATH}/${newRecordKey}`] = statusData;
-        updates[`/${RECORDS_PATH}/${newRecordKey}`] = fullData;
-
-        // 15 秒 Timeout 防護，避免斷線或權限設定錯誤時無限卡住
-        await Promise.race([
-          database.ref().update(updates),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('連線逾時 (15秒)。請確認網路是否正常，或檢查 Firebase Realtime Database Rules 讀寫權限。')), 15000))
-        ]);
-
+        await Promise.race([batch.commit(), timeoutPromise]);
         alert(`✅ ${currentAction}成功！`);
         goHome();
       } catch (err) {
-        console.error("Upload error:", err);
-        alert("⚠️ 寫入失敗：
-" + (err.message || "請檢查網路連線或權限設定。")); 
+        if (err && err.message === 'TIMEOUT') {
+          alert("上傳時間過長，可能是網路連線不穩定或校內網路限制。請確認網路後再試一次。\n(若剛才的資料其實已經送出成功，重新整理頁面後名單會顯示已簽到，不會重複。)");
+        } else {
+          alert("連線失敗，請檢查網路後再試一次。\n" + (err && err.code ? ('錯誤代碼：' + err.code) : ''));
+        }
         submitBtn.disabled = false; 
         submitBtn.innerText = `確認送出 (${currentAction})`;
       }
@@ -885,14 +882,11 @@
 
     function deleteRecord(firebaseId) {
       if(confirm("確定要刪除這筆紀錄嗎？\n刪除後該員可在前台重新進行操作。")) {
-        const updates = {};
-        updates[`/${STATUS_PATH}/${firebaseId}`] = null;
-        updates[`/${RECORDS_PATH}/${firebaseId}`] = null;
-        database.ref().update(updates).then(() => {
-          alert("刪除成功！"); goBack();
-        }).catch(err => {
-          alert("刪除失敗：" + err.message);
-        });
+        const batch = db.batch();
+        batch.delete(db.collection(DB_PATH).doc(firebaseId));
+        batch.delete(db.collection(STATUS_PATH).doc(firebaseId));
+        batch.commit().then(() => { alert("刪除成功！"); goBack(); })
+          .catch(() => alert("刪除失敗，請檢查網路連線後再試一次。"));
       }
     }
   </script>
