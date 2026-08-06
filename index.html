@@ -9,6 +9,8 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docx@9.7.1/dist/index.iife.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 
   <style>
     /* === 視覺主題 === */
@@ -579,64 +581,39 @@
       element.classList.add('selected');
     }
 
-    function generateExportHTML(records) {
-      let exportHtml = `
-      <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
-      <head>
-        <meta charset="utf-8">
-        <title>簽名報表</title>
-        <style>
-          table { border-collapse: collapse; width: 100%; font-family: 'Microsoft JhengHei', sans-serif; }
-          th, td { border: 1px solid #000; padding: 12px; text-align: center; vertical-align: middle; }
-          th { background-color: #f2f2f2; font-weight: bold; }
-          img { max-height: 60px; width: auto; }
-        </style>
-      </head>
-      <body>
-        <h2>屏東縣中小學校長行政會議 簽到退報表</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>機關/學校</th>
-              <th>單位/鄉鎮</th>
-              <th>職稱</th>
-              <th>姓名</th>
-              <th>動作</th>
-              <th>用餐</th>
-              <th>時間</th>
-              <th>簽名</th>
-            </tr>
-          </thead>
-          <tbody>
-      `;
-      
-      let sortedRecords = [...records].sort((a, b) => {
+    // ============================================================
+    // 匯出報表：改用「真正的」docx/xlsx二進位格式，圖片以OOXML內嵌媒體方式寫入，
+    // 不再用 data URI 塞進 <img src>。因為 Excel 完全不支援 data URI 圖片，
+    // Word 也視版本/安全性設定而不一定支援，這是紅色X的真正原因。
+    // ============================================================
+    const EXPORT_HEADERS = ['機關/學校', '單位/鄉鎮', '職稱', '姓名', '動作', '用餐', '時間'];
+
+    function sortRecordsForExport(records) {
+      return [...records].sort((a, b) => {
         if (a.type !== b.type) return a.type.localeCompare(b.type);
-        return a.timestamp.localeCompare(b.timestamp);
+        return (a.timestamp || '').localeCompare(b.timestamp || '');
       });
+    }
 
-      sortedRecords.forEach(r => {
-        exportHtml += `
-          <tr>
-            <td>${r.agency || r.school || '其他'}</td>
-            <td>${r.unit || r.town || ''}</td>
-            <td>${r.title || ''}</td>
-            <td>${r.name}</td>
-            <td>${r.action}</td>
-            <td>${r.meal}</td>
-            <td>${r.timestamp}</td>
-            <td>${r.signature ? `<img src="${r.signature}">` : ''}</td>
-          </tr>
-        `;
-      });
+    function recordToRowValues(r) {
+      return [
+        r.agency || r.school || '其他',
+        r.unit || r.town || '',
+        r.title || '',
+        r.name || '',
+        r.action || '',
+        r.meal || '',
+        r.timestamp || ''
+      ];
+    }
 
-      exportHtml += `
-          </tbody>
-        </table>
-      </body>
-      </html>
-      `;
-      return exportHtml;
+    // 將簽名的 data URI (data:image/jpeg;base64,xxxx) 轉成 docx.js 需要的 Uint8Array
+    function dataUriToUint8Array(dataUri) {
+      const base64 = dataUri.split(',')[1] || '';
+      const binaryStr = atob(base64);
+      const bytes = new Uint8Array(binaryStr.length);
+      for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i);
+      return bytes;
     }
 
     // 完整紀錄 (含簽名圖片) 只在按下匯出時才下載一次，平時不佔用即時同步流量
@@ -657,15 +634,103 @@
       URL.revokeObjectURL(url);
     }
 
+    // 產生「真正的」.docx 檔案，簽名圖片以 OOXML 內嵌媒體方式寫入 (word/media/*.jpg)
+    async function buildWordBlob(records) {
+      const sorted = sortRecordsForExport(records);
+
+      const headerRow = new docx.TableRow({
+        tableHeader: true,
+        children: EXPORT_HEADERS.concat('簽名').map(h => new docx.TableCell({
+          shading: { fill: "F2F2F2" },
+          verticalAlign: docx.VerticalAlign.CENTER,
+          children: [new docx.Paragraph({ alignment: docx.AlignmentType.CENTER, children: [new docx.TextRun({ text: h, bold: true })] })]
+        }))
+      });
+
+      const dataRows = sorted.map(r => {
+        const cells = recordToRowValues(r).map(v => new docx.TableCell({
+          verticalAlign: docx.VerticalAlign.CENTER,
+          children: [new docx.Paragraph({ alignment: docx.AlignmentType.CENTER, text: String(v) })]
+        }));
+
+        let sigChildren = [new docx.TextRun('')];
+        if (r.signature) {
+          try {
+            sigChildren = [new docx.ImageRun({ data: dataUriToUint8Array(r.signature), transformation: { width: 90, height: 54 }, type: "jpg" })];
+          } catch (e) {
+            sigChildren = [new docx.TextRun('(圖片讀取失敗)')];
+          }
+        }
+        cells.push(new docx.TableCell({
+          verticalAlign: docx.VerticalAlign.CENTER,
+          children: [new docx.Paragraph({ alignment: docx.AlignmentType.CENTER, children: sigChildren })]
+        }));
+        return new docx.TableRow({ children: cells });
+      });
+
+      const table = new docx.Table({
+        width: { size: 100, type: docx.WidthType.PERCENTAGE },
+        rows: [headerRow, ...dataRows]
+      });
+
+      const doc = new docx.Document({
+        sections: [{
+          children: [
+            new docx.Paragraph({ text: "屏東縣中小學校長行政會議 簽到退報表", heading: docx.HeadingLevel.HEADING_2, alignment: docx.AlignmentType.CENTER }),
+            new docx.Paragraph({ text: "" }),
+            table
+          ]
+        }]
+      });
+
+      return await docx.Packer.toBlob(doc);
+    }
+
+    // 產生「真正的」.xlsx 檔案，簽名圖片以 OOXML 內嵌媒體方式寫入 (xl/media/*.jpeg)
+    async function buildExcelBlob(records) {
+      const sorted = sortRecordsForExport(records);
+      const wb = new ExcelJS.Workbook();
+      const ws = wb.addWorksheet('簽到退報表');
+      ws.columns = [
+        { header: '機關/學校', key: 'agency', width: 20 },
+        { header: '單位/鄉鎮', key: 'unit', width: 16 },
+        { header: '職稱', key: 'title', width: 12 },
+        { header: '姓名', key: 'name', width: 12 },
+        { header: '動作', key: 'action', width: 8 },
+        { header: '用餐', key: 'meal', width: 8 },
+        { header: '時間', key: 'timestamp', width: 20 },
+        { header: '簽名', key: 'sig', width: 20 },
+      ];
+      ws.getRow(1).font = { bold: true };
+      ws.getRow(1).alignment = { horizontal: 'center', vertical: 'middle' };
+
+      sorted.forEach((r, idx) => {
+        const rowIdx = idx + 2; // 第1列是標題列
+        const [agency, unit, title, name, action, meal, timestamp] = recordToRowValues(r);
+        ws.addRow({ agency, unit, title, name, action, meal, timestamp });
+        ws.getRow(rowIdx).height = 46;
+        ws.getRow(rowIdx).alignment = { horizontal: 'center', vertical: 'middle' };
+        if (r.signature) {
+          try {
+            const imgId = wb.addImage({ base64: r.signature, extension: 'jpeg' });
+            ws.addImage(imgId, { tl: { col: 7, row: rowIdx - 1 }, ext: { width: 100, height: 60 } });
+          } catch (e) { /* 單張圖片異常時跳過，不影響其他資料 */ }
+        }
+      });
+
+      const buffer = await wb.xlsx.writeBuffer();
+      return new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    }
+
     async function exportSignaturesWord(btn) {
       const originalText = btn ? btn.innerText : null;
-      if (btn) { btn.disabled = true; btn.innerText = "匯出中，下載簽名圖片請稍候..."; }
+      if (btn) { btn.disabled = true; btn.innerText = "匯出中，產生Word檔請稍候..."; }
       try {
         const fullRecords = await fetchFullRecords();
-        const exportHtml = generateExportHTML(fullRecords);
-        const blob = new Blob(['\ufeff', exportHtml], { type: 'application/msword' });
-        downloadBlob(blob, `簽名報表_${new Date().getTime()}.doc`);
+        const blob = await buildWordBlob(fullRecords);
+        downloadBlob(blob, `簽名報表_${new Date().getTime()}.docx`);
       } catch (e) {
+        console.error(e);
         alert("匯出失敗，請檢查網路連線後再試一次。");
       } finally {
         if (btn) { btn.disabled = false; btn.innerText = originalText; }
@@ -674,13 +739,13 @@
 
     async function exportSignaturesExcel(btn) {
       const originalText = btn ? btn.innerText : null;
-      if (btn) { btn.disabled = true; btn.innerText = "匯出中，下載簽名圖片請稍候..."; }
+      if (btn) { btn.disabled = true; btn.innerText = "匯出中，產生Excel檔請稍候..."; }
       try {
         const fullRecords = await fetchFullRecords();
-        const exportHtml = generateExportHTML(fullRecords);
-        const blob = new Blob(['\ufeff', exportHtml], { type: 'application/vnd.ms-excel' });
-        downloadBlob(blob, `簽名報表_${new Date().getTime()}.xls`);
+        const blob = await buildExcelBlob(fullRecords);
+        downloadBlob(blob, `簽名報表_${new Date().getTime()}.xlsx`);
       } catch (e) {
+        console.error(e);
         alert("匯出失敗，請檢查網路連線後再試一次。");
       } finally {
         if (btn) { btn.disabled = false; btn.innerText = originalText; }
