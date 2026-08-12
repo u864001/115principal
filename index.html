@@ -170,7 +170,7 @@
       border-radius: 5px;
       animation: breathe 1.5s infinite;
       display: none;
-      background: rgba(255, 0, 0, 0.15);
+      background: transparent;
       z-index: 10;
     }
   </style>
@@ -373,7 +373,7 @@
     // 在這裡可以填寫每個座位在圖片上的相對座標 (百分比 %)
     // 例如 "2-15": { x: 30.5, y: 40.2, w: 5, h: 4 }
     // 若沒有填寫座標，系統仍會報讀並顯示全圖，但不畫紅框。
-    const rawSeatCoordinates = {
+        const rawSeatCoordinates = {
 "黃柏翰": { "x": 10.0, "y": 26.3, "w": 4.5, "h": 1.5 },
 "廖怡倫": { "x": 14.4, "y": 26.3, "w": 4.5, "h": 1.5 },
 "涂燕玲": { "x": 18.7, "y": 26.3, "w": 4.5, "h": 1.5 },
