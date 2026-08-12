@@ -114,7 +114,7 @@
     input[type="radio"] { transform: scale(1.8); margin-right: 5px; accent-color: var(--pt-pink); }
     
     .signature-wrapper { border: 3px dashed #90CAF9; background: white; border-radius: 15px; margin-bottom: 20px; width: 100%; overflow: hidden; }
-    canvas { display: block; touch-action: none; width: 100%; height: 350px; cursor: crosshair; }
+    canvas { display: block; touch-action: none; width: 100%; cursor: crosshair; }
     
     .btn-submit { background: linear-gradient(135deg, #1E88E5, #1565C0); font-size: 32px; padding: 20px; color: white; border: none; border-radius: 15px; width: 100%; font-weight: bold; box-shadow: 0 6px 12px rgba(0,0,0,0.15); transition: 0.2s; cursor: pointer;}
     .btn-submit:active { transform: scale(0.97); }
@@ -194,6 +194,7 @@
       <div style="font-size:28px; margin-bottom: 20px;">請選擇您的動作</div>
       <button id="btn-signin-main" class="btn-massive btn-signin" onclick="setAction('簽到')" disabled>資料載入中...</button>
       <button id="btn-signout-main" class="btn-massive btn-signout" onclick="setAction('簽退')" disabled>資料載入中...</button>
+      <button id="btn-search-main" class="btn-massive btn-nav" style="margin-top:15px; background: linear-gradient(135deg, #8E24AA, #6A1B9A);" onclick="setAction('查詢座位')" disabled>資料載入中...</button>
       
       <div class="qr-container">
         <div class="qr-text">📱 掃描 QR Code，手機免網址直接簽到</div>
@@ -352,8 +353,8 @@
   <!-- 成功與座位提示頁 -->
   <div id="screen-success" class="screen">
     <div class="glass-panel" style="max-width: 900px; padding: 30px;">
-      <h2 style="color: #4CAF50; font-size: 36px; margin-bottom: 10px;">✅ 簽到成功！</h2>
-      <div style="font-size: 24px; margin-bottom: 20px; color: #333;">感謝您的參與，已收到您的用餐資訊，祝您有愉快的一天。</div>
+      <h2 id="success-header" style="color: #4CAF50; font-size: 36px; margin-bottom: 10px;">✅ 簽到成功！</h2>
+      <div id="success-sub" style="font-size: 24px; margin-bottom: 20px; color: #333;">感謝您的參與，已收到您的用餐資訊，祝您有愉快的一天。</div>
       
       <div id="seat-info-container" style="display: none;">
         <div id="seat-text" style="font-size: 32px; font-weight: bold; color: #E91E63; margin-bottom: 20px; background: #FFF3E0; padding: 15px; border-radius: 10px; border: 2px dashed #FF9800;"></div>
@@ -886,7 +887,7 @@
         const [res1, res2, res3] = await Promise.all([ fetch(sheet1Url), fetch(sheet2Url), fetch(sheetPrefillUrl) ]);
         parseGovCSV(await res1.text()); parseSchoolCSV(await res2.text()); parsePrefillCSV(await res3.text());
         document.getElementById('btn-signin-main').disabled = false; document.getElementById('btn-signin-main').innerText = "我要簽到";
-        document.getElementById('btn-signout-main').disabled = false; document.getElementById('btn-signout-main').innerText = "我要簽退";
+        document.getElementById('btn-signout-main').disabled = false; document.getElementById('btn-signout-main').innerText = "我要簽退"; document.getElementById('btn-search-main').disabled = false; document.getElementById('btn-search-main').innerText = "快速查詢座位";
       } catch(e) { alert("名單載入失敗，請檢查網路連線。"); }
     }
 
@@ -987,17 +988,25 @@
     function showSuccessScreen(seatStr) {
       document.getElementById('seat-info-container').style.display = 'block';
       
-      let voiceText = "簽到成功。";
+      if (currentAction === '查詢座位') {
+         document.getElementById('success-header').innerText = '📍 座位查詢';
+         document.getElementById('success-sub').innerText = '為您找到以下座位資訊：';
+      } else {
+         document.getElementById('success-header').innerText = '✅ ' + currentAction + '成功！';
+         document.getElementById('success-sub').innerText = '感謝您的參與，已收到您的用餐資訊，祝您有愉快的一天。';
+      }
+
+      let voiceText = (currentAction === '查詢座位') ? "為您播報座位資訊。" : (currentAction + "成功。");
       let displaySeat = seatStr;
       
       const match = seatStr.match(/(\d+)-(\d+)/);
       if (match) {
         const row = match[1];
         const num = match[2];
-        voiceText = `簽到成功。感謝您的參與。您的座位在，第${row}排，編號${row}之${num}。`;
+        voiceText = (currentAction === '查詢座位') ? `為您播報座位資訊。您的座位在，第${row}排，編號${row}之${num}。` : `${currentAction}成功。感謝您的參與。您的座位在，第${row}排，編號${row}之${num}。`;
         displaySeat = `📍 您的座位在：第 ${row} 排，編號 ${row}-${num}`;
       } else {
-        voiceText = `簽到成功。您的座位在：${seatStr}`;
+        voiceText = (currentAction === '查詢座位') ? `為您播報座位資訊。您的座位在：${seatStr}` : `${currentAction}成功。您的座位在：${seatStr}`;
         displaySeat = `📍 您的座位在：${seatStr}`;
       }
 
@@ -1045,7 +1054,7 @@
 
     function setAction(action) {
       currentAction = action;
-      document.getElementById('meal-section').style.display = (action === '簽退') ? 'none' : 'block';
+      document.getElementById('meal-section').style.display = (action === '簽退' || action === '查詢座位') ? 'none' : 'block';
       document.getElementById('btn-type-other').style.display = (action === '管理刪除') ? 'none' : 'block';
       
       if(action === '管理刪除') {
@@ -1081,6 +1090,17 @@
             alert("✅ 已成功清除紀錄！"); goBack();
           }).catch(() => alert("刪除失敗，請檢查網路連線後再試一次。"));
         }
+        return;
+      }
+      if (currentAction === '查詢座位') {
+        currentSelection = person;
+        let seatStr = '';
+        if (prefillData[person.name] && prefillData[person.name].seat) {
+            seatStr = prefillData[person.name].seat;
+        } else {
+            seatStr = person.name;
+        }
+        showSuccessScreen(seatStr);
         return;
       }
       currentSelection = person; prepareSignScreen();
@@ -1361,8 +1381,11 @@
       
       // 確保在畫面顯示後才計算寬度，並且不再隨手機滑動而重置畫布
       setTimeout(() => {
-        canvas.width = canvas.offsetWidth; 
-        canvas.height = 350; 
+        const targetWidth = canvas.offsetWidth;
+        const targetHeight = targetWidth * (3 / 5); // 寬5:高3
+        canvas.width = targetWidth; 
+        canvas.height = targetHeight; 
+        canvas.style.height = targetHeight + 'px';
         signaturePad.clear();
         setPenColor('#000000', document.querySelector('.color-btn[style*="#000000"]'));
       }, 150);
