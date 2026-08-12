@@ -358,10 +358,13 @@
       
       <div id="seat-info-container" style="display: none;">
         <div id="seat-text" style="font-size: 32px; font-weight: bold; color: #E91E63; margin-bottom: 20px; background: #FFF3E0; padding: 15px; border-radius: 10px; border: 2px dashed #FF9800;"></div>
-        <div style="position: relative; display: inline-block; width: 100%; max-width: 800px; margin: 0 auto; border: 3px solid #ddd; border-radius: 12px; overflow: hidden; background: #fff; box-shadow: 0 10px 20px rgba(0,0,0,0.1);">
-          <img src="115seats.jpg" style="width: 100%; height: auto; display: block;" id="seat-map-img">
-          <!-- 這裡會加上呼吸燈紅框 (若有設定座標) -->
-          <div id="seat-highlight" class="breathing-box"></div>
+        <div style="font-size: 16px; color: #666; margin-bottom: 10px; font-weight: bold;">🔍 支援手指滑動，或點擊圖片放大/縮小查看</div>
+        <div id="zoom-outer-container" style="position: relative; display: block; width: 100%; max-width: 800px; margin: 0 auto; border: 3px solid #ddd; border-radius: 12px; overflow: auto; background: #fff; box-shadow: 0 10px 20px rgba(0,0,0,0.1); max-height: 60vh;">
+          <div id="seat-map-zoom-wrapper" style="position: relative; width: 100%; transition: width 0.3s ease; transform-origin: top left; cursor: zoom-in;" onclick="toggleZoom()">
+            <img src="115seats.jpg" style="width: 100%; height: auto; display: block;" id="seat-map-img">
+            <!-- 這裡會加上呼吸燈紅框 (若有設定座標) -->
+            <div id="seat-highlight" class="breathing-box"></div>
+          </div>
         </div>
       </div>
 
@@ -374,24 +377,24 @@
     // 例如 "2-15": { x: 30.5, y: 40.2, w: 5, h: 4 }
     // 若沒有填寫座標，系統仍會報讀並顯示全圖，但不畫紅框。
         const rawSeatCoordinates = {
-"黃柏翰": { "x": 10.0, "y": 26.3, "w": 4.5, "h": 1.5 },
-"廖怡倫": { "x": 14.4, "y": 26.3, "w": 4.5, "h": 1.5 },
-"涂燕玲": { "x": 18.7, "y": 26.3, "w": 4.5, "h": 1.5 },
-"張瓊升": { "x": 23.1, "y": 26.3, "w": 4.5, "h": 1.5 },
-"陳尚奕": { "x": 27.4, "y": 26.3, "w": 4.5, "h": 1.5 },
-"唐郁卉": { "x": 31.8, "y": 26.3, "w": 4.5, "h": 1.5 },
-"方翠綺": { "x": 36.1, "y": 26.3, "w": 4.5, "h": 1.5 },
-"吳佩珊": { "x": 40.5, "y": 26.3, "w": 4.5, "h": 1.5 },
-"陳國祥": { "x": 44.8, "y": 26.3, "w": 4.5, "h": 1.5 },
-"周春米": { "x": 49.2, "y": 26.3, "w": 4.5, "h": 1.5 },
-"巴正義": { "x": 53.5, "y": 26.3, "w": 4.5, "h": 1.5 },
-"陳惠蓉": { "x": 57.9, "y": 26.3, "w": 4.5, "h": 1.5 },
-"張茂泉": { "x": 62.2, "y": 26.3, "w": 4.5, "h": 1.5 },
-"吳季璇": { "x": 66.6, "y": 26.3, "w": 4.5, "h": 1.5 },
-"陳菁徽": { "x": 70.9, "y": 26.3, "w": 4.5, "h": 1.5 },
-"林淑真": { "x": 75.3, "y": 26.3, "w": 4.5, "h": 1.5 },
-"郭小蘋": { "x": 79.6, "y": 26.3, "w": 4.5, "h": 1.5 },
-"蔡學斌": { "x": 84.0, "y": 26.3, "w": 4.5, "h": 1.5 },
+"黃柏翰": { "x": 10.0, "y": 27.3, "w": 4.5, "h": 1.5 },
+"廖怡倫": { "x": 14.4, "y": 27.3, "w": 4.5, "h": 1.5 },
+"涂燕玲": { "x": 18.7, "y": 27.3, "w": 4.5, "h": 1.5 },
+"張瓊升": { "x": 23.1, "y": 27.3, "w": 4.5, "h": 1.5 },
+"陳尚奕": { "x": 27.4, "y": 27.3, "w": 4.5, "h": 1.5 },
+"唐郁卉": { "x": 31.8, "y": 27.3, "w": 4.5, "h": 1.5 },
+"方翠綺": { "x": 36.1, "y": 27.3, "w": 4.5, "h": 1.5 },
+"吳佩珊": { "x": 40.5, "y": 27.3, "w": 4.5, "h": 1.5 },
+"陳國祥": { "x": 44.8, "y": 27.3, "w": 4.5, "h": 1.5 },
+"周春米": { "x": 49.2, "y": 27.3, "w": 4.5, "h": 1.5 },
+"巴正義": { "x": 53.5, "y": 27.3, "w": 4.5, "h": 1.5 },
+"陳惠蓉": { "x": 57.9, "y": 27.3, "w": 4.5, "h": 1.5 },
+"張茂泉": { "x": 62.2, "y": 27.3, "w": 4.5, "h": 1.5 },
+"吳季璇": { "x": 66.6, "y": 27.3, "w": 4.5, "h": 1.5 },
+"陳菁徽": { "x": 70.9, "y": 27.3, "w": 4.5, "h": 1.5 },
+"林淑真": { "x": 75.3, "y": 27.3, "w": 4.5, "h": 1.5 },
+"郭小蘋": { "x": 79.6, "y": 27.3, "w": 4.5, "h": 1.5 },
+"蔡學斌": { "x": 84.0, "y": 27.3, "w": 4.5, "h": 1.5 },
 "1-1": { "x": 10.0, "y": 30.0, "w": 5.0, "h": 1.5 },
 "陳冠明": { "x": 10.0, "y": 32.9, "w": 5.0, "h": 1.5 },
 "1-2": { "x": 14.9, "y": 30.0, "w": 5.0, "h": 1.5 },
@@ -973,6 +976,20 @@
       }
     }
 
+    
+    let isZoomed = false;
+    function toggleZoom() {
+      const wrapper = document.getElementById('seat-map-zoom-wrapper');
+      isZoomed = !isZoomed;
+      if (isZoomed) {
+        wrapper.style.width = '250%';
+        wrapper.style.cursor = 'zoom-out';
+      } else {
+        wrapper.style.width = '100%';
+        wrapper.style.cursor = 'zoom-in';
+      }
+    }
+
     function goHome() { showScreen('screen-home'); }
 
     function resetIdleTimer(screenId) {
@@ -1055,7 +1072,7 @@
     function setAction(action) {
       currentAction = action;
       document.getElementById('meal-section').style.display = (action === '簽退' || action === '查詢座位') ? 'none' : 'block';
-      document.getElementById('btn-type-other').style.display = (action === '管理刪除') ? 'none' : 'block';
+      document.getElementById('btn-type-other').style.display = (action === '管理刪除' || action === '查詢座位') ? 'none' : 'block';
       
       if(action === '管理刪除') {
         document.getElementById('type-title').innerHTML = "<span style='color:#D32F2F;'>🗑️ 管理員模式：請選擇機關尋找刪除</span>";
