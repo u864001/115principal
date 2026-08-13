@@ -173,6 +173,11 @@
       background: transparent;
       z-index: 10;
     }
+  
+    @media (max-width: 768px) {
+      .meal-options { flex-direction: column; align-items: center; }
+      .meal-options label { width: 100%; justify-content: center; }
+    }
   </style>
 
 </head>
@@ -370,6 +375,32 @@
       </div>
 
       <button class="btn-massive btn-back" style="margin-top: 30px; max-width: 300px; font-size: 24px; margin-left:auto; margin-right:auto; display:block;" onclick="goHome()">回首頁 (或等待自動跳轉)</button>
+    </div>
+  </div>
+
+
+  <div id="screen-status" class="screen">
+    <div class="glass-panel" style="max-width: 1200px; width: 95%;">
+      <div style="font-size:32px; font-weight:bold; color: var(--pt-blue); margin-bottom: 20px;">目前簽到退情形總覽</div>
+      <div id="status-loading" style="font-size: 24px;">資料載入中...</div>
+      <div style="overflow-x: auto; max-height: 60vh; overflow-y: auto; border: 2px solid #ddd; border-radius: 8px;">
+        <table id="status-table" style="width: 100%; border-collapse: collapse; text-align: center; min-width: 800px; display: none;">
+          <thead style="background: var(--pt-blue); color: white; position: sticky; top: 0; z-index: 2;">
+            <tr>
+              <th style="padding: 10px; border: 1px solid #ccc;">編號</th>
+              <th style="padding: 10px; border: 1px solid #ccc;">機關/學校</th>
+              <th style="padding: 10px; border: 1px solid #ccc;">單位/鄉鎮</th>
+              <th style="padding: 10px; border: 1px solid #ccc;">職稱</th>
+              <th style="padding: 10px; border: 1px solid #ccc;">姓名</th>
+              <th style="padding: 10px; border: 1px solid #ccc;">手寫簽到</th>
+              <th style="padding: 10px; border: 1px solid #ccc;">手寫簽退</th>
+            </tr>
+          </thead>
+          <tbody id="status-tbody" style="background: white;">
+          </tbody>
+        </table>
+      </div>
+      <button class="btn-massive btn-back" style="margin-top: 20px;" onclick="goHome()">回首頁</button>
     </div>
   </div>
 
@@ -985,7 +1016,7 @@
       const wrapper = document.getElementById('seat-map-zoom-wrapper');
       isZoomed = !isZoomed;
       if (isZoomed) {
-        wrapper.style.width = '400%';
+        wrapper.style.width = 'max(400%, 2500px)';
         wrapper.style.cursor = 'zoom-out';
       } else {
         wrapper.style.width = '100%';
@@ -1003,7 +1034,7 @@
       const table = document.getElementById('status-table');
       const tbody = document.getElementById('status-tbody');
       
-      if (now - lastFullRecordsFetch > 10000 || cachedFullRecords.length === 0) {
+      if (now - lastFullRecordsFetch > 5000 || cachedFullRecords.length === 0) {
         loading.style.display = 'block';
         table.style.display = 'none';
         try {
@@ -1046,8 +1077,8 @@
         tableHtml += `
           <tr>
             <td style="padding: 8px; border: 1px solid #ccc;">${idx + 1}</td>
-            <td style="padding: 8px; border: 1px solid #ccc;">${person.agency || person.town || ''}</td>
-            <td style="padding: 8px; border: 1px solid #ccc;">${person.unit || person.school || ''}</td>
+            <td style="padding: 8px; border: 1px solid #ccc;">${person.agency || person.school || '其他'}</td>
+            <td style="padding: 8px; border: 1px solid #ccc;">${person.unit || person.town || ''}</td>
             <td style="padding: 8px; border: 1px solid #ccc;">${person.title || ''}</td>
             <td style="padding: 8px; border: 1px solid #ccc; font-weight: bold;">${person.name}</td>
             <td style="padding: 8px; border: 1px solid #ccc;">${signInImg}</td>
