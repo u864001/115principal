@@ -194,6 +194,7 @@
       <div style="font-size:28px; margin-bottom: 20px;">請選擇您的動作</div>
       <button id="btn-signin-main" class="btn-massive btn-signin" onclick="setAction('簽到')" disabled>資料載入中...</button>
       <button id="btn-signout-main" class="btn-massive btn-signout" onclick="setAction('簽退')" disabled>資料載入中...</button>
+      <button id="btn-status-main" class="btn-massive btn-nav" style="margin-top:15px; background: linear-gradient(135deg, #009688, #00796B);" onclick="renderStatusOverview()" disabled>資料載入中...</button>
       <button id="btn-search-main" class="btn-massive btn-nav" style="margin-top:15px; background: linear-gradient(135deg, #8E24AA, #6A1B9A);" onclick="setAction('查詢座位')" disabled>資料載入中...</button>
       
       <div class="qr-container">
@@ -267,7 +268,7 @@
       <div id="meal-section">
         <div style="font-size:28px; font-weight:bold; margin-bottom:15px;">您今日的午餐用餐需求為：</div>
         <div class="meal-options">
-          <label><input type="radio" name="meal" value="葷食"> 🍱 葷食</label>
+          <label style="display:inline-flex; align-items:center;"><input type="radio" name="meal" value="葷食"> <span>🍱 葷食</span></label> <button type="button" onclick="document.getElementById('lunch-modal').style.display='flex'" style="background:#FF9800; color:white; border:none; padding:5px 10px; border-radius:5px; font-size:16px; cursor:pointer; margin-left: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">看菜色 📸</button>
           <label><input type="radio" name="meal" value="素食"> 🥗 素食</label>
           <label><input type="radio" name="meal" value="不用餐"> ❌ 不用餐</label>
         </div>
@@ -890,7 +891,9 @@
         const [res1, res2, res3] = await Promise.all([ fetch(sheet1Url), fetch(sheet2Url), fetch(sheetPrefillUrl) ]);
         parseGovCSV(await res1.text()); parseSchoolCSV(await res2.text()); parsePrefillCSV(await res3.text());
         document.getElementById('btn-signin-main').disabled = false; document.getElementById('btn-signin-main').innerText = "我要簽到";
-        document.getElementById('btn-signout-main').disabled = false; document.getElementById('btn-signout-main').innerText = "我要簽退"; document.getElementById('btn-search-main').disabled = false; document.getElementById('btn-search-main').innerText = "快速查詢座位";
+        document.getElementById('btn-signout-main').disabled = false; document.getElementById('btn-signout-main').innerText = "我要簽退"; 
+        document.getElementById('btn-status-main').disabled = false; document.getElementById('btn-status-main').innerText = "📝 目前簽到退情形總覽"; 
+        document.getElementById('btn-search-main').disabled = false; document.getElementById('btn-search-main').innerText = "快速查詢座位";
       } catch(e) { alert("名單載入失敗，請檢查網路連線。"); }
     }
 
@@ -982,12 +985,77 @@
       const wrapper = document.getElementById('seat-map-zoom-wrapper');
       isZoomed = !isZoomed;
       if (isZoomed) {
-        wrapper.style.width = '250%';
+        wrapper.style.width = '400%';
         wrapper.style.cursor = 'zoom-out';
       } else {
         wrapper.style.width = '100%';
         wrapper.style.cursor = 'zoom-in';
       }
+    }
+
+    
+    let lastFullRecordsFetch = 0;
+    let cachedFullRecords = [];
+    async function renderStatusOverview() {
+      showScreen('screen-status');
+      const now = Date.now();
+      const loading = document.getElementById('status-loading');
+      const table = document.getElementById('status-table');
+      const tbody = document.getElementById('status-tbody');
+      
+      if (now - lastFullRecordsFetch > 10000 || cachedFullRecords.length === 0) {
+        loading.style.display = 'block';
+        table.style.display = 'none';
+        try {
+          cachedFullRecords = await fetchFullRecords();
+          lastFullRecordsFetch = now;
+        } catch(e) {
+          alert('讀取失敗，請重試');
+          goHome();
+          return;
+        }
+      }
+      
+      loading.style.display = 'none';
+      table.style.display = 'table';
+      tbody.innerHTML = '';
+      
+      const allExpected = [...rawDataGov, ...rawDataSchool];
+      const otherRecords = cachedFullRecords.filter(r => r.type === 'other');
+      const otherNames = [...new Set(otherRecords.map(r => r.name))];
+      otherNames.forEach(name => {
+        const r = otherRecords.find(x => x.name === name);
+        allExpected.push({
+          agency: r.agency || '',
+          unit: r.unit || r.school || '',
+          title: r.title || '',
+          name: name,
+          isOther: true
+        });
+      });
+
+      let tableHtml = '';
+      allExpected.forEach((person, idx) => {
+        const pRecords = cachedFullRecords.filter(r => r.name === person.name);
+        const signIn = pRecords.find(r => r.action === '簽到');
+        const signOut = pRecords.find(r => r.action === '簽退');
+        
+        const signInImg = signIn && signIn.signature ? `<img src="${signIn.signature}" style="height: 40px;">` : `<span style="color:#aaa;">未簽到</span>`;
+        const signOutImg = signOut && signOut.signature ? `<img src="${signOut.signature}" style="height: 40px;">` : `<span style="color:#aaa;">未簽退</span>`;
+        
+        tableHtml += `
+          <tr>
+            <td style="padding: 8px; border: 1px solid #ccc;">${idx + 1}</td>
+            <td style="padding: 8px; border: 1px solid #ccc;">${person.agency || person.town || ''}</td>
+            <td style="padding: 8px; border: 1px solid #ccc;">${person.unit || person.school || ''}</td>
+            <td style="padding: 8px; border: 1px solid #ccc;">${person.title || ''}</td>
+            <td style="padding: 8px; border: 1px solid #ccc; font-weight: bold;">${person.name}</td>
+            <td style="padding: 8px; border: 1px solid #ccc;">${signInImg}</td>
+            <td style="padding: 8px; border: 1px solid #ccc;">${signOutImg}</td>
+          </tr>
+        `;
+      });
+      tbody.innerHTML = tableHtml;
     }
 
     function goHome() { showScreen('screen-home'); }
@@ -1389,7 +1457,8 @@
       // 處理預設用餐意願
       document.querySelectorAll('input[name="meal"]').forEach(el => el.checked = false); // 清空預設
       const personData = prefillData[currentSelection.name];
-      if (personData && personData.meal) {
+      const isBeforeDeadline = new Date() < new Date('2026-08-20T00:00:00+08:00');
+      if (isBeforeDeadline && personData && personData.meal) {
          const radio = Array.from(document.querySelectorAll('input[name="meal"]')).find(r => personData.meal.includes(r.value));
          if (radio) radio.checked = true;
       }
@@ -1613,5 +1682,13 @@
       }
     }
   </script>
+
+  <!-- 葷食菜色彈窗 -->
+  <div id="lunch-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center;">
+    <div style="position:relative; max-width:90%; max-height:90%;">
+      <img src="115lunch.png" style="max-width:100%; max-height:90vh; border-radius:10px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+      <button onclick="document.getElementById('lunch-modal').style.display='none'" style="position:absolute; top:-15px; right:-15px; background:#D32F2F; color:white; border:2px solid white; border-radius:50%; width:45px; height:45px; font-size:24px; font-weight:bold; cursor:pointer; box-shadow:0 4px 10px rgba(0,0,0,0.3); display:flex; justify-content:center; align-items:center;">&times;</button>
+    </div>
+  </div>
 </body>
 </html>
