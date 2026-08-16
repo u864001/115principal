@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>屏東縣115學年度第一學期中小學校長行政會議</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700;900&display=swap');
+
+        :root {
+            --bg-top: #030712;
+            --bg-mid: #071326;
+            --bg-bottom: #020914;
+            --text-main: #ffffff;
+            --text-muted: #94a3b8;
+            --accent-cyan: #00f2fe;
+            --accent-blue: #38bdf8;
+            --glass-bg: rgba(7, 19, 38, 0.65);
+            --glass-border: rgba(56, 189, 248, 0.2);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Noto Sans TC', sans-serif;
+            background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 60%, var(--bg-bottom) 100%);
+            color: var(--text-main);
+            user-select: none;
+        }
+
+        /* 畫布容器 */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* 簡報主體容器 */
+        .presentation {
+            position: relative;
+            z-index: 10;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .slide {
+            position: absolute;
+            width: 82%;
+            max-width: 1300px;
+            height: 78%;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            transform: translateY(20px) scale(0.98);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+        }
+
+        /* 毛玻璃科技面板 */
+        .glass-panel {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 45px 55px;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+        }
+
+        /* 標題與內文字型樣式 */
+        h1 {
+            font-size: 3.6rem;
+            font-weight: 900;
+            line-height: 1.25;
+            background: linear-gradient(90deg, #ffffff, var(--accent-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+        }
+
+        h2 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        h2::before {
+            content: '';
+            display: inline-block;
+            width: 6px;
+            height: 32px;
+            background: var(--accent-cyan);
+            border-radius: 3px;
+            box-shadow: 0 0 12px var(--accent-cyan);
+        }
+
+        p, li {
+            font-size: 1.45rem;
+            line-height: 1.85;
+            color: #f1f5f9;
+            font-weight: 300;
+            margin-bottom: 16px;
+        }
+
+        .subtitle {
+            font-size: 1.7rem;
+            color: var(--accent-blue);
+            letter-spacing: 3px;
+            margin-bottom: 35px;
+            font-weight: 400;
+        }
+
+        /* 封面投影片 */
+        .title-slide {
+            text-align: center;
+            align-items: center;
+        }
+
+        .logos-container {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 25px;
+            justify-content: center;
+        }
+
+        .logo-box {
+            padding: 12px 28px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px dashed var(--accent-blue);
+            border-radius: 12px;
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            letter-spacing: 2px;
+        }
+
+        .meta-info {
+            display: flex;
+            gap: 40px;
+            margin-top: 35px;
+            color: #cbd5e1;
+            font-size: 1.25rem;
+            font-weight: 400;
+        }
+
+        /* 獎項專屬排版 */
+        .award-badge {
+            display: inline-block;
+            padding: 6px 18px;
+            background: rgba(0, 242, 254, 0.12);
+            border: 1px solid var(--accent-cyan);
+            border-radius: 30px;
+            color: var(--accent-cyan);
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.2);
+        }
+
+        .school-title {
+            font-size: 2.8rem;
+            font-weight: 900;
+            margin-bottom: 25px;
+            color: #ffffff;
+        }
+
+        .award-desc {
+            font-size: 1.45rem;
+            color: #cbd5e1;
+            line-height: 1.9;
+            text-align: justify;
+        }
+
+        /* 議程雙欄排版 */
+        .agenda-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        .agenda-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-left: 4px solid var(--accent-blue);
+            padding: 20px 25px;
+            border-radius: 0 12px 12px 0;
+            transition: all 0.3s ease;
+        }
+
+        .agenda-card:hover {
+            transform: translateX(8px);
+            background: rgba(56, 189, 248, 0.08);
+            border-left-color: var(--accent-cyan);
+        }
+
+        .agenda-card-title {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 6px;
+        }
+
+        .agenda-card-speaker {
+            font-size: 1.1rem;
+            color: var(--accent-cyan);
+        }
+
+        /* 底部進度條與控制器 */
+        .progress-bar-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            z-index: 100;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan));
+            box-shadow: 0 0 10px var(--accent-cyan);
+            transition: width 0.3s ease;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 25px;
+            right: 35px;
+            display: flex;
+            gap: 15px;
+            z-index: 100;
+        }
+
+        .ctrl-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.2rem;
+            backdrop-filter: blur(8px);
+            transition: all 0.2s ease;
+        }
+
+        .ctrl-btn:hover {
+            background: var(--accent-cyan);
+            color: #030712;
+            box-shadow: 0 0 15px var(--accent-cyan);
+        }
+
+        .page-indicator {
+            position: fixed;
+            bottom: 30px;
+            left: 35px;
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            font-weight: 300;
+            letter-spacing: 1px;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 背景 Canvas：星空、流星、海浪、礁岩岸邊、燈塔水平光束、碎石浪花 -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- 簡報頁面 -->
+    <div class="presentation">
+
+        <!-- Slide 1: 封面 -->
+        <div class="slide title-slide active">
+            <div class="logos-container">
+                <div class="logo-box">🏛️ [ 屏東縣政府 Logo ]</div>
+                <div class="logo-box">✨ [ 希望城市 Logo ]</div>
+            </div>
+            <h1>屏東縣115學年度第一學期<br>中小學校長行政會議</h1>
+            <div class="subtitle">厚植學力 ✦ 科技賦能 ✦ 國際接軌 ✦ 人文永續</div>
+            <div class="meta-info">
+                <div>🗓️ 115年8月20日 (星期四)</div>
+                <div>📍 國立內埔高級農工職業學校 (活動中心)</div>
+            </div>
+        </div>
+
+        <!-- Slide 2: 上午議程 -->
+        <div class="slide">
+            <div class="glass-panel">
+                <h2>會議議程 (上午)</h2>
+                <div class="agenda-grid">
+                    <div class="agenda-card">
+                        <div class="agenda-card-title">報到</div>
+                        <div class="agenda-card-speaker">與會長官及貴賓</div>
+                    </div>
+                    <div class="agenda-card">
+                        <div class="agenda-card-title">政風處重點業務宣導</div>
+                        <div class="agenda-card-speaker">政風處政風預防科 吳季璇科長</div>
+                    </div>
+                    <div class="agenda-card" style="grid-column: span 2; border-left-color: var(--accent-cyan); background: rgba(0, 242, 254, 0.05);">
+                        <div class="agenda-card-title" style="font-size: 1.7rem; color: var(--accent-cyan);">長官致詞</div>
+                        <div class="agenda-card-speaker" style="font-size: 1.3rem;">屏東縣 周春米 縣長</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: 頒獎 1 -->
+        <div class="slide">
+            <div class="glass-panel">
+                <div class="award-badge">視力保健績優學校 ✦ 特優</div>
+                <div class="school-title">瑞光國小</div>
+                <p class="award-desc">學校持續改善教室照明與課桌椅配置，打造明亮舒適的護眼環境。積極落實「3010護眼行動」、「戶外活動120分鐘」及下課教室淨空，培養學生良好護眼習慣。</p>
+                <p class="award-desc">同時推廣遠視儲備與戶外戴帽觀念，提升親師生對近視預防的重視。在全校共同努力下，學生視力不良率逐年穩定下降。</p>
+            </div>
+        </div>
+
+        <!-- Slide 4: 頒獎 2 -->
+        <div class="slide">
+            <div class="glass-panel">
+                <div class="award-badge">口腔保健績優學校 ✦ 優等</div>
+                <div class="school-title">青山國小</div>
+                <p class="award-desc">學校從幼兒園扎根口腔保健，落實早餐後潔牙，並由校長、護理師及「潔牙小天使」共同推動正確潔牙。另結合社區文健站辦理老幼共學，將健康理念延伸至家庭與社區。</p>
+                <p class="award-desc">學生齲齒率逐年下降，齲齒矯治率、窩溝封填率及塗氟率皆接近100%，成效卓著。</p>
+            </div>
+        </div>
+
+        <!-- Slide 5: 頒獎 3 -->
+        <div class="slide">
+            <div class="glass-panel">
+                <div class="award-badge">健康體位績優學校 ✦ 優良</div>
+                <div class="school-title">崇蘭國小</div>
+                <p class="award-desc">學校以學生健康為核心，營造健康、活力且友善的校園環境。透過健康體位推動策略，將「五正四樂」融入課程與日常生活，引導學生建立正確飲食與運動觀念。</p>
+                <p class="award-desc">前後測顯示學生健康知能與行為均明顯進步，健康理念已深植校園。</p>
+            </div>
+        </div>
+
+        <!-- Slide 6: 頒獎 4 -->
+        <div class="slide">
+            <div class="glass-panel">
+                <div class="award-badge">菸檳防制教育推廣績優 ✦ 優良</div>
+                <div class="school-title">內埔國中</div>
+                <p class="award-desc">學校結合衛生政策、健康教育、表演藝術及多元宣導，推動反菸拒檳與電子煙防制。課程著重危害認知、拒絕技巧及健康生活能力，協助學生做出自主選擇。</p>
+                <p class="award-desc">並整合家長、社區與衛生單位資源，共同營造無菸、無檳、安全友善的健康校園。</p>
+            </div>
+        </div>
+
+        <!-- Slide 7: 頒獎 5 -->
+        <div class="slide">
+            <div class="glass-panel">
+                <div class="award-badge">「前後測成效評價」成果評選 ✦ 特優</div>
+                <div class="school-title">惠農國小</div>
+                <p class="award-desc">學校以「正向心理『惠』健康，『農』心戮力愛健保」為主題，推動正向心理健康、全民健保與正確用藥行動研究。透過問卷掌握學生及家長的認知與行為，據以規劃適切策略。</p>
+                <p class="award-desc">藉此提升親師生對健保與用藥安全的重視，建立正確就醫、用藥觀念及負責任的健康態度。</p>
+            </div>
+        </div>
+
+        <!-- Slide 8: 頒獎 6 -->
+        <div class="slide">
+            <div class="glass-panel">
+                <div class="award-badge">校園健康主播 ✦ 佳作</div>
+                <div class="school-title">滿州國中</div>
+                <p class="award-desc">學校以「滿州韌性・健康起飛」為核心，結合自然生態、在地文化與產業，將健康促進融入校本課程及日常生活。</p>
+                <p class="award-desc">透過多元課程與實際行動，引導學生從生活中學習健康、從土地中認識家鄉。並培養學生守護自我、關懷在地與實踐健康生活的行動力。</p>
+            </div>
+        </div>
+
+        <!-- Slide 9: 頒獎 7 -->
+        <div class="slide">
+            <div class="glass-panel">
+                <div class="award-badge">校園珍惜健保AI創作實境秀 (國中組) ✦ 特優</div>
+                <div class="school-title">鶴聲國中</div>
+                <p class="award-desc">學校企劃《校園健康守護特報》實境秀，將珍惜健保、正確用藥及分級醫療融入校園生活。影片結合親師宣誓、棒球隊情境演繹、童軍社區服務、AR桌遊及AI共創主題曲。</p>
+                <p class="award-desc">成功串聯校園、家庭與社區，將健保政策轉化為溫暖且具行動力的健康教育。</p>
+            </div>
+        </div>
+
+        <!-- Slide 10: 頒獎 8 -->
+        <div class="slide">
+            <div class="glass-panel">
+                <div class="award-badge">校園珍惜健保AI創作實境秀 (國小組) ✦ 佳作</div>
+                <div class="school-title">長榮百合國小</div>
+                <p class="award-desc">學校以「珍惜健保、正確用藥」為主題，全片運用AI技術創作，突破傳統拍攝在場景、角色與表現形式上的限制。</p>
+                <p class="award-desc">活潑且富想像力的呈現方式提升影片吸引力，引發學生觀看、討論與分享。透過創新媒材深化健康知能，讓健保與用藥教育更貼近孩子。</p>
+            </div>
+        </div>
+
+        <!-- Slide 11: 頒獎 9 -->
+        <div class="slide">
+            <div class="glass-panel">
+                <div class="award-badge">第10屆國家環境教育獎 ✦ 優等</div>
+                <div class="school-title">餉潭國小</div>
+                <p class="award-desc">餉潭國小積極推動「ECO餉潭學」校本課程，結合在地生態、台美生態學校認證與老幼共學繪本創作，展現永續教育成效，榮獲第10屆國家環境教育獎學校組優等獎殊榮。</p>
+            </div>
+        </div>
+
+        <!-- Slide 12: 頒獎 10 -->
+        <div class="slide">
+            <div class="glass-panel">
+                <div class="award-badge">教育部戶外教育成效卓著獎 ✦ 學校績優獎</div>
+                <div class="school-title">石門國小 ✦ 恆春國小</div>
+                <p class="award-desc"><b>石門國小：</b>以「跟著luli蝸牛遊學趣」為主題，將排灣族文化與山林智慧融入課程，帶領孩子「從土地出發、朝夢想長大」，培育具文化根基與行動力的下一代。</p>
+                <p class="award-desc"><b>恆春國小：</b>以「半島TOUR趣，行動永留續」為核心，結合古城、民謠與國家公園優勢，建構安全的螺旋式戶外學習，實踐「在地行動、永續共好」的素養教育！</p>
+            </div>
+        </div>
+
+        <!-- Slide 13: 頒獎 11 -->
+        <div class="slide">
+            <div class="glass-panel">
+                <div class="award-badge">115年閱讀磐石學校組</div>
+                <div class="school-title" style="font-size: 2.3rem;">滿州國中 ✦ 五溝國小 ✦ 仁和國小 ✦ 民和國小</div>
+                <p class="award-desc">教育部公布115年閱讀磐石獎，屏東縣推薦學校全數獲獎！</p>
+                <p class="award-desc">滿州國中、仁和國小、五溝國小及民和國小四校團隊將嚴苛的環境轉化為向上盤旋的動力，讓屏東的孩子們透過閱讀，讓閱讀的種子在家庭與學校扎根。</p>
+            </div>
+        </div>
+
+        <!-- Slide 14: 中午業務與專題演講 -->
+        <div class="slide">
+            <div class="glass-panel">
+                <h2>重點業務宣導與專題演講</h2>
+                <div class="agenda-grid">
+                    <div class="agenda-card">
+                        <div class="agenda-card-title">人事處重點業務宣導</div>
+                        <div class="agenda-card-speaker">人事處 陳惠蓉處長</div>
+                    </div>
+                    <div class="agenda-card">
+                        <div class="agenda-card-title">教育處重點業務宣導</div>
+                        <div class="agenda-card-speaker">教育處 陳國祥處長</div>
+                    </div>
+                    <div class="agenda-card">
+                        <div class="agenda-card-title">本縣教育政策重點說明</div>
+                        <div class="agenda-card-speaker">教育處科長、中心主任、督學</div>
+                    </div>
+                    <div class="agenda-card">
+                        <div class="agenda-card-title">茶敘交流</div>
+                        <div class="agenda-card-speaker">Networking Break</div>
+                    </div>
+                    <div class="agenda-card" style="grid-column: span 2; background: rgba(0, 242, 254, 0.08); border-left-color: var(--accent-cyan);">
+                        <div class="agenda-card-title" style="color: var(--accent-cyan); font-size: 1.45rem;">專題演講</div>
+                        <div class="agenda-card-speaker" style="font-size: 1.35rem; color: #fff; margin-top: 6px;">
+                            《把劣勢，精算成禮物 校園治理的系統思考》<br>
+                            <span style="font-size: 1.05rem; color: var(--text-muted);">主講：滿州國中 于福豪校長</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 15: 下午議程與閉會 -->
+        <div class="slide">
+            <div class="glass-panel">
+                <h2>會議議程 (下午)</h2>
+                <div class="agenda-grid">
+                    <div class="agenda-card">
+                        <div class="agenda-card-title">午餐</div>
+                        <div class="agenda-card-speaker">Lunch Break</div>
+                    </div>
+                    <div class="agenda-card">
+                        <div class="agenda-card-title">職場霸凌法規宣導</div>
+                        <div class="agenda-card-speaker">南區職業安全衛生中心 趙懋勳技正</div>
+                    </div>
+                    <div class="agenda-card">
+                        <div class="agenda-card-title">教育議題推動及執行策略討論及分享</div>
+                        <div class="agenda-card-speaker">教育處科長、中心主任、督學</div>
+                    </div>
+                    <div class="agenda-card">
+                        <div class="agenda-card-title">提案討論、綜合座談</div>
+                        <div class="agenda-card-speaker">教育處 陳國祥處長</div>
+                    </div>
+                    <div class="agenda-card" style="grid-column: span 2; text-align: center; border: none; background: transparent;">
+                        <div class="agenda-card-title" style="font-size: 2.2rem; color: var(--accent-cyan); margin-top: 15px;">✦ 賦歸 ✦</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 底部進度條 -->
+    <div class="progress-bar-container">
+        <div class="progress-bar" id="progress"></div>
+    </div>
+
+    <!-- 頁碼計數 -->
+    <div class="page-indicator" id="counter">1 / 15</div>
+
+    <!-- 控制按鈕 -->
+    <div class="controls">
+        <div class="ctrl-btn" onclick="prevSlide()">❮</div>
+        <div class="ctrl-btn" onclick="nextSlide()">❯</div>
+    </div>
+
+    <script>
+        /* === 投影片切換控制邏輯 === */
+        const slides = document.querySelectorAll('.slide');
+        const progress = document.getElementById('progress');
+        const counter = document.getElementById('counter');
+        let currentSlide = 0;
+
+        function updateSlide() {
+            slides.forEach((slide, idx) => {
+                if (idx === currentSlide) {
+                    slide.classList.add('active');
+                } else {
+                    slide.classList.remove('active');
+                }
+            });
+            const pct = ((currentSlide + 1) / slides.length) * 100;
+            progress.style.width = pct + '%';
+            counter.textContent = `${currentSlide + 1} / ${slides.length}`;
+        }
+
+        function nextSlide() {
+            if (currentSlide < slides.length - 1) {
+                currentSlide++;
+                updateSlide();
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlide();
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === 'Space') nextSlide();
+            else if (e.key === 'ArrowLeft') prevSlide();
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.controls')) nextSlide();
+        });
+
+        updateSlide();
+
+        /* === Canvas 特效：燈塔、礁岩海岸、不規則浪潮、碎石浪花、夜空呼吸星點、隨機流星 === */
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let W = window.innerWidth, H = window.innerHeight;
+
+        function resizeCanvas() {
+            W = window.innerWidth;
+            H = window.innerHeight;
+            canvas.width = W;
+            canvas.height = H;
+            initStars();
+        }
+        window.addEventListener('resize', resizeCanvas);
+
+        // 1. 呼吸星點初始化
+        let stars = [];
+        function initStars() {
+            stars = [];
+            const count = Math.floor((W * H) / 4500); // 依解析度分佈
+            for (let i = 0; i < count; i++) {
+                stars.push({
+                    x: Math.random() * W,
+                    y: Math.random() * (H * 0.72), // 主要分佈在上半部
+                    size: Math.random() * 1.5 + 0.6,
+                    baseAlpha: Math.random() * 0.4 + 0.2,
+                    speed: Math.random() * 0.002 + 0.001,
+                    phase: Math.random() * Math.PI * 2
+                });
+            }
+        }
+
+        // 2. 流星系統 (隨機、降低頻率、降低數量)
+        let meteors = [];
+        function spawnMeteor() {
+            // 數量減為一半(1)，出現機率減為一半(0.004)
+            if (meteors.length < 1 && Math.random() < 0.004) { 
+                meteors.push({
+                    x: Math.random() * (W * 0.8),
+                    y: Math.random() * (H * 0.35),
+                    length: Math.random() * 120 + 80,
+                    speed: Math.random() * 8 + 7,
+                    angle: Math.PI / 6, // 30度往右下劃過
+                    alpha: 1,
+                    decay: Math.random() * 0.012 + 0.008
+                });
+            }
+        }
+
+        // 3. 浪花泡沫粒子系統 (規模減半、亮度降低)
+        let splashes = [];
+        function spawnSplash(x, y) {
+            for (let i = 0; i < 4; i++) {
+                splashes.push({
+                    x: x + (Math.random() * 20 - 10), // 擴散範圍縮半
+                    y: y + (Math.random() * 5 - 2.5),  
+                    vx: (Math.random() - 0.7) * 1.25, // 噴發水平速度縮半
+                    vy: -Math.random() * 1.25 - 0.5,  // 噴發垂直高度縮半
+                    size: Math.random() * 1.75 + 0.75, // 泡沫尺寸縮半
+                    alpha: 0.4, // 亮度降低
+                    decay: Math.random() * 0.02 + 0.015
+                });
+            }
+        }
+
+        let time = 0;
+
+        function animate() {
+            time += 0.02;
+            ctx.clearRect(0, 0, W, H);
+
+            // A. 繪製呼吸星點
+            stars.forEach(s => {
+                const alpha = s.baseAlpha + Math.sin(time * s.speed * 100 + s.phase) * 0.3;
+                ctx.fillStyle = `rgba(224, 242, 254, ${Math.max(0.1, alpha)})`;
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // B. 繪製流星
+            spawnMeteor();
+            for (let i = meteors.length - 1; i >= 0; i--) {
+                const m = meteors[i];
+                const tailX = m.x - Math.cos(m.angle) * m.length;
+                const tailY = m.y - Math.sin(m.angle) * m.length;
+
+                const grad = ctx.createLinearGradient(m.x, m.y, tailX, tailY);
+                grad.addColorStop(0, `rgba(255, 255, 255, ${m.alpha})`);
+                grad.addColorStop(0.3, `rgba(0, 242, 254, ${m.alpha * 0.6})`);
+                grad.addColorStop(1, 'rgba(0, 242, 254, 0)');
+
+                ctx.strokeStyle = grad;
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.moveTo(m.x, m.y);
+                ctx.lineTo(tailX, tailY);
+                ctx.stroke();
+
+                m.x += Math.cos(m.angle) * m.speed;
+                m.y += Math.sin(m.angle) * m.speed;
+                m.alpha -= m.decay;
+
+                if (m.alpha <= 0 || m.x > W || m.y > H) {
+                    meteors.splice(i, 1);
+                }
+            }
+
+            // 幾何設定：燈塔與海岸
+            const towerBaseX = W * 0.85;
+            const towerBaseY = H * 0.86;
+            const towerH = Math.min(H * 0.14, 130);
+            const headY = towerBaseY - towerH;
+
+            // C. 繪製夜浪 (不規則起伏海平面)
+            const seaY = H * 0.88;
+            for (let layer = 0; layer < 3; layer++) {
+                ctx.beginPath();
+                ctx.moveTo(0, H);
+                for (let x = 0; x <= W; x += 15) {
+                    const waveY = seaY + layer * 8 +
+                        Math.sin(x * 0.008 + time * 1.2 + layer) * 7 +
+                        Math.cos(x * 0.015 - time * 0.8) * 5;
+                    ctx.lineTo(x, waveY);
+                }
+                ctx.lineTo(W, H);
+                ctx.closePath();
+
+                if (layer === 0) ctx.fillStyle = 'rgba(10, 25, 47, 0.7)';
+                else if (layer === 1) ctx.fillStyle = 'rgba(7, 18, 36, 0.85)';
+                else ctx.fillStyle = 'rgba(3, 10, 22, 0.95)';
+                ctx.fill();
+            }
+
+            // D. 繪製礁岩海岸 (從燈塔腳下一直延伸連到右側)
+            ctx.beginPath();
+            ctx.moveTo(towerBaseX - 60, H);
+            ctx.lineTo(towerBaseX - 45, towerBaseY + 15);
+            ctx.lineTo(towerBaseX - 10, towerBaseY);
+            ctx.lineTo(towerBaseX + 50, towerBaseY + 5);
+            ctx.lineTo(towerBaseX + 110, towerBaseY + 25);
+            ctx.lineTo(W, towerBaseY + 20);
+            ctx.lineTo(W, H);
+            ctx.closePath();
+
+            const rockGrad = ctx.createLinearGradient(0, towerBaseY, 0, H);
+            rockGrad.addColorStop(0, '#0c1b2e');
+            rockGrad.addColorStop(1, '#02060d');
+            ctx.fillStyle = rockGrad;
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(56, 189, 248, 0.15)';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+
+            // E. 浪花拍打岩石特效
+            if (Math.sin(time * 2.5) > 0.6) {
+                spawnSplash(towerBaseX - 35, towerBaseY + 18);
+            }
+            for (let i = splashes.length - 1; i >= 0; i--) {
+                const sp = splashes[i];
+                ctx.fillStyle = `rgba(186, 230, 253, ${sp.alpha})`;
+                ctx.beginPath();
+                ctx.arc(sp.x, sp.y, sp.size, 0, Math.PI * 2);
+                ctx.fill();
+
+                sp.x += sp.vx;
+                sp.y += sp.vy;
+                sp.vy += 0.08; // 重力
+                sp.alpha -= sp.decay;
+
+                if (sp.alpha <= 0) splashes.splice(i, 1);
+            }
+
+            // F. 繪製燈塔本體
+            // 塔身
+            ctx.beginPath();
+            ctx.moveTo(towerBaseX - 14, towerBaseY);
+            ctx.lineTo(towerBaseX - 8, headY + 18);
+            ctx.lineTo(towerBaseX + 8, headY + 18);
+            ctx.lineTo(towerBaseX + 14, towerBaseY);
+            ctx.closePath();
+            ctx.fillStyle = '#0f243a';
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
+            ctx.lineWidth = 1.2;
+            ctx.stroke();
+
+            // 燈室與圓頂
+            ctx.beginPath();
+            ctx.rect(towerBaseX - 9, headY + 6, 18, 12);
+            ctx.arc(towerBaseX, headY + 6, 8, Math.PI, 0);
+            ctx.fillStyle = '#162e4a';
+            ctx.fill();
+            ctx.stroke();
+
+            // G. 燈塔水平光束 360° 旋轉 (水平壓縮 + 呼吸明暗透視)
+            const theta = time * 0.7; // 旋轉速度
+            const depth = Math.cos(theta);     // Z軸：1=面對使用者, -1=背對
+            const projected = Math.sin(theta); // X軸：左右方向
+
+            const facing = Math.max(0, depth);
+            const breathing = Math.pow(facing, 3.2); // 面對時的光暈
+            const sideVis = Math.max(0, depth + 0.3);
+            const glow = 0.05 + 0.35 * sideVis + 0.85 * breathing;
+
+            const maxBeamLen = Math.max(W * 0.95, H * 0.8);
+            const currentLen = maxBeamLen * Math.abs(projected);
+            const beamDirX = projected >= 0 ? 1 : -1;
+
+            const lightCenterY = headY + 12;
+
+            if (glow > 0.06 && currentLen > 5) {
+                const spread = 0.012 + 0.04 * breathing;
+                const baseAng = beamDirX > 0 ? 0 : Math.PI;
+
+                const p1 = baseAng - spread, p2 = baseAng + spread;
+                const x1 = towerBaseX + Math.cos(p1) * currentLen;
+                const y1 = lightCenterY + Math.sin(p1) * currentLen;
+                const x2 = towerBaseX + Math.cos(p2) * currentLen;
+                const y2 = lightCenterY + Math.sin(p2) * currentLen;
+
+                // 光錐漸層
+                const beamGrad = ctx.createLinearGradient(towerBaseX, lightCenterY, (x1 + x2) / 2, (y1 + y2) / 2);
+                beamGrad.addColorStop(0, `rgba(255, 255, 255, ${0.45 * glow})`);
+                beamGrad.addColorStop(0.08, `rgba(56, 189, 248, ${0.25 * glow})`);
+                beamGrad.addColorStop(0.4, `rgba(0, 242, 254, ${0.06 * glow})`);
+                beamGrad.addColorStop(1, 'rgba(0, 242, 254, 0)');
+
+                ctx.fillStyle = beamGrad;
+                ctx.beginPath();
+                ctx.moveTo(towerBaseX, lightCenterY);
+                ctx.lineTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.closePath();
+                ctx.fill();
+            }
+
+            // 面對使用者時的強烈鏡頭光暈 (Lens flare / Halo)
+            if (breathing > 0.02) {
+                const haloR = 40 + 130 * breathing;
+                const haloGrad = ctx.createRadialGradient(towerBaseX, lightCenterY, 0, towerBaseX, lightCenterY, haloR);
+                haloGrad.addColorStop(0, `rgba(255, 255, 255, ${0.35 * breathing})`);
+                haloGrad.addColorStop(0.25, `rgba(0, 242, 254, ${0.15 * breathing})`);
+                haloGrad.addColorStop(1, 'rgba(0, 242, 254, 0)');
+
+                ctx.fillStyle = haloGrad;
+                ctx.beginPath();
+                ctx.arc(towerBaseX, lightCenterY, haloR, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // 燈芯亮點
+            ctx.beginPath();
+            ctx.arc(towerBaseX, lightCenterY, 3 + 3 * breathing, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(255, 255, 255, ${0.3 + 0.7 * breathing})`;
+            ctx.shadowBlur = 10 + 20 * breathing;
+            ctx.shadowColor = '#00f2fe';
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            requestAnimationFrame(animate);
+        }
+
+        resizeCanvas();
+        animate();
+    </script>
+</body>
+</html>
