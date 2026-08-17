@@ -442,7 +442,7 @@
 </head>
 <body>
     <button style="position: absolute; top: 20px; left: 20px; z-index: 1000; background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.3); color: white; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 16px; backdrop-filter: blur(10px); transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.3);" onclick="window.location.href='index.html'" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">← 返回首頁</button>
-    <img src="7.png" alt="希望城市" style="position: fixed; top: 70px; left: 20px; width: 156px; z-index: 1000;">
+    
 
 
     <!-- 背景 Canvas：星空、流星、海浪、礁岩岸邊、燈塔水平光束、碎石浪花 -->
@@ -450,6 +450,7 @@
 
     <!-- 簡報頁面 -->
     <div class="presentation">
+        <div id="presentation-stage" style="width: 1920px; height: 1080px; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: flex; justify-content: center; align-items: center; transform-origin: center center;">
 
         <!-- Slide 1: 封面 -->
         
@@ -693,6 +694,7 @@
                 <div class="speaker-name trans-title" style="font-size:4rem; color:var(--accent-cyan);">✦ 賦歸 ✦</div>
                 <div style="font-size:1.5rem; color:var(--text-muted); margin-top:30px;" class="trans-text">感謝各位長官及校長的參與，祝平安順心</div>
             </div>
+        </div>
         </div>
     </div>
 
@@ -1160,6 +1162,17 @@
 
         resizeCanvas();
         animate();
+    
+        function resizeStage() {
+            const stage = document.getElementById('presentation-stage');
+            if(stage) {
+                const scale = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+                stage.style.transform = `translate(-50%, -50%) scale(${scale})`;
+            }
+        }
+        window.addEventListener('resize', resizeStage);
+        resizeStage();
+
     </script>
 </body>
 </html>
