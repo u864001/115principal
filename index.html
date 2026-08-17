@@ -187,23 +187,28 @@
 
   <!-- 置頂導覽列 -->
   <div class="top-bar">
-    <button id="btn-back" class="btn-nav hidden" onclick="goBack()">🔙 上一頁</button>
-    <div id="secret-title" class="top-bar-title">屏東縣115學年度第一學期<br>中小學校長行政會議</div>
-    <button class="btn-nav" onclick="goHome()">🏠 首頁</button>
+    <button id="btn-back" class="btn-nav hidden" onclick="goBack()" data-i18n="back">🔙 上一頁</button>
+    <div id="secret-title" class="top-bar-title" data-i18n="title">屏東縣115學年度第一學期<br>中小學校長行政會議</div>
+    <div style="display:flex; gap:10px;">
+        <button id="btn-lang" class="btn-nav" style="background:#E91E63;" onclick="toggleLanguage()">EN</button>
+        <button class="btn-nav" onclick="goHome()" data-i18n="home">🏠 首頁</button>
+    </div>
   </div>
+
 
   <!-- 首頁 -->
   <div id="screen-home" class="screen active">
     <div class="glass-panel">
-      <div style="font-size:36px; font-weight:bold; margin-bottom: 10px; color: var(--pt-blue);">歡迎蒞臨</div>
-      <div style="font-size:28px; margin-bottom: 20px;">請選擇您的動作</div>
+      <div style="font-size:36px; font-weight:bold; margin-bottom: 10px; color: var(--pt-blue);" data-i18n="welcome">歡迎蒞臨</div>
+      <div style="font-size:28px; margin-bottom: 20px;" data-i18n="selectAction">請選擇您的動作</div>
       <button id="btn-signin-main" class="btn-massive btn-signin" onclick="setAction('簽到')" disabled>資料載入中...</button>
       <button id="btn-signout-main" class="btn-massive btn-signout" onclick="setAction('簽退')" disabled>資料載入中...</button>
+      <button class="btn-massive btn-nav" style="margin-top:15px; background: linear-gradient(135deg, #1E88E5, #1565C0);" onclick="window.location.href='meeting.html'" data-i18n="presentation">進入會議簡報</button>
       <button id="btn-status-main" class="btn-massive btn-nav" style="margin-top:15px; background: linear-gradient(135deg, #009688, #00796B);" onclick="renderStatusOverview()" disabled>資料載入中...</button>
       <button id="btn-search-main" class="btn-massive btn-nav" style="margin-top:15px; background: linear-gradient(135deg, #8E24AA, #6A1B9A);" onclick="setAction('查詢座位')" disabled>資料載入中...</button>
       
       <div class="qr-container">
-        <div class="qr-text">📱 掃描 QR Code，手機免網址直接簽到</div>
+        <div class="qr-text" data-i18n="qrText">📱 掃描 QR Code，手機免網址直接簽到</div>
         <div id="qrcode"></div>
       </div>
     </div>
@@ -212,11 +217,11 @@
   <!-- 選擇身分類別 -->
   <div id="screen-type" class="screen">
     <div class="glass-panel">
-      <div id="type-title" style="font-size:34px; font-weight:bold; color: var(--pt-blue);">請選擇服務機關類別</div>
+      <div id="type-title" style="font-size:34px; font-weight:bold; color: var(--pt-blue);" data-i18n="selectType">請選擇服務機關類別</div>
       <div class="list-container">
-        <button class="btn-list" style="border-left: 8px solid #E91E63;" onclick="selectType('gov')">🏛️ 屏東縣政府</button>
-        <button class="btn-list" style="border-left: 8px solid #4CAF50;" onclick="selectType('school')">🏫 各級學校</button>
-        <button id="btn-type-other" class="btn-list" style="border-left: 8px solid #FF9800;" onclick="selectType('other')">✏️ 其他 (來賓/工作人員自填)</button>
+        <button class="btn-list" style="border-left: 8px solid #E91E63;" onclick="selectType('gov')" data-i18n="gov">🏛️ 屏東縣政府</button>
+        <button class="btn-list" style="border-left: 8px solid #4CAF50;" onclick="selectType('school')" data-i18n="school">🏫 各級學校</button>
+        <button id="btn-type-other" class="btn-list" style="border-left: 8px solid #FF9800;" onclick="selectType('other')" data-i18n="other">✏️ 其他 (來賓/工作人員自填)</button>
       </div>
     </div>
   </div>
@@ -224,7 +229,7 @@
   <!-- 縣府專屬 -->
   <div id="screen-gov-vip" class="screen">
     <div class="glass-panel">
-      <div style="font-size:34px; font-weight:bold; color: var(--pt-blue);">屏東縣政府 長官與單位</div>
+      <div style="font-size:34px; font-weight:bold; color: var(--pt-blue);" data-i18n="govUnit">屏東縣政府 長官與單位</div>
       <div id="vip-list" class="list-container"></div>
     </div>
   </div>
@@ -232,7 +237,7 @@
   <!-- 學校選鄉鎮 -->
   <div id="screen-school-town" class="screen">
     <div class="glass-panel">
-      <div style="font-size:34px; font-weight:bold; color: var(--pt-blue);">請選擇鄉鎮市</div>
+      <div style="font-size:34px; font-weight:bold; color: var(--pt-blue);" data-i18n="town">請選擇鄉鎮市</div>
       <div id="town-list" class="list-container"></div>
     </div>
   </div>
@@ -240,7 +245,7 @@
   <!-- 縣府選單位 -->
   <div id="screen-gov-unit" class="screen">
     <div class="glass-panel">
-      <div style="font-size:34px; font-weight:bold; color: var(--pt-blue);">請選擇處室/單位</div>
+      <div style="font-size:34px; font-weight:bold; color: var(--pt-blue);" data-i18n="govUnit">請選擇處室/單位</div>
       <div id="gov-unit-list" class="list-container"></div>
     </div>
   </div>
@@ -248,7 +253,7 @@
   <!-- 選擇姓名 -->
   <div id="screen-name-list" class="screen">
     <div class="glass-panel">
-      <div id="name-list-title" style="font-size:34px; font-weight:bold; color: var(--pt-blue);">請選擇姓名</div>
+      <div id="name-list-title" style="font-size:34px; font-weight:bold; color: var(--pt-blue);" data-i18n="selectName">請選擇姓名</div>
       <div id="name-list-container" class="list-container"></div>
     </div>
   </div>
@@ -256,12 +261,12 @@
   <!-- 其他自填 -->
   <div id="screen-other-form" class="screen">
     <div class="glass-panel">
-      <div style="font-size:34px; font-weight:bold; color: var(--pt-blue); margin-bottom: 20px;">請填寫基本資料</div>
-      <div class="form-group"><label>服務機關 (如: 某某基金會)</label><input type="text" id="other-agency"></div>
-      <div class="form-group"><label>單位/處室 (選填)</label><input type="text" id="other-unit"></div>
-      <div class="form-group"><label>職稱 (選填)</label><input type="text" id="other-title"></div>
-      <div class="form-group"><label>您的姓名 (必填)</label><input type="text" id="other-name"></div>
-      <button class="btn-submit" style="margin-top:20px;" onclick="checkAndSignOther()">下一步：餐點與簽名</button>
+      <div style="font-size:34px; font-weight:bold; color: var(--pt-blue); margin-bottom: 20px;" data-i18n="basicInfo">請填寫基本資料</div>
+      <div class="form-group"><label data-i18n="otherAgency">服務機關 (如: 某某基金會)</label><input type="text" id="other-agency"></div>
+      <div class="form-group"><label data-i18n="otherUnit">單位/處室 (選填)</label><input type="text" id="other-unit"></div>
+      <div class="form-group"><label data-i18n="otherTitle">職稱 (選填)</label><input type="text" id="other-title"></div>
+      <div class="form-group"><label data-i18n="otherName">您的姓名 (必填)</label><input type="text" id="other-name"></div>
+      <button class="btn-submit" style="margin-top:20px;" onclick="checkAndSignOther()" data-i18n="nextStep">下一步：餐點與簽名</button>
     </div>
   </div>
 
@@ -271,23 +276,23 @@
       <div id="greeting" class="info-display">歡迎載入中...</div>
       
       <div id="meal-section">
-        <div style="font-size:28px; font-weight:bold; margin-bottom:15px;">您今日的午餐用餐需求為：</div>
+        <div style="font-size:28px; font-weight:bold; margin-bottom:15px;" data-i18n="mealTitle">您今日的午餐用餐需求為：</div>
         <div class="meal-options">
-          <label style="display:inline-flex; align-items:center;"><input type="radio" name="meal" value="葷食"> <span>🍱 葷食</span></label> <button type="button" onclick="document.getElementById('lunch-modal').style.display='flex'" style="background:#FF9800; color:white; border:none; padding:5px 10px; border-radius:5px; font-size:16px; cursor:pointer; margin-left: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">看菜色 📸</button>
-          <label><input type="radio" name="meal" value="素食"> 🥗 素食</label>
-          <label><input type="radio" name="meal" value="不用餐"> ❌ 不用餐</label>
+          <label style="display:inline-flex; align-items:center;"><input type="radio" name="meal" value="葷食"> <span data-i18n="meat">🍱 葷食</span></label> <button type="button" onclick="document.getElementById('lunch-modal').style.display='flex'" style="background:#FF9800; color:white; border:none; padding:5px 10px; border-radius:5px; font-size:16px; cursor:pointer; margin-left: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"><span data-i18n="menuBtn">看菜色 📸</span></button>
+          <label><input type="radio" name="meal" value="素食"> <span data-i18n="veg">🥗 素食</span></label>
+          <label><input type="radio" name="meal" value="不用餐"> <span data-i18n="none">❌ 不用餐</span></label>
         </div>
       </div>
 
-      <div style="font-size:28px; font-weight:bold; margin-bottom:15px; color: var(--pt-pink);">請在下方方框內簽下您的大名：</div>
+      <div style="font-size:28px; font-weight:bold; margin-bottom:15px; color: var(--pt-pink);" data-i18n="signTitle">請在下方方框內簽下您的大名：</div>
       <div class="color-picker">
         <div class="color-btn selected" style="background: #000000;" onclick="setPenColor('#000000', this)"></div>
         <div class="color-btn" style="background: #0077C0;" onclick="setPenColor('#0077C0', this)"></div>
         <div class="color-btn" style="background: #00008B;" onclick="setPenColor('#00008B', this)"></div>
       </div>
       <div class="signature-wrapper"><canvas id="signature-pad"></canvas></div>
-      <button class="btn-clear" onclick="signaturePad.clear()">↺ 簽名不滿意，清除重簽</button>
-      <button id="submit-btn" class="btn-submit" onclick="submitData()">確認送出</button>
+      <button class="btn-clear" onclick="signaturePad.clear()" data-i18n="clearBtn">↺ 簽名不滿意，清除重簽</button>
+      <button id="submit-btn" class="btn-submit" onclick="submitData()" data-i18n="submitBtn">確認送出</button>
     </div>
   </div>
 
@@ -359,12 +364,12 @@
   <!-- 成功與座位提示頁 -->
   <div id="screen-success" class="screen">
     <div class="glass-panel" style="max-width: 900px; padding: 30px;">
-      <h2 id="success-header" style="color: #4CAF50; font-size: 36px; margin-bottom: 10px;">✅ 簽到成功！</h2>
-      <div id="success-sub" style="font-size: 24px; margin-bottom: 20px; color: #333;">感謝您的參與，已收到您的用餐資訊，祝您有愉快的一天。</div>
+      <h2 id="success-header" style="color: #4CAF50; font-size: 36px; margin-bottom: 10px;" data-i18n="successIn">✅ 簽到成功！</h2>
+      <div id="success-sub" style="font-size: 24px; margin-bottom: 20px; color: #333;" data-i18n="thanksIn">感謝您的參與，已收到您的用餐資訊，祝您有愉快的一天。</div>
       
       <div id="seat-info-container" style="display: none;">
         <div id="seat-text" style="font-size: 32px; font-weight: bold; color: #E91E63; margin-bottom: 20px; background: #FFF3E0; padding: 15px; border-radius: 10px; border: 2px dashed #FF9800;"></div>
-        <div style="font-size: 16px; color: #666; margin-bottom: 10px; font-weight: bold;">🔍 支援手指滑動，或點擊圖片放大/縮小查看</div>
+        <div style="font-size: 16px; color: #666; margin-bottom: 10px; font-weight: bold;" data-i18n="zoomHint">🔍 支援手指滑動，或點擊圖片放大/縮小查看</div>
         <div id="zoom-outer-container" style="position: relative; display: block; width: 100%; max-width: 800px; margin: 0 auto; border: 3px solid #ddd; border-radius: 12px; overflow: auto; background: #fff; box-shadow: 0 10px 20px rgba(0,0,0,0.1); max-height: 60vh;">
           <div id="seat-map-zoom-wrapper" style="position: relative; width: 100%; transition: width 0.3s ease; transform-origin: top left; cursor: zoom-in;" onclick="toggleZoom()">
             <img src="115seats.jpg" style="width: 100%; height: auto; display: block;" id="seat-map-img">
@@ -374,37 +379,206 @@
         </div>
       </div>
 
-      <button class="btn-massive btn-back" style="margin-top: 30px; max-width: 300px; font-size: 24px; margin-left:auto; margin-right:auto; display:block;" onclick="goHome()">回首頁 (或等待自動跳轉)</button>
+      <button class="btn-massive btn-back" style="margin-top: 30px; max-width: 300px; font-size: 24px; margin-left:auto; margin-right:auto; display:block;" onclick="goHome()" data-i18n="backHomeWait">回首頁 (或等待自動跳轉)</button>
     </div>
   </div>
 
 
   <div id="screen-status" class="screen">
     <div class="glass-panel" style="max-width: 1200px; width: 95%;">
-      <div style="font-size:32px; font-weight:bold; color: var(--pt-blue); margin-bottom: 20px;">目前簽到退情形總覽</div>
-      <div id="status-loading" style="font-size: 24px;">資料載入中...</div>
+      <div style="font-size:32px; font-weight:bold; color: var(--pt-blue); margin-bottom: 20px;" data-i18n="statusTitle">目前簽到退情形總覽</div>
+      <div id="status-loading" style="font-size: 24px;" data-i18n="loading">資料載入中...</div>
       <div style="overflow-x: auto; max-height: 60vh; overflow-y: auto; border: 2px solid #ddd; border-radius: 8px;">
         <table id="status-table" style="width: 100%; border-collapse: collapse; text-align: center; min-width: 800px; display: none;">
           <thead style="background: var(--pt-blue); color: white; position: sticky; top: 0; z-index: 2;">
             <tr>
-              <th style="padding: 10px; border: 1px solid #ccc;">編號</th>
-              <th style="padding: 10px; border: 1px solid #ccc;">機關/學校</th>
-              <th style="padding: 10px; border: 1px solid #ccc;">單位/鄉鎮</th>
-              <th style="padding: 10px; border: 1px solid #ccc;">職稱</th>
-              <th style="padding: 10px; border: 1px solid #ccc;">姓名</th>
-              <th style="padding: 10px; border: 1px solid #ccc;">手寫簽到</th>
-              <th style="padding: 10px; border: 1px solid #ccc;">手寫簽退</th>
+              <th style="padding: 10px; border: 1px solid #ccc;" data-i18n="thNum">編號</th>
+              <th style="padding: 10px; border: 1px solid #ccc;" data-i18n="thAgency">機關/學校</th>
+              <th style="padding: 10px; border: 1px solid #ccc;" data-i18n="thUnit">單位/鄉鎮</th>
+              <th style="padding: 10px; border: 1px solid #ccc;" data-i18n="thTitle">職稱</th>
+              <th style="padding: 10px; border: 1px solid #ccc;" data-i18n="thName">姓名</th>
+              <th style="padding: 10px; border: 1px solid #ccc;" data-i18n="thSignIn">手寫簽到</th>
+              <th style="padding: 10px; border: 1px solid #ccc;" data-i18n="thSignOut">手寫簽退</th>
             </tr>
           </thead>
           <tbody id="status-tbody" style="background: white;">
           </tbody>
         </table>
       </div>
-      <button class="btn-massive btn-back" style="margin-top: 20px;" onclick="goHome()">回首頁</button>
+      <button class="btn-massive btn-back" style="margin-top: 20px;" onclick="goHome()" data-i18n="backHome">回首頁</button>
     </div>
   </div>
 
   <script>
+
+    let currentLang = 'zh';
+    const translations = {
+      zh: {
+        back: "🔙 上一頁",
+        home: "🏠 首頁",
+        title: "屏東縣115學年度第一學期<br>中小學校長行政會議",
+        welcome: "歡迎蒞臨",
+        selectAction: "請選擇您的動作",
+        signinBtn: "我要簽到",
+        signoutBtn: "我要簽退",
+        presentation: "進入會議簡報",
+        statusBtn: "📝 目前簽到退情形總覽",
+        searchBtn: "快速查詢座位",
+        qrText: "📱 掃描 QR Code，手機免網址直接簽到",
+        selectType: "請選擇服務機關類別",
+        gov: "🏛️ 屏東縣政府",
+        school: "🏫 各級學校",
+        other: "✏️ 其他 (來賓/工作人員自填)",
+        govUnit: "請選擇處室/單位",
+        town: "請選擇鄉鎮市",
+        selectName: "請選擇姓名",
+        basicInfo: "請填寫基本資料",
+        otherAgency: "服務機關 (如: 某某基金會)",
+        otherUnit: "單位/處室 (選填)",
+        otherTitle: "職稱 (選填)",
+        otherName: "您的姓名 (必填)",
+        nextStep: "下一步：餐點與簽名",
+        mealTitle: "您今日的午餐用餐需求為：",
+        meat: "🍱 葷食",
+        veg: "🥗 素食",
+        none: "❌ 不用餐",
+        menuBtn: "看菜色 📸",
+        signTitle: "請在下方方框內簽下您的大名：",
+        clearBtn: "↺ 簽名不滿意，清除重簽",
+        submitBtn: "確認送出",
+        successIn: "✅ 簽到成功！",
+        successOut: "✅ 簽退成功！",
+        thanksIn: "感謝您的參與，已收到您的用餐資訊，祝您有愉快的一天。",
+        thanksOut: "感謝您的參與，祝您有愉快的一天，期待下次再見。",
+        zoomHint: "🔍 支援手指滑動，或點擊圖片放大/縮小查看",
+        backHomeWait: "回首頁 (或等待自動跳轉)",
+        statusTitle: "目前簽到退情形總覽",
+        loading: "資料載入中...",
+        thNum: "編號",
+        thAgency: "機關/學校",
+        thUnit: "單位/鄉鎮",
+        thTitle: "職稱",
+        thName: "姓名",
+        thSignIn: "手寫簽到",
+        thSignOut: "手寫簽退",
+        backHome: "回首頁",
+        voiceSelectAction: "請選擇您的動作",
+        voiceSelectType: "請選擇服務機關類別",
+        voiceSelectUnit: "請選擇處室或單位",
+        voiceSelectTown: "請選擇鄉鎮市",
+        voiceSelectName: "請選擇您的姓名",
+        voiceSearchSeat: "請輸入您的姓名查詢座位",
+        voiceSignInOk: "簽到成功",
+        voiceSignOutOk: "簽退成功",
+        voiceGreeting: "您好，",
+        voiceSeatMsg: "，您的座位在",
+        searchSeatTitle: "請輸入姓名查詢",
+        searchAction: "查詢",
+        seatInfo: "座位資訊",
+      },
+      en: {
+        back: "🔙 Back",
+        home: "🏠 Home",
+        title: "Pingtung County 115th Semester 1<br>Principals Meeting",
+        welcome: "Welcome",
+        selectAction: "Please select an action",
+        signinBtn: "Sign In",
+        signoutBtn: "Sign Out",
+        presentation: "View Presentation",
+        statusBtn: "📝 Sign In/Out Status",
+        searchBtn: "Quick Seat Search",
+        qrText: "📱 Scan QR Code to sign in via mobile",
+        selectType: "Please select your organization",
+        gov: "🏛️ Pingtung County Government",
+        school: "🏫 Schools",
+        other: "✏️ Other (Guests/Staff)",
+        govUnit: "Please select Department/Unit",
+        town: "Please select Township",
+        selectName: "Please select your Name",
+        basicInfo: "Please fill in basic info",
+        otherAgency: "Agency (e.g. Foundation)",
+        otherUnit: "Unit/Dept (Optional)",
+        otherTitle: "Title (Optional)",
+        otherName: "Your Name (Required)",
+        nextStep: "Next: Meal & Signature",
+        mealTitle: "Your lunch preference today:",
+        meat: "🍱 Meat",
+        veg: "🥗 Vegetarian",
+        none: "❌ No Meal",
+        menuBtn: "View Menu 📸",
+        signTitle: "Please sign your name in the box below:",
+        clearBtn: "↺ Clear and Resign",
+        submitBtn: "Submit",
+        successIn: "✅ Sign In Successful!",
+        successOut: "✅ Sign Out Successful!",
+        thanksIn: "Thank you for participating. Your meal info has been received. Have a great day!",
+        thanksOut: "Thank you for participating. Have a great day and see you next time!",
+        zoomHint: "🔍 Swipe or tap to zoom the image",
+        backHomeWait: "Back to Home (or wait for auto redirect)",
+        statusTitle: "Sign In / Sign Out Overview",
+        loading: "Loading data...",
+        thNum: "No.",
+        thAgency: "Agency/School",
+        thUnit: "Unit/Town",
+        thTitle: "Title",
+        thName: "Name",
+        thSignIn: "Sign In",
+        thSignOut: "Sign Out",
+        backHome: "Back to Home",
+        voiceSelectAction: "Please select an action",
+        voiceSelectType: "Please select your organization category",
+        voiceSelectUnit: "Please select your department or unit",
+        voiceSelectTown: "Please select your township",
+        voiceSelectName: "Please select your name",
+        voiceSearchSeat: "Please enter your name to search for your seat",
+        voiceSignInOk: "Sign in successful",
+        voiceSignOutOk: "Sign out successful",
+        voiceGreeting: "Hello, ",
+        voiceSeatMsg: ", your seat is at ",
+        searchSeatTitle: "Enter Name to Search",
+        searchAction: "Search",
+        seatInfo: "Seat Information",
+      }
+    };
+
+    function toggleLanguage() {
+      currentLang = (currentLang === 'zh') ? 'en' : 'zh';
+      document.getElementById('btn-lang').innerText = (currentLang === 'zh') ? 'EN' : '中文';
+      updateI18n();
+    }
+
+    function t(key) {
+      return translations[currentLang][key] || key;
+    }
+
+    function updateI18n() {
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (translations[currentLang][key]) {
+          if (key === 'title') {
+             el.innerHTML = translations[currentLang][key];
+          } else {
+             el.innerText = translations[currentLang][key];
+          }
+        }
+      });
+      
+      const setPlaceholder = (id, key) => {
+        const el = document.getElementById(id);
+        if(el) el.placeholder = t(key);
+      };
+      
+      if (!document.getElementById('btn-signin-main').disabled) {
+         document.getElementById('btn-signin-main').innerText = t('signinBtn');
+         document.getElementById('btn-signout-main').innerText = t('signoutBtn');
+         document.getElementById('btn-status-main').innerText = t('statusBtn');
+         document.getElementById('btn-search-main').innerText = t('searchBtn');
+      }
+      
+      // search input
+      setPlaceholder('search-input', 'otherName');
+    }
+
     // 在這裡可以填寫每個座位在圖片上的相對座標 (百分比 %)
     // 例如 "2-15": { x: 30.5, y: 40.2, w: 5, h: 4 }
     // 若沒有填寫座標，系統仍會報讀並顯示全圖，但不畫紅框。
@@ -921,11 +1095,11 @@
       try {
         const [res1, res2, res3] = await Promise.all([ fetch(sheet1Url), fetch(sheet2Url), fetch(sheetPrefillUrl) ]);
         parseGovCSV(await res1.text()); parseSchoolCSV(await res2.text()); parsePrefillCSV(await res3.text());
-        document.getElementById('btn-signin-main').disabled = false; document.getElementById('btn-signin-main').innerText = "我要簽到";
-        document.getElementById('btn-signout-main').disabled = false; document.getElementById('btn-signout-main').innerText = "我要簽退"; 
-        document.getElementById('btn-status-main').disabled = false; document.getElementById('btn-status-main').innerText = "📝 目前簽到退情形總覽"; 
-        document.getElementById('btn-search-main').disabled = false; document.getElementById('btn-search-main').innerText = "快速查詢座位";
-      } catch(e) { alert("名單載入失敗，請檢查網路連線。"); }
+        document.getElementById('btn-signin-main').disabled = false; document.getElementById('btn-signin-main').innerText = t("signinBtn");
+        document.getElementById('btn-signout-main').disabled = false; document.getElementById('btn-signout-main').innerText = t("signoutBtn"); 
+        document.getElementById('btn-status-main').disabled = false; document.getElementById('btn-status-main').innerText = t("statusBtn"); 
+        document.getElementById('btn-search-main').disabled = false; document.getElementById('btn-search-main').innerText = t("searchBtn");
+      } catch(e) { alert(currentLang === "en" ? "Failed to load list. Please check your network connection." : "名單載入失敗，請檢查網路連線。"); }
     }
 
     function parseGovCSV(csv) {
@@ -1104,61 +1278,97 @@
     function showSuccessScreen(seatStr) {
       document.getElementById('seat-info-container').style.display = 'block';
       
-      if (currentAction === '查詢座位') {
-         document.getElementById('success-header').innerText = '📍 座位查詢';
-         document.getElementById('success-sub').innerText = '為您找到以下座位資訊：';
+      const isSearch = (currentAction === '查詢座位');
+      const isSignOut = (currentAction === '簽退');
+      
+      if (isSearch) {
+         document.getElementById('success-header').innerText = (currentLang === 'en') ? '📍 Seat Search' : '📍 座位查詢';
+         document.getElementById('success-sub').innerText = (currentLang === 'en') ? 'Found the following seat info:' : '為您找到以下座位資訊：';
       } else {
-         document.getElementById('success-header').innerText = '✅ ' + currentAction + '成功！';
-         document.getElementById('success-sub').innerText = '感謝您的參與，已收到您的用餐資訊，祝您有愉快的一天。';
+         const actMap = {
+           '簽到': t('successIn'),
+           '簽退': t('successOut')
+         };
+         document.getElementById('success-header').innerText = actMap[currentAction] || '✅ ' + currentAction + '成功！';
+         document.getElementById('success-sub').innerText = isSignOut ? t('thanksOut') : t('thanksIn');
       }
 
-      let voiceText = (currentAction === '查詢座位') ? "為您播報座位資訊。" : (currentAction + "成功。");
-      let displaySeat = seatStr;
+      let voiceText = "";
+      const vAct = isSearch ? "" : (isSignOut ? t('voiceSignOutOk') : t('voiceSignInOk'));
       
       const match = seatStr.match(/(\d+)-(\d+)/);
+      let displaySeat = seatStr;
+      
       if (match) {
         const row = match[1];
         const num = match[2];
-        voiceText = (currentAction === '查詢座位') ? `為您播報座位資訊。您的座位在，第${row}排，編號${row}之${num}。` : `${currentAction}成功。感謝您的參與。您的座位在，第${row}排，編號${row}之${num}。`;
-        displaySeat = `📍 您的座位在：第 ${row} 排，編號 ${row}-${num}`;
+        if (currentLang === 'en') {
+          voiceText = isSearch ? `Your seat is at row ${row}, number ${num}.` : `${vAct}. Thank you. Your seat is at row ${row}, number ${num}.`;
+          displaySeat = `📍 Your seat is: Row ${row}, Number ${row}-${num}`;
+        } else {
+          voiceText = isSearch ? `為您播報座位資訊。您的座位在，第${row}排，編號${row}之${num}。` : `${vAct}。感謝您的參與。您的座位在，第${row}排，編號${row}之${num}。`;
+          displaySeat = `📍 您的座位在：第 ${row} 排，編號 ${row}-${num}`;
+        }
       } else {
-        voiceText = (currentAction === '查詢座位') ? `為您播報座位資訊。您的座位在：${seatStr}` : `${currentAction}成功。您的座位在：${seatStr}`;
-        displaySeat = `📍 您的座位在：${seatStr}`;
+        if (currentLang === 'en') {
+          voiceText = isSearch ? `Your seat is: ${seatStr}` : `${vAct}. Your seat is: ${seatStr}`;
+          displaySeat = `📍 Your seat is: ${seatStr}`;
+        } else {
+          voiceText = isSearch ? `為您播報座位資訊。您的座位在：${seatStr}` : `${vAct}。您的座位在：${seatStr}`;
+          displaySeat = `📍 您的座位在：${seatStr}`;
+        }
       }
-
+      
       document.getElementById('seat-text').innerText = displaySeat;
 
       // 語音播報
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
         const msg = new SpeechSynthesisUtterance(voiceText);
-        msg.lang = 'zh-TW';
-        msg.rate = 0.9;
-        msg.pitch = 1.0;
+        msg.lang = currentLang === 'en' ? 'en-US' : 'zh-TW';
+        msg.rate = 1.1;
         window.speechSynthesis.speak(msg);
       }
 
-      const highlight = document.getElementById('seat-highlight');
-      // 嘗試用座位號碼或姓名來尋找紅框座標
-      let targetCoord = null;
-      if (seatCoordinates) {
-         if (seatCoordinates[seatStr]) {
-            targetCoord = seatCoordinates[seatStr];
-         } else if (seatCoordinates[currentSelection.name]) {
-            targetCoord = seatCoordinates[currentSelection.name];
-         }
-      }
-      
-      if (targetCoord) {
-        const coord = targetCoord;
-        highlight.style.left = coord.x + '%';
-        highlight.style.top = coord.y + '%';
-        highlight.style.width = coord.w + '%';
-        highlight.style.height = coord.h + '%';
-        highlight.style.display = 'block';
-      } else {
-        highlight.style.display = 'none';
-      }
+      // 座位圖標記
+      const canvas = document.getElementById('seat-canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      img.src = '115seats.jpg';
+      img.onload = () => {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+
+        const pos = rawSeatCoordinates[seatStr];
+        if (pos) {
+          const rx = (pos.x / 100) * img.width;
+          const ry = (pos.y / 100) * img.height;
+          const rw = (pos.w / 100) * img.width;
+          const rh = (pos.h / 100) * img.height;
+          
+          let alpha = 0;
+          let increasing = true;
+          const drawPulse = () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0);
+            
+            ctx.strokeStyle = `rgba(255, 0, 0, ${alpha})`;
+            ctx.lineWidth = 15;
+            ctx.strokeRect(rx, ry, rw, rh);
+            ctx.fillStyle = `rgba(255, 0, 0, ${alpha * 0.3})`;
+            ctx.fillRect(rx, ry, rw, rh);
+            
+            if(increasing) { alpha += 0.05; if(alpha >= 1) increasing = false; }
+            else { alpha -= 0.05; if(alpha <= 0.2) increasing = true; }
+            
+            if(currentScreenId === 'screen-success') {
+              requestAnimationFrame(drawPulse);
+            }
+          };
+          drawPulse();
+        }
+      };
 
       showScreen('screen-success');
 
@@ -1176,7 +1386,7 @@
       if(action === '管理刪除') {
         document.getElementById('type-title').innerHTML = "<span style='color:#D32F2F;'>🗑️ 管理員模式：請選擇機關尋找刪除</span>";
       } else {
-        document.getElementById('type-title').innerText = "請選擇服務機關類別";
+        document.getElementById('type-title').innerText = t("selectType");
       }
       showScreen('screen-type');
     }
@@ -1224,9 +1434,9 @@
 
     function checkAndSignOther() {
       const name = document.getElementById('other-name').value.trim();
-      if (!name) { alert('請至少填寫您的姓名！'); return; }
+      if (!name) { alert(currentLang === 'en' ? 'Please enter your name!' : '請至少填寫您的姓名！'); return; }
       const hasRecord = firebaseRecords.some(d => d.name === name && d.action === currentAction);
-      if (hasRecord) { alert(`系統顯示您已完成${currentAction}。`); return; }
+      if (hasRecord) { alert(currentLang === "en" ? `The system shows you have already completed this action.` : `系統顯示您已完成${currentAction}。`); return; }
       
       currentSelection = { agency: document.getElementById('other-agency').value || '未填寫機關', unit: document.getElementById('other-unit').value || '', title: document.getElementById('other-title').value || '', name: name, type: 'other' };
       prepareSignScreen();
@@ -1283,7 +1493,7 @@
         if (isActionDone) {
           btn.classList.add('signed-disabled');
           btn.innerText += ` (已${currentAction})`;
-          btn.onclick = () => alert(`系統顯示您已完成${currentAction}。`);
+          btn.onclick = () => alert(currentLang === "en" ? `The system shows you have already completed this action.` : `系統顯示您已完成${currentAction}。`);
         } else {
           btn.onclick = () => checkAndSign(p);
         }
@@ -1483,7 +1693,7 @@
       document.getElementById('greeting').innerHTML = `歡迎！<br><span>「${titleName}」</span>`;
       
       const submitBtn = document.getElementById('submit-btn'); 
-      submitBtn.disabled = false; submitBtn.innerText = `確認送出 (${currentAction})`;
+      submitBtn.disabled = false; submitBtn.innerText = currentLang === "en" ? "Submit" : `確認送出 (${currentAction})`;
 
       // 處理預設用餐意願
       document.querySelectorAll('input[name="meal"]').forEach(el => el.checked = false); // 清空預設
@@ -1509,8 +1719,8 @@
     }
 
     async function submitData() {
-      if (signaturePad.isEmpty()) { alert("簽名欄不可空白，請簽下您的大名！"); return; }
-      if (!confirm(`您確認要完成「${currentAction}」手續嗎？\n按下「確定」送出，按下「取消」清除重簽。`)) { signaturePad.clear(); return; }
+      if (signaturePad.isEmpty()) { alert(currentLang === "en" ? "Signature cannot be empty. Please sign your name!" : "簽名欄不可空白，請簽下您的大名！"); return; }
+      const confirmMsg = currentLang === "en" ? `Are you sure you want to complete this action?\nPress OK to submit, Cancel to clear.` : `您確認要完成「${currentAction}」手續嗎？\n按下「確定」送出，按下「取消」清除重簽。`; if (!confirm(confirmMsg)) { signaturePad.clear(); return; }
       
       const submitBtn = document.getElementById('submit-btn'); 
       submitBtn.disabled = true; submitBtn.innerText = "資料寫入中請稍候...";
@@ -1518,7 +1728,7 @@
       if (currentAction !== '簽退') {
         const mealSelected = document.querySelector('input[name="meal"]:checked');
         if (!mealSelected) {
-           alert("請選擇用餐意願！");
+           alert(currentLang === "en" ? "Please select your meal preference!" : "請選擇用餐意願！");
            submitBtn.disabled = false;
            submitBtn.innerText = `確認送出 (${currentAction})`;
            return;
