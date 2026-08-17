@@ -85,15 +85,30 @@
         }
 
         /* 標題與內文字型樣式 */
-        h1 {
-            font-size: 3.6rem;
+        .metallic-title {
+            font-size: 3.8rem;
             font-weight: 900;
             line-height: 1.25;
-            background: linear-gradient(90deg, #ffffff, var(--accent-cyan));
+            background: linear-gradient(
+                -45deg, 
+                #cbd5e1 20%, 
+                #ffffff 40%, 
+                var(--accent-cyan) 50%, 
+                #ffffff 60%, 
+                #cbd5e1 80%
+            );
+            background-size: 250% auto;
+            color: transparent;
             -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: metallic-shine 4s linear infinite;
             margin-bottom: 20px;
             letter-spacing: 2px;
+        }
+
+        @keyframes metallic-shine {
+            0% { background-position: 200% center; }
+            100% { background-position: -50% center; }
         }
 
         h2 {
@@ -106,7 +121,8 @@
             gap: 15px;
         }
 
-        h2::before {
+        /* 獎項頁面的標題裝飾 */
+        .award-slide h2::before {
             content: '';
             display: inline-block;
             width: 6px;
@@ -133,6 +149,30 @@
         }
 
         /* 封面投影片 */
+        .slogan-container {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 40px;
+            letter-spacing: 3px;
+        }
+        .slogan-item {
+            text-shadow: 0 0 5px rgba(0, 242, 254, 0.3);
+            animation: neon-sweep 8s infinite;
+        }
+        @keyframes neon-sweep {
+            0%, 20%, 100% {
+                text-shadow: 0 0 5px rgba(0, 242, 254, 0.3);
+                color: #ffffff;
+            }
+            10% {
+                text-shadow: 0 0 20px rgba(0, 242, 254, 1), 0 0 40px rgba(0, 242, 254, 0.8), 0 0 10px rgba(255, 255, 255, 1);
+                color: #ffffff;
+            }
+        }
         .title-slide {
             text-align: center;
             align-items: center;
@@ -141,30 +181,46 @@
         .logos-container {
             display: flex;
             gap: 30px;
-            margin-bottom: 25px;
+            margin-bottom: 30px;
             justify-content: center;
         }
 
         .logo-box {
-            padding: 12px 28px;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px dashed var(--accent-blue);
-            border-radius: 12px;
-            color: var(--text-muted);
+            padding: 10px 24px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.01) 100%);
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            border-radius: 10px;
+            color: #94a3b8;
             font-size: 1.1rem;
             letter-spacing: 2px;
+            box-shadow: inset 0 1px 1px rgba(255,255,255,0.1), 0 4px 15px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 220px;
+            height: 65px;
+            position: relative;
+        }
+
+        .logo-box img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 0 8px rgba(56,189,248,0.8));
         }
 
         .meta-info {
             display: flex;
-            gap: 40px;
-            margin-top: 35px;
-            color: #cbd5e1;
-            font-size: 1.25rem;
-            font-weight: 400;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 80px;
+            color: rgba(203, 213, 225, 0.7);
+            font-size: 1.35rem;
+            font-weight: 300;
+            letter-spacing: 2px;
         }
 
-        /* 獎項專屬排版 */
+        /* 獎項特別樣式 */
         .award-badge {
             display: inline-block;
             padding: 6px 18px;
@@ -190,6 +246,91 @@
             color: #cbd5e1;
             line-height: 1.9;
             text-align: justify;
+        }
+
+        /* 演講與宣導獨立頁面卡片樣式 */
+        .speaker-card {
+            border-left: none; 
+            background: var(--card-bg, rgba(0, 242, 254, 0.05)); 
+            border-radius: 12px; 
+            padding: 50px 80px; 
+            border: 1px solid var(--glass-border);
+            margin-top: 20px;
+            align-self: center;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            transition: border 0.6s ease;
+        }
+        
+        .speaker-name {
+            font-size: 2.5rem; 
+            margin-bottom: 0; 
+            background: linear-gradient(90deg, var(--title-grad-1, #fff), var(--title-grad-2, var(--accent-cyan))); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+
+        .progress-bar-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            z-index: 100;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan));
+            box-shadow: 0 0 10px var(--accent-cyan);
+            transition: width 0.3s ease;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 25px;
+            right: 35px;
+            display: flex;
+            gap: 15px;
+            z-index: 100;
+        }
+
+        .ctrl-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.2rem;
+            backdrop-filter: blur(8px);
+            transition: all 0.2s ease;
+        }
+
+        .ctrl-btn:hover {
+            background: var(--accent-cyan);
+            color: #030712;
+            box-shadow: 0 0 15px var(--accent-cyan);
+        }
+
+        .page-indicator {
+            position: fixed;
+            bottom: 30px;
+            left: 35px;
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            font-weight: 300;
+            letter-spacing: 1px;
+            z-index: 100;
         }
 
         /* 議程雙欄排版 */
@@ -285,9 +426,24 @@
             letter-spacing: 1px;
             z-index: 100;
         }
-    </style>
+    
+        .metallic-sweep {
+            background: linear-gradient(90deg, var(--title-grad-1, #fff) 0%, #cbd5e1 40%, #ffffff 50%, #cbd5e1 60%, var(--title-grad-2, var(--accent-cyan)) 100%) !important;
+            background-size: 200% auto !important;
+            color: transparent !important;
+            -webkit-background-clip: text !important;
+            background-clip: text !important;
+            animation: shine 5s linear infinite !important;
+        }
+        .neon-outline {
+            filter: drop-shadow(0 0 2px rgba(255,255,255,0.9)) drop-shadow(0 0 5px rgba(255,255,255,0.8)) !important;
+        }
+</style>
 </head>
 <body>
+    <button style="position: absolute; top: 20px; left: 20px; z-index: 1000; background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.3); color: white; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 16px; backdrop-filter: blur(10px); transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.3);" onclick="window.location.href='index.html'" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">← 返回首頁</button>
+    <img src="7.png" alt="希望城市" style="position: fixed; top: 70px; left: 20px; width: 156px; z-index: 1000;">
+
 
     <!-- 背景 Canvas：星空、流星、海浪、礁岩岸邊、燈塔水平光束、碎石浪花 -->
     <canvas id="bg-canvas"></canvas>
@@ -296,41 +452,42 @@
     <div class="presentation">
 
         <!-- Slide 1: 封面 -->
+        
         <div class="slide title-slide active">
-            <div class="logos-container">
-                <div class="logo-box">🏛️ [ 屏東縣政府 Logo ]</div>
-                <div class="logo-box">✨ [ 希望城市 Logo ]</div>
+            <div class="ptc-logo-container" style="text-align: center; margin-bottom: 30px; position: relative; top: -20px;">
+                <img src="ptclogo.png" alt="屏東縣政府" style="height: 180px; object-fit: contain; filter: drop-shadow(0 0 25px rgba(56,189,248,1));">
             </div>
-            <h1>屏東縣115學年度第一學期<br>中小學校長行政會議</h1>
-            <div class="subtitle">厚植學力 ✦ 科技賦能 ✦ 國際接軌 ✦ 人文永續</div>
+            <h1 class="metallic-title">屏東縣115學年度第一學期<br>中小學校長行政會議</h1>
+            <div class="slogan-container">
+                <span class="slogan-item" style="animation-delay: 0s;">厚植學力</span>
+                <span class="slogan-item" style="animation-delay: 2s;">科技賦能</span>
+                <span class="slogan-item" style="animation-delay: 4s;">國際接軌</span>
+                <span class="slogan-item" style="animation-delay: 6s;">人文永續</span>
+            </div>
+            
             <div class="meta-info">
-                <div>🗓️ 115年8月20日 (星期四)</div>
-                <div>📍 國立內埔高級農工職業學校 (活動中心)</div>
+                <div>國立內埔高級農工職業學校</div>
+                <div>115年8月20日</div>
             </div>
         </div>
-
-        <!-- Slide 2: 上午議程 -->
+        <!-- Slide 2: 宣導 1 -->
         <div class="slide">
-            <div class="glass-panel">
-                <h2>會議議程 (上午)</h2>
-                <div class="agenda-grid">
-                    <div class="agenda-card">
-                        <div class="agenda-card-title">報到</div>
-                        <div class="agenda-card-speaker">與會長官及貴賓</div>
-                    </div>
-                    <div class="agenda-card">
-                        <div class="agenda-card-title">政風處重點業務宣導</div>
-                        <div class="agenda-card-speaker">政風處政風預防科 吳季璇科長</div>
-                    </div>
-                    <div class="agenda-card" style="grid-column: span 2; border-left-color: var(--accent-cyan); background: rgba(0, 242, 254, 0.05);">
-                        <div class="agenda-card-title" style="font-size: 1.7rem; color: var(--accent-cyan);">長官致詞</div>
-                        <div class="agenda-card-speaker" style="font-size: 1.3rem;">屏東縣 周春米 縣長</div>
-                    </div>
-                </div>
+            <div class="speaker-card">
+                <h2 style="margin-bottom:10px; color:#cbd5e1; font-weight:400;">業務宣導</h2>
+                <div class="speaker-name">政風處重點業務宣導</div>
+                <div style="font-size:1.8rem; color:#94a3b8; margin-top:20px;">政風處政風預防科 吳季璇科長</div>
             </div>
         </div>
 
-        <!-- Slide 3: 頒獎 1 -->
+        <!-- Slide 3: 長官致詞 -->
+        <div class="slide">
+            <div class="speaker-card" style="padding-top: 60px; padding-bottom: 60px;">
+                <h2 style="margin-bottom:15px; color:#cbd5e1; font-weight:400;">長官致詞</h2>
+                <div class="speaker-name" style="font-size: 3.2rem;">屏東縣 周春米 縣長</div>
+            </div>
+        </div>
+
+        <!-- Slide 4: 頒獎 1 -->
         <div class="slide">
             <div class="glass-panel">
                 <div class="award-badge">視力保健績優學校 ✦ 特優</div>
@@ -424,6 +581,7 @@
             <div class="glass-panel">
                 <div class="award-badge">教育部戶外教育成效卓著獎 ✦ 學校績優獎</div>
                 <div class="school-title">石門國小 ✦ 恆春國小</div>
+                <p class="award-desc">石門國小與恆春國小長期深耕戶外教育有成，本次榮獲115年度「教育部戶外教育成效卓著獎」學校績優獎</p>
                 <p class="award-desc"><b>石門國小：</b>以「跟著luli蝸牛遊學趣」為主題，將排灣族文化與山林智慧融入課程，帶領孩子「從土地出發、朝夢想長大」，培育具文化根基與行動力的下一代。</p>
                 <p class="award-desc"><b>恆春國小：</b>以「半島TOUR趣，行動永留續」為核心，結合古城、民謠與國家公園優勢，建構安全的螺旋式戶外學習，實踐「在地行動、永續共好」的素養教育！</p>
             </div>
@@ -439,66 +597,103 @@
             </div>
         </div>
 
-        <!-- Slide 14: 中午業務與專題演講 -->
+        
+        <!-- Slide 14: 人事處 -->
         <div class="slide">
-            <div class="glass-panel">
-                <h2>重點業務宣導與專題演講</h2>
-                <div class="agenda-grid">
-                    <div class="agenda-card">
-                        <div class="agenda-card-title">人事處重點業務宣導</div>
-                        <div class="agenda-card-speaker">人事處 陳惠蓉處長</div>
-                    </div>
-                    <div class="agenda-card">
-                        <div class="agenda-card-title">教育處重點業務宣導</div>
-                        <div class="agenda-card-speaker">教育處 陳國祥處長</div>
-                    </div>
-                    <div class="agenda-card">
-                        <div class="agenda-card-title">本縣教育政策重點說明</div>
-                        <div class="agenda-card-speaker">教育處科長、中心主任、督學</div>
-                    </div>
-                    <div class="agenda-card">
-                        <div class="agenda-card-title">茶敘交流</div>
-                        <div class="agenda-card-speaker">Networking Break</div>
-                    </div>
-                    <div class="agenda-card" style="grid-column: span 2; background: rgba(0, 242, 254, 0.08); border-left-color: var(--accent-cyan);">
-                        <div class="agenda-card-title" style="color: var(--accent-cyan); font-size: 1.45rem;">專題演講</div>
-                        <div class="agenda-card-speaker" style="font-size: 1.35rem; color: #fff; margin-top: 6px;">
-                            《把劣勢，精算成禮物 校園治理的系統思考》<br>
-                            <span style="font-size: 1.05rem; color: var(--text-muted);">主講：滿州國中 于福豪校長</span>
-                        </div>
-                    </div>
-                </div>
+            <div class="speaker-card">
+                <h2 style="margin-bottom:10px; color:var(--text-muted); font-weight:400;" class="trans-text">業務宣導</h2>
+                <div class="speaker-name trans-title">人事處重點業務宣導</div>
+                <div style="font-size:1.8rem; color:var(--text-muted); margin-top:20px;" class="trans-text">人事處 陳惠蓉處長</div>
             </div>
         </div>
 
-        <!-- Slide 15: 下午議程與閉會 -->
+        <!-- Slide 15: 教育處 -->
         <div class="slide">
-            <div class="glass-panel">
-                <h2>會議議程 (下午)</h2>
-                <div class="agenda-grid">
-                    <div class="agenda-card">
-                        <div class="agenda-card-title">午餐</div>
-                        <div class="agenda-card-speaker">Lunch Break</div>
-                    </div>
-                    <div class="agenda-card">
-                        <div class="agenda-card-title">職場霸凌法規宣導</div>
-                        <div class="agenda-card-speaker">南區職業安全衛生中心 趙懋勳技正</div>
-                    </div>
-                    <div class="agenda-card">
-                        <div class="agenda-card-title">教育議題推動及執行策略討論及分享</div>
-                        <div class="agenda-card-speaker">教育處科長、中心主任、督學</div>
-                    </div>
-                    <div class="agenda-card">
-                        <div class="agenda-card-title">提案討論、綜合座談</div>
-                        <div class="agenda-card-speaker">教育處 陳國祥處長</div>
-                    </div>
-                    <div class="agenda-card" style="grid-column: span 2; text-align: center; border: none; background: transparent;">
-                        <div class="agenda-card-title" style="font-size: 2.2rem; color: var(--accent-cyan); margin-top: 15px;">✦ 賦歸 ✦</div>
-                    </div>
-                </div>
+            <div class="speaker-card">
+                <h2 style="margin-bottom:10px; color:var(--text-muted); font-weight:400;" class="trans-text">業務宣導</h2>
+                <div class="speaker-name trans-title">教育處重點業務宣導</div>
+                <div style="font-size:1.8rem; color:var(--text-muted); margin-top:20px;" class="trans-text">教育處 陳國祥處長</div>
+            </div>
+        </div>
+        
+        <!-- Slide 16: 茶敘 -->
+        <div class="slide">
+            <div class="speaker-card" style="text-align: center;">
+                <h2 style="justify-content: center; margin-bottom:10px; color:var(--text-muted); font-weight:400;" class="trans-text">Tea Break</h2>
+                <div class="speaker-name trans-title" style="font-size:3.5rem;">茶敘交流</div>
             </div>
         </div>
 
+        <!-- Slide 17: 政策說明 -->
+        <div class="slide">
+            <div class="speaker-card">
+                <h2 style="margin-bottom:10px; color:var(--text-muted); font-weight:400;" class="trans-text">重點說明</h2>
+                <div class="speaker-name trans-title">本縣教育政策重點說明</div>
+                <div style="font-size:1.8rem; color:var(--text-muted); margin-top:20px;" class="trans-text">教育處科長、中心主任、督學</div>
+            </div>
+        </div>
+        
+        <!-- Slide 18: 專題演講 -->
+        <div class="slide">
+            <div class="speaker-card">
+                <h2 style="margin-bottom:10px; color:var(--text-muted); font-weight:400;" class="trans-text">專題演講</h2>
+                <div class="speaker-name trans-title" style="font-size:2.2rem; line-height: 1.4;">《把劣勢，精算成禮物<br>校園治理的系統思考》</div>
+                <div style="font-size:1.8rem; color:var(--text-muted); margin-top:20px;" class="trans-text">滿州國中 于福豪校長</div>
+                <a href="manzhou.html" target="_blank" style="display: inline-block; margin-top: 30px; padding: 12px 24px; background: rgba(0,242,254,0.15); border: 1px solid rgba(0,242,254,0.4); color: #fff; text-decoration: none; border-radius: 8px; font-size: 1.5rem; transition: all 0.3s; backdrop-filter: blur(5px);" onmouseover="this.style.background='rgba(0,242,254,0.25)'" onmouseout="this.style.background='rgba(0,242,254,0.15)'">📄 點此閱讀演講簡報</a>
+            </div>
+        </div>
+
+        <!-- Slide 19: 午餐 -->
+        <div class="slide">
+            <div class="speaker-card" style="text-align: center;">
+                <h2 style="justify-content: center; margin-bottom:10px; color:var(--text-muted); font-weight:400;" class="trans-text">Lunch Break</h2>
+                <div class="speaker-name trans-title metallic-sweep" style="font-size:3.5rem;">午餐</div>
+            </div>
+        </div>
+
+        <!-- Slide 20: 霸凌法規 -->
+        <div class="slide">
+            <div class="speaker-card">
+                <h2 style="margin-bottom:10px; color:var(--text-muted); font-weight:400;" class="trans-text neon-outline">法規宣導</h2>
+                <div class="speaker-name trans-title neon-outline" style="color: #fff; -webkit-text-fill-color: #fff;">職場霸凌法規宣導</div>
+                <div style="font-size:1.8rem; color:var(--text-muted); margin-top:20px;" class="trans-text neon-outline">南區職業安全衛生中心 趙懋勳技正</div>
+                <a href="bullying.pdf" target="_blank" style="display: inline-block; margin-top: 30px; padding: 12px 24px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.4); color: #fff; text-decoration: none; border-radius: 8px; font-size: 1.5rem; transition: all 0.3s; backdrop-filter: blur(5px);" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">📄 點此閱讀演講簡報</a>
+            </div>
+        </div>
+
+        <!-- Slide 21: 茶敘 2 -->
+        <div class="slide">
+            <div class="speaker-card" style="text-align: center;">
+                <h2 style="justify-content: center; margin-bottom:10px; color:var(--text-muted); font-weight:400;" class="trans-text">Tea Break</h2>
+                <div class="speaker-name trans-title" style="font-size:3.5rem;">茶敘交流</div>
+            </div>
+        </div>
+
+        <!-- Slide 22: 議題討論 -->
+        <div class="slide">
+            <div class="speaker-card">
+                <h2 style="margin-bottom:10px; color:var(--text-muted); font-weight:400;" class="trans-text">策略討論</h2>
+                <div class="speaker-name trans-title">教育議題推動及執行策略討論及分享</div>
+                <div style="font-size:1.8rem; color:var(--text-muted); margin-top:20px;" class="trans-text">教育處科長、中心主任、督學</div>
+            </div>
+        </div>
+
+        <!-- Slide 23: 綜合座談 -->
+        <div class="slide">
+            <div class="speaker-card">
+                <h2 style="margin-bottom:10px; color:var(--text-muted); font-weight:400;" class="trans-text">提案討論</h2>
+                <div class="speaker-name trans-title">綜合座談</div>
+                <div style="font-size:1.8rem; color:var(--text-muted); margin-top:20px;" class="trans-text">教育處 陳國祥處長</div>
+            </div>
+        </div>
+
+        <!-- Slide 24: 賦歸 -->
+        <div class="slide">
+            <div class="speaker-card" style="text-align: center; background: transparent; border: none; padding-top: 80px; box-shadow: none; backdrop-filter: none;">
+                <div class="speaker-name trans-title" style="font-size:4rem; color:var(--accent-cyan);">✦ 賦歸 ✦</div>
+                <div style="font-size:1.5rem; color:var(--text-muted); margin-top:30px;" class="trans-text">感謝各位長官及校長的參與，祝平安順心</div>
+            </div>
+        </div>
     </div>
 
     <!-- 底部進度條 -->
@@ -523,16 +718,118 @@
         let currentSlide = 0;
 
         function updateSlide() {
-            slides.forEach((slide, idx) => {
-                if (idx === currentSlide) {
-                    slide.classList.add('active');
-                } else {
-                    slide.classList.remove('active');
+            try {
+                const allSlides = document.querySelectorAll('.slide');
+                allSlides.forEach((slide, idx) => {
+                    if (idx === currentSlide) {
+                        slide.classList.add('active');
+                        slide.style.opacity = '1';
+                        slide.style.visibility = 'visible';
+                    } else {
+                        slide.classList.remove('active');
+                        slide.style.opacity = '0';
+                        slide.style.visibility = 'hidden';
+                    }
+                });
+                const pct = ((currentSlide + 1) / allSlides.length) * 100;
+                progress.style.width = pct + '%';
+                counter.textContent = `${currentSlide + 1} / ${allSlides.length}`;
+                
+                // 3-Phase Color Logic via Tweening
+                window.targetCurve = 0;
+                // Index 18 is Slide 19.
+                if (currentSlide >= 18) {
+                    let t = (currentSlide - 18) / (allSlides.length - 1 - 18);
+                    if (t < 0) t = 0;
+                    if (t > 1) t = 1;
+                    window.targetCurve = t;
                 }
-            });
-            const pct = ((currentSlide + 1) / slides.length) * 100;
-            progress.style.width = pct + '%';
-            counter.textContent = `${currentSlide + 1} / ${slides.length}`;
+
+                if (!window.colorLoopStarted) {
+                    window.colorLoopStarted = true;
+                    window.currentCurve = 0;
+
+                    const bgNight = [[3, 7, 18], [7, 19, 38], [2, 9, 20]];
+                    const bgDawn = [[112, 161, 215], [255, 208, 161], [190, 110, 80]];
+                    const bgDay = [[20, 150, 255], [120, 200, 255], [180, 230, 255]];
+                    
+                    const textNight = [203, 213, 225];
+                    const textDawn = [51, 65, 85];
+                    const textDay = [15, 23, 42];
+
+                    const grad1Night = [255, 255, 255]; 
+                    const grad2Night = [0, 242, 254]; 
+                    const grad1Dawn = [15, 23, 42]; 
+                    const grad2Dawn = [190, 24, 93]; 
+                    const grad1Day = [3, 105, 161]; 
+                    const grad2Day = [15, 23, 42]; 
+                    
+                    // Glassmorphism tweaked for high transparency (毛玻璃效果)
+                    const cardNight = [0, 242, 254, 0.05];
+                    const cardDawn = [255, 255, 255, 0.15]; 
+                    const cardDay = [255, 255, 255, 0.25];
+
+                    function lerp(a, b, t) { return a + (b - a) * t; }
+                    function lerpColor(c1, c2, t) {
+                        return [Math.round(lerp(c1[0], c2[0], t)), Math.round(lerp(c1[1], c2[1], t)), Math.round(lerp(c1[2], c2[2], t))];
+                    }
+                    function lerpAlpha(c1, c2, t) {
+                        return [Math.round(lerp(c1[0], c2[0], t)), Math.round(lerp(c1[1], c2[1], t)), Math.round(lerp(c1[2], c2[2], t)), lerp(c1[3], c2[3], t)];
+                    }
+
+                    window.appLerp = function(cNight, cDawn, cDay, t) {
+                        if (t < 0.5) return lerpColor(cNight, cDawn, t * 2);
+                        return lerpColor(cDawn, cDay, (t - 0.5) * 2);
+                    };
+                    window.appLerpAlpha = function(cNight, cDawn, cDay, t) {
+                        if (t < 0.5) return lerpAlpha(cNight, cDawn, t * 2);
+                        return lerpAlpha(cDawn, cDay, (t - 0.5) * 2);
+                    };
+
+                    function colorLoop() {
+                        const diff = window.targetCurve - window.currentCurve;
+                        if (Math.abs(diff) > 0.001) {
+                            window.currentCurve += diff * 0.05;
+                            let curve = window.currentCurve;
+                            window.dawnRatio = curve; // Pass to Canvas
+
+                            // Background
+                            const rTop = window.appLerp(bgNight[0], bgDawn[0], bgDay[0], curve);
+                            const rMid = window.appLerp(bgNight[1], bgDawn[1], bgDay[1], curve);
+                            const rBot = window.appLerp(bgNight[2], bgDawn[2], bgDay[2], curve);
+                            document.body.style.background = `linear-gradient(180deg, rgb(${rTop}), rgb(${rMid}), rgb(${rBot}))`;
+                            
+                            // Text & Gradients
+                            const root = document.documentElement;
+                            const textMuted = window.appLerp(textNight, textDawn, textDay, curve);
+                            root.style.setProperty('--text-muted', `rgb(${textMuted[0]}, ${textMuted[1]}, ${textMuted[2]})`);
+                            
+                            const g1 = window.appLerp(grad1Night, grad1Dawn, grad1Day, curve);
+                            const g2 = window.appLerp(grad2Night, grad2Dawn, grad2Day, curve);
+                            root.style.setProperty('--title-grad-1', `rgb(${g1[0]}, ${g1[1]}, ${g1[2]})`);
+                            root.style.setProperty('--title-grad-2', `rgb(${g2[0]}, ${g2[1]}, ${g2[2]})`);
+                            
+                            // Glass Card Background
+                            const cBg = window.appLerpAlpha(cardNight, cardDawn, cardDay, curve);
+                            root.style.setProperty('--card-bg', `rgba(${cBg[0]}, ${cBg[1]}, ${cBg[2]}, ${cBg[3].toFixed(3)})`);
+
+                            // Dynamic end-slide border removal
+                            const cards = document.querySelectorAll('.speaker-card');
+                            cards.forEach((c, idx) => {
+                                if (idx === cards.length - 1 && curve > 0.9) {
+                                    c.style.border = 'none';
+                                } else {
+                                    c.style.border = '1px solid var(--glass-border)';
+                                }
+                            });
+                        }
+                        requestAnimationFrame(colorLoop);
+                    }
+                    colorLoop();
+                }
+            } catch (err) {
+                console.error("Error in updateSlide:", err);
+            }
         }
 
         function nextSlide() {
@@ -628,12 +925,14 @@
 
         function animate() {
             time += 0.02;
+            let dr = window.dawnRatio || 0;
+            const starAlpha = Math.max(0, 1 - dr * 2.5);
             ctx.clearRect(0, 0, W, H);
 
             // A. 繪製呼吸星點
             stars.forEach(s => {
                 const alpha = s.baseAlpha + Math.sin(time * s.speed * 100 + s.phase) * 0.3;
-                ctx.fillStyle = `rgba(224, 242, 254, ${Math.max(0.1, alpha)})`;
+                ctx.fillStyle = `rgba(224, 242, 254, ${Math.max(0, alpha) * starAlpha})`;
                 ctx.beginPath();
                 ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
                 ctx.fill();
@@ -647,10 +946,9 @@
                 const tailY = m.y - Math.sin(m.angle) * m.length;
 
                 const grad = ctx.createLinearGradient(m.x, m.y, tailX, tailY);
-                grad.addColorStop(0, `rgba(255, 255, 255, ${m.alpha})`);
-                grad.addColorStop(0.3, `rgba(0, 242, 254, ${m.alpha * 0.6})`);
+                grad.addColorStop(0, `rgba(255, 255, 255, ${m.alpha * starAlpha})`);
+                grad.addColorStop(0.3, `rgba(0, 242, 254, ${m.alpha * 0.6 * starAlpha})`);
                 grad.addColorStop(1, 'rgba(0, 242, 254, 0)');
-
                 ctx.strokeStyle = grad;
                 ctx.lineWidth = 1.5;
                 ctx.beginPath();
@@ -673,8 +971,14 @@
             const towerH = Math.min(H * 0.14, 130);
             const headY = towerBaseY - towerH;
 
+            // Helper for 3-phase lerp in Canvas
+            function cvsLerp(cNight, cDawn, cDay, t) {
+                if(!window.appLerp) return cNight;
+                return window.appLerp(cNight, cDawn, cDay, t);
+            }
+
             // C. 繪製夜浪 (不規則起伏海平面)
-            const seaY = H * 0.88;
+            const seaY = H * 0.93;
             for (let layer = 0; layer < 3; layer++) {
                 ctx.beginPath();
                 ctx.moveTo(0, H);
@@ -687,16 +991,38 @@
                 ctx.lineTo(W, H);
                 ctx.closePath();
 
-                if (layer === 0) ctx.fillStyle = 'rgba(10, 25, 47, 0.7)';
-                else if (layer === 1) ctx.fillStyle = 'rgba(7, 18, 36, 0.85)';
-                else ctx.fillStyle = 'rgba(3, 10, 22, 0.95)';
+                function lerpColor(c1, c2, t) {
+                    return [
+                        Math.round(c1[0] + (c2[0] - c1[0]) * t),
+                        Math.round(c1[1] + (c2[1] - c1[1]) * t),
+                        Math.round(c1[2] + (c2[2] - c1[2]) * t)
+                    ];
+                }
+                const nightSea0 = [10, 25, 47];
+                const nightSea1 = [7, 18, 36];
+                const nightSea2 = [3, 10, 22];
+                const dawnSea0 = [44, 150, 199];
+                const dawnSea1 = [25, 110, 156];
+                const dawnSea2 = [14, 75, 110];
+                const daySea0 = [0, 119, 190];
+                const daySea1 = [0, 150, 200];
+                const daySea2 = [0, 180, 220];
+
+                let c0 = cvsLerp(nightSea0, dawnSea0, daySea0, dr);
+                let c1 = cvsLerp(nightSea1, dawnSea1, daySea1, dr);
+                let c2 = cvsLerp(nightSea2, dawnSea2, daySea2, dr);
+
+                if (layer === 0) ctx.fillStyle = `rgba(${c0[0]}, ${c0[1]}, ${c0[2]}, 0.8)`;
+                else if (layer === 1) ctx.fillStyle = `rgba(${c1[0]}, ${c1[1]}, ${c1[2]}, 0.9)`;
+                else ctx.fillStyle = `rgba(${c2[0]}, ${c2[1]}, ${c2[2]}, 0.95)`;
                 ctx.fill();
             }
 
             // D. 繪製礁岩海岸 (從燈塔腳下一直延伸連到右側)
             ctx.beginPath();
-            ctx.moveTo(towerBaseX - 60, H);
-            ctx.lineTo(towerBaseX - 45, towerBaseY + 15);
+            ctx.moveTo(towerBaseX - 90, H);
+            ctx.lineTo(towerBaseX - 65, seaY + 5);
+            ctx.lineTo(towerBaseX - 40, towerBaseY + 15);
             ctx.lineTo(towerBaseX - 10, towerBaseY);
             ctx.lineTo(towerBaseX + 50, towerBaseY + 5);
             ctx.lineTo(towerBaseX + 110, towerBaseY + 25);
@@ -715,11 +1041,11 @@
 
             // E. 浪花拍打岩石特效
             if (Math.sin(time * 2.5) > 0.6) {
-                spawnSplash(towerBaseX - 35, towerBaseY + 18);
+                spawnSplash(towerBaseX - 65, seaY + 5);
             }
             for (let i = splashes.length - 1; i >= 0; i--) {
                 const sp = splashes[i];
-                ctx.fillStyle = `rgba(186, 230, 253, ${sp.alpha})`;
+                ctx.fillStyle = `rgba(120, 150, 175, ${sp.alpha})`;
                 ctx.beginPath();
                 ctx.arc(sp.x, sp.y, sp.size, 0, Math.PI * 2);
                 ctx.fill();
@@ -740,7 +1066,11 @@
             ctx.lineTo(towerBaseX + 8, headY + 18);
             ctx.lineTo(towerBaseX + 14, towerBaseY);
             ctx.closePath();
-            ctx.fillStyle = '#0f243a';
+            
+            const dayTower2 = [255, 255, 255];
+            const nightTower2 = [15, 36, 58];
+            const dawnTower2 = [210, 220, 230]; const tc2 = cvsLerp(nightTower2, dawnTower2, dayTower2, dr);
+            ctx.fillStyle = `rgb(${tc2[0]}, ${tc2[1]}, ${tc2[2]})`;
             ctx.fill();
             ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
             ctx.lineWidth = 1.2;
@@ -750,7 +1080,11 @@
             ctx.beginPath();
             ctx.rect(towerBaseX - 9, headY + 6, 18, 12);
             ctx.arc(towerBaseX, headY + 6, 8, Math.PI, 0);
-            ctx.fillStyle = '#162e4a';
+            
+            const dayDome = [255, 255, 255]; // Red dome for daylight
+            const nightDome = [22, 46, 74];
+            const dawnDome = [220, 220, 220]; const tcd = cvsLerp(nightDome, dawnDome, dayDome, dr);
+            ctx.fillStyle = `rgb(${tcd[0]}, ${tcd[1]}, ${tcd[2]})`;
             ctx.fill();
             ctx.stroke();
 
@@ -764,6 +1098,8 @@
             const sideVis = Math.max(0, depth + 0.3);
             const glow = 0.05 + 0.35 * sideVis + 0.85 * breathing;
 
+            
+            const beamAlphaMulti = Math.max(0, 1 - dr * 1.5);
             const maxBeamLen = Math.max(W * 0.95, H * 0.8);
             const currentLen = maxBeamLen * Math.abs(projected);
             const beamDirX = projected >= 0 ? 1 : -1;
@@ -782,9 +1118,9 @@
 
                 // 光錐漸層
                 const beamGrad = ctx.createLinearGradient(towerBaseX, lightCenterY, (x1 + x2) / 2, (y1 + y2) / 2);
-                beamGrad.addColorStop(0, `rgba(255, 255, 255, ${0.45 * glow})`);
-                beamGrad.addColorStop(0.08, `rgba(56, 189, 248, ${0.25 * glow})`);
-                beamGrad.addColorStop(0.4, `rgba(0, 242, 254, ${0.06 * glow})`);
+                beamGrad.addColorStop(0, `rgba(255, 255, 255, ${0.45 * glow * beamAlphaMulti})`);
+                beamGrad.addColorStop(0.08, `rgba(56, 189, 248, ${0.25 * glow * beamAlphaMulti})`);
+                beamGrad.addColorStop(0.4, `rgba(0, 242, 254, ${0.06 * glow * beamAlphaMulti})`);
                 beamGrad.addColorStop(1, 'rgba(0, 242, 254, 0)');
 
                 ctx.fillStyle = beamGrad;
@@ -800,8 +1136,8 @@
             if (breathing > 0.02) {
                 const haloR = 40 + 130 * breathing;
                 const haloGrad = ctx.createRadialGradient(towerBaseX, lightCenterY, 0, towerBaseX, lightCenterY, haloR);
-                haloGrad.addColorStop(0, `rgba(255, 255, 255, ${0.35 * breathing})`);
-                haloGrad.addColorStop(0.25, `rgba(0, 242, 254, ${0.15 * breathing})`);
+                haloGrad.addColorStop(0, `rgba(255, 255, 255, ${0.35 * breathing * beamAlphaMulti})`);
+                haloGrad.addColorStop(0.25, `rgba(0, 242, 254, ${0.15 * breathing * beamAlphaMulti})`);
                 haloGrad.addColorStop(1, 'rgba(0, 242, 254, 0)');
 
                 ctx.fillStyle = haloGrad;
@@ -814,7 +1150,7 @@
             ctx.beginPath();
             ctx.arc(towerBaseX, lightCenterY, 3 + 3 * breathing, 0, Math.PI * 2);
             ctx.fillStyle = `rgba(255, 255, 255, ${0.3 + 0.7 * breathing})`;
-            ctx.shadowBlur = 10 + 20 * breathing;
+            ctx.shadowBlur = (10 + 20 * breathing) * beamAlphaMulti;
             ctx.shadowColor = '#00f2fe';
             ctx.fill();
             ctx.shadowBlur = 0;
