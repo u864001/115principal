@@ -31,6 +31,7 @@
             background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 60%, var(--bg-bottom) 100%);
             color: var(--text-main);
             user-select: none;
+            font-size: 28px; /* 大幅放大基礎字體，實現全部字體與毛玻璃框放大 (16px -> 28px) */
         }
 
         /* 畫布容器 */
@@ -57,9 +58,9 @@
 
         .slide {
             position: absolute;
-            width: 82%;
-            max-width: 1300px;
-            height: 78%;
+            width: 92%;
+            max-width: 1750px;
+            height: 92%;
             opacity: 0;
             visibility: hidden;
             transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
@@ -80,7 +81,7 @@
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
             border-radius: 20px;
-            padding: 45px 55px;
+            padding: 60px 80px; /* 增加內距，配合放大的字體 */
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), inset 0 1px 1px rgba(255, 255, 255, 0.1);
@@ -591,6 +592,14 @@
             </div>
         </div>
 
+        <!-- Slide 3-1: 來賓致詞 -->
+        <div class="slide">
+            <div class="speaker-card" style="padding-top: 60px; padding-bottom: 60px;">
+                <h2 style="margin-bottom:15px; color:#cbd5e1; font-weight:400;">來賓致詞</h2>
+                <div class="speaker-name" style="font-size: 3.2rem;">霧臺鄉 巴正義 鄉長</div>
+            </div>
+        </div>
+
         <!-- Slide 4: 頒獎 1 -->
         <div class="slide">
             <div class="glass-panel">
@@ -894,9 +903,9 @@
                 
                 // 3-Phase Color Logic via Tweening
                 let slideCurve = 0;
-                // Index 18 is Slide 19.
-                if (currentSlide >= 18) {
-                    let t = (currentSlide - 18) / (allSlides.length - 1 - 18);
+                // Index 19 is Slide 20 (after adding 1 slide).
+                if (currentSlide >= 19) {
+                    let t = (currentSlide - 19) / (allSlides.length - 1 - 19);
                     if (t < 0) t = 0;
                     if (t > 1) t = 1;
                     slideCurve = t;
