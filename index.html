@@ -1,1377 +1,1941 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>屏東縣115學年度第一學期中小學校長行政會議</title>
-    <!-- 優先預載日間版底圖 -->
-    <link rel="preload" href="115principalday.jfif" as="image">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700;900&display=swap');
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>屏東縣中小學校長行政會議</title>
+  <link rel="icon" href="data:,">
+  
+  <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.0.0/dist/signature_pad.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/docx@9.7.1/dist/index.iife.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 
-        :root {
-            --bg-top: #030712;
-            --bg-mid: #071326;
-            --bg-bottom: #020914;
-            --text-main: #ffffff;
-            --text-muted: #94a3b8;
-            --accent-cyan: #00f2fe;
-            --accent-blue: #38bdf8;
-            --glass-bg: rgba(7, 19, 38, 0.65);
-            --glass-border: rgba(56, 189, 248, 0.2);
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body, html {
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            font-family: 'Noto Sans TC', sans-serif;
-            background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 60%, var(--bg-bottom) 100%);
-            color: var(--text-main);
-            user-select: none;
-            font-size: 28px; /* 大幅放大基礎字體，實現全部字體與毛玻璃框放大 (16px -> 28px) */
-        }
-
-        /* 畫布容器 */
-        #bg-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: 0;
-            pointer-events: none;
-        }
-
-        /* 簡報主體容器 */
-        .presentation {
-            position: relative;
-            z-index: 10;
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .slide {
-            position: absolute;
-            width: 92%;
-            max-width: 1750px;
-            height: 92%;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-            transform: translateY(20px) scale(0.98);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .slide.active {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0) scale(1);
-        }
-
-        /* 毛玻璃科技面板 */
-        .glass-panel {
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 60px 80px; /* 增加內距，配合放大的字體 */
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), inset 0 1px 1px rgba(255, 255, 255, 0.1);
-        }
-
-        /* 標題與內文字型樣式 */
-        .metallic-title {
-            font-size: 3.8rem;
-            font-weight: 900;
-            line-height: 1.25;
-            background: linear-gradient(
-                -45deg, 
-                #cbd5e1 20%, 
-                #ffffff 40%, 
-                var(--accent-cyan) 50%, 
-                #ffffff 60%, 
-                #cbd5e1 80%
-            );
-            background-size: 250% auto;
-            color: transparent;
-            -webkit-background-clip: text;
-            background-clip: text;
-            animation: metallic-shine 4s linear infinite;
-            margin-bottom: 20px;
-            letter-spacing: 2px;
-        }
-
-        @keyframes metallic-shine {
-            0% { background-position: 200% center; }
-            100% { background-position: -50% center; }
-        }
-
-        h2 {
-            font-size: 2.2rem;
-            font-weight: 700;
-            color: var(--accent-cyan);
-            margin-bottom: 30px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        /* 獎項頁面的標題裝飾 */
-        .award-slide h2::before {
-            content: '';
-            display: inline-block;
-            width: 6px;
-            height: 32px;
-            background: var(--accent-cyan);
-            border-radius: 3px;
-            box-shadow: 0 0 12px var(--accent-cyan);
-        }
-
-        p, li {
-            font-size: 1.45rem;
-            line-height: 1.85;
-            color: #f1f5f9;
-            font-weight: 300;
-            margin-bottom: 16px;
-        }
-
-        .subtitle {
-            font-size: 1.7rem;
-            color: var(--accent-blue);
-            letter-spacing: 3px;
-            margin-bottom: 35px;
-            font-weight: 400;
-        }
-
-        /* 封面投影片 */
-        .slogan-container {
-            display: flex;
-            justify-content: center;
-            gap: 25px;
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #ffffff;
-            margin-bottom: 40px;
-            letter-spacing: 3px;
-        }
-        .slogan-item {
-            text-shadow: 0 0 5px rgba(0, 242, 254, 0.3);
-            animation: neon-sweep 8s infinite;
-        }
-        @keyframes neon-sweep {
-            0%, 20%, 100% {
-                text-shadow: 0 0 5px rgba(0, 242, 254, 0.3);
-                color: #ffffff;
-            }
-            10% {
-                text-shadow: 0 0 20px rgba(0, 242, 254, 1), 0 0 40px rgba(0, 242, 254, 0.8), 0 0 10px rgba(255, 255, 255, 1);
-                color: #ffffff;
-            }
-        }
-        .title-slide {
-            text-align: center;
-            align-items: center;
-        }
-
-        .logos-container {
-            display: flex;
-            gap: 30px;
-            margin-bottom: 30px;
-            justify-content: center;
-        }
-
-        .logo-box {
-            padding: 10px 24px;
-            background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.01) 100%);
-            border: 1px solid rgba(148, 163, 184, 0.3);
-            border-radius: 10px;
-            color: #94a3b8;
-            font-size: 1.1rem;
-            letter-spacing: 2px;
-            box-shadow: inset 0 1px 1px rgba(255,255,255,0.1), 0 4px 15px rgba(0,0,0,0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 220px;
-            height: 65px;
-            position: relative;
-        }
-
-        .logo-box img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-            filter: drop-shadow(0 0 8px rgba(56,189,248,0.8));
-        }
-
-        .meta-info {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-top: 80px;
-            color: rgba(203, 213, 225, 0.7);
-            font-size: 1.35rem;
-            font-weight: 300;
-            letter-spacing: 2px;
-        }
-
-        /* 獎項特別樣式 */
-        .award-badge {
-            display: inline-block;
-            padding: 6px 18px;
-            background: rgba(0, 242, 254, 0.12);
-            border: 1px solid var(--accent-cyan);
-            border-radius: 30px;
-            color: var(--accent-cyan);
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin-bottom: 20px;
-            box-shadow: 0 0 15px rgba(0, 242, 254, 0.2);
-            white-space: nowrap;
-        }
-
-        .school-title {
-            font-size: 3.5rem;
-            font-weight: 900;
-            margin-bottom: 25px;
-            color: #ffffff;
-        }
-
-        .award-desc {
-            font-size: 1.6rem;
-            color: #cbd5e1;
-            line-height: 1.9;
-            text-align: justify;
-        }
-
-        /* 演講與宣導獨立頁面卡片樣式 */
-        .speaker-card {
-            border-left: none; 
-            background: var(--card-bg, rgba(0, 242, 254, 0.05)); 
-            border-radius: 12px; 
-            padding: 50px 80px; 
-            border: 1px solid var(--glass-border);
-            margin-top: 20px;
-            align-self: center;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            transition: border 0.6s ease;
-        }
-        
-        .speaker-name {
-            font-size: 2.5rem; 
-            margin-bottom: 0; 
-            background: linear-gradient(90deg, var(--title-grad-1, #fff), var(--title-grad-2, var(--accent-cyan))); 
-            -webkit-background-clip: text; 
-            -webkit-text-fill-color: transparent;
-            font-weight: 700;
-        }
-
-        .progress-bar-container {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.05);
-            z-index: 100;
-        }
-
-        .progress-bar {
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan));
-            box-shadow: 0 0 10px var(--accent-cyan);
-            transition: width 0.3s ease;
-        }
-
-        .controls {
-            position: fixed;
-            bottom: 25px;
-            right: 35px;
-            display: flex;
-            gap: 15px;
-            z-index: 100;
-        }
-
-        .ctrl-btn {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background: rgba(15, 23, 42, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            color: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 1.2rem;
-            backdrop-filter: blur(8px);
-            transition: all 0.2s ease;
-        }
-
-        .ctrl-btn:hover {
-            background: var(--accent-cyan);
-            color: #030712;
-            box-shadow: 0 0 15px var(--accent-cyan);
-        }
-
-        .page-indicator {
-            position: fixed;
-            bottom: 30px;
-            left: 35px;
-            color: var(--text-muted);
-            font-size: 1.1rem;
-            font-weight: 300;
-            letter-spacing: 1px;
-            z-index: 100;
-        }
-
-        /* 議程雙欄排版 */
-        .agenda-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 25px;
-        }
-
-        .agenda-card {
-            background: rgba(255, 255, 255, 0.03);
-            border-left: 4px solid var(--accent-blue);
-            padding: 20px 25px;
-            border-radius: 0 12px 12px 0;
-            transition: all 0.3s ease;
-        }
-
-        .agenda-card:hover {
-            transform: translateX(8px);
-            background: rgba(56, 189, 248, 0.08);
-            border-left-color: var(--accent-cyan);
-        }
-
-        .agenda-card-title {
-            font-size: 1.35rem;
-            font-weight: 700;
-            color: #ffffff;
-            margin-bottom: 6px;
-        }
-
-        .agenda-card-speaker {
-            font-size: 1.1rem;
-            color: var(--accent-cyan);
-        }
-
-        /* 底部進度條與控制器 */
-        .progress-bar-container {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.05);
-            z-index: 100;
-        }
-
-        .progress-bar {
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan));
-            box-shadow: 0 0 10px var(--accent-cyan);
-            transition: width 0.3s ease;
-        }
-
-        .controls {
-            position: fixed;
-            bottom: 25px;
-            right: 35px;
-            display: flex;
-            gap: 15px;
-            z-index: 100;
-        }
-
-        .ctrl-btn {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background: rgba(15, 23, 42, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            color: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 1.2rem;
-            backdrop-filter: blur(8px);
-            transition: all 0.2s ease;
-        }
-
-        .ctrl-btn:hover {
-            background: var(--accent-cyan);
-            color: #030712;
-            box-shadow: 0 0 15px var(--accent-cyan);
-        }
-
-        .page-indicator {
-            position: fixed;
-            bottom: 30px;
-            left: 35px;
-            color: var(--text-muted);
-            font-size: 1.1rem;
-            font-weight: 300;
-            letter-spacing: 1px;
-            z-index: 100;
-        }
+  <style>
+    /* === 視覺主題 === */
+    :root {
+      --pt-blue: #0077C0;    
+      --pt-light: #80D0F0;   
+      --pt-pink: #E91E63;    
+      --pt-green: #2E7D32;   
+      --glass-bg: rgba(255, 255, 255, 0.75);
+      --glass-border: rgba(255, 255, 255, 0.5);
+      --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+    }
     
-        .metallic-sweep {
-            background: linear-gradient(90deg, var(--title-grad-1, #fff) 0%, #cbd5e1 40%, #ffffff 50%, #cbd5e1 60%, var(--title-grad-2, var(--accent-cyan)) 100%) !important;
-            background-size: 200% auto !important;
-            color: transparent !important;
-            -webkit-background-clip: text !important;
-            background-clip: text !important;
-            animation: shine 5s linear infinite !important;
-        }
-        .neon-outline {
-            filter: drop-shadow(0 0 2px rgba(255,255,255,0.9)) drop-shadow(0 0 5px rgba(255,255,255,0.8)) !important;
-        }
+    body { 
+      font-family: 'Helvetica Neue', '微軟正黑體', Arial, sans-serif; 
+      margin: 0; padding: 0; 
+      background: linear-gradient(135deg, #A1E4FF 0%, #E8F4F8 40%, #F3D2ED 100%);
+      background-attachment: fixed; user-select: none; color: #333;
+    }
+    * { box-sizing: border-box; }
 
-        /* 日間模式：白底玻璃、黑字 */
-        body.day-mode .glass-panel, 
-        body.day-mode .speaker-card {
-            background: rgba(255, 255, 255, 0.7) !important;
-            border: 1px solid rgba(255, 255, 255, 0.5) !important;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important;
-        }
-        
-        body.day-mode .slide:not(.title-slide) h2,
-        body.day-mode .slide:not(.title-slide) .school-title,
-        body.day-mode .slide:not(.title-slide) .award-desc,
-        body.day-mode .slide:not(.title-slide) p,
-        body.day-mode .slide:not(.title-slide) .speaker-name,
-        body.day-mode .slide:not(.title-slide) .award-badge,
-        body.day-mode .slide:not(.title-slide) .trans-text {
-            color: #111 !important;
-            text-shadow: none !important;
-            background: none !important;
-            -webkit-text-fill-color: #111 !important;
-            border-color: #111 !important;
-        }
+    /* === 凍結窗格 === */
+    .top-bar { 
+      background: rgba(255, 255, 255, 0.85); 
+      backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+      padding: 15px; text-align: center; position: sticky; top: 0; z-index: 100; 
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1); border-bottom: 2px solid var(--glass-border);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .top-bar-title { 
+      font-size: 24px; font-weight: bold; color: var(--pt-blue); 
+      flex-grow: 1; text-align: center; margin: 0 10px; cursor: pointer;
+    }
+    .btn-nav { 
+      background-color: var(--pt-blue); color: white; border: none; 
+      padding: 10px 20px; font-size: 20px; border-radius: 12px; 
+      cursor: pointer; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: all 0.2s ease;
+    }
+    .btn-nav:active { transform: scale(0.90); box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+    .btn-nav.hidden { display: none; }
 
-        body.day-mode .slide:not(.title-slide) h2::before {
-            background: #111 !important;
-            box-shadow: none !important;
-        }
+    /* === 容器與特效 === */
+    .screen { 
+      display: none; padding: 25px 20px 80px 20px; min-height: calc(100vh - 80px); 
+      flex-direction: column; align-items: center; max-width: 800px; margin: 0 auto; 
+    }
+    .screen.active { display: flex; animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
 
-        body.day-mode .title-slide .school-title, 
-        body.day-mode .title-slide .meta-info {
-            color: #222 !important;
-        }
+    .glass-panel {
+      background: var(--glass-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      border-radius: 20px; border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow); padding: 30px; width: 100%; text-align: center; transition: all 0.3s ease;
+    }
 
-        /* 日間模式：第一頁的標題文字 */
-        body.day-mode .metallic-title {
-            background: linear-gradient(
-                -45deg, 
-                #0f172a 20%, 
-                #38bdf8 40%, 
-                #0f172a 50%, 
-                #38bdf8 60%, 
-                #0f172a 80%
-            ) !important;
-            background-size: 250% auto !important;
-            color: transparent !important;
-            -webkit-background-clip: text !important;
-            background-clip: text !important;
-            filter: drop-shadow(0 0 4px rgba(255,255,255,0.85)) !important;
-        }
+    /* === 按鈕設計 === */
+    .list-container { width: 100%; display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
+    
+    .btn-massive { 
+      width: 100%; padding: 40px 20px; margin: 15px 0; font-size: 38px; font-weight: bold; 
+      border-radius: 20px; border: none; color: white; cursor: pointer; 
+      box-shadow: 0 8px 15px rgba(0,0,0,0.2); transition: all 0.15s ease;
+    }
+    .btn-signin { background: linear-gradient(135deg, #43A047, #2E7D32); }
+    .btn-signout { background: linear-gradient(135deg, #E53935, #C62828); }
+    .btn-massive:active { transform: scale(0.96); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
 
-        /* 日間模式：連結按鈕樣式 */
-        body.day-mode .slide a[target="_blank"] {
-            color: #111 !important;
-            border-color: rgba(17, 17, 17, 0.4) !important;
-            background: rgba(17, 17, 17, 0.05) !important;
-        }
-        body.day-mode .slide a[target="_blank"]:hover {
-            background: rgba(17, 17, 17, 0.15) !important;
-        }
+    .btn-list { 
+      width: 100%; padding: 25px; font-size: 28px; font-weight: bold; 
+      border-radius: 15px; border: 2px solid rgba(255,255,255,0.8); cursor: pointer; 
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: left;
+      background: rgba(255, 255, 255, 0.9); color: #333; transition: all 0.15s ease;
+    }
+    .btn-list:active { background: #e0f7fa; transform: scale(0.97); }
+    .btn-vip { background: linear-gradient(135deg, #FFF0F5, #FCE4EC); color: var(--pt-pink); border-color: #F8BBD0; }
+    .btn-dept { background: linear-gradient(135deg, #E3F2FD, #BBDEFB); color: var(--pt-blue); }
 
-        /* 首頁返回與切換按鈕日間模式字體顏色與邊框 */
-        body.day-mode > button {
-            color: #111 !important;
-            border-color: rgba(17, 17, 17, 0.4) !important;
-            background: rgba(255, 255, 255, 0.5) !important;
-        }
-        body.day-mode > button:hover {
-            background: rgba(255, 255, 255, 0.8) !important;
-        }
+    /* 灰色已簽到狀態 */
+    .signed-disabled {
+      opacity: 0.5 !important;
+      background: #eeeeee !important;
+      color: #757575 !important;
+      border-color: #bdbdbd !important;
+      cursor: not-allowed !important;
+      box-shadow: none !important;
+    }
+    .signed-disabled:active { transform: none !important; }
 
-        /* 獎項特別樣式 */
-        .award-badge {
-            display: inline-block;
-            padding: 6px 18px;
-            background: rgba(0, 242, 254, 0.12);
-            border: 1px solid var(--accent-cyan);
-            border-radius: 30px;
-            color: var(--accent-cyan);
-            font-size: 2.3rem; /* Further increased as requested */
-            font-weight: 700;
-            margin-bottom: 20px;
-            box-shadow: 0 0 15px rgba(0, 242, 254, 0.2);
-            white-space: nowrap;
-        }
+    /* === 簽名與表單區塊 === */
+    .info-display { font-size: 32px; font-weight: bold; color: var(--pt-blue); margin-bottom: 20px; line-height: 1.5; }
+    .info-display span { color: var(--pt-green); font-size: 42px; display: block; margin-top: 10px; }
+    
+    .meal-options { display: flex; justify-content: center; flex-wrap: wrap; gap: 20px; margin-bottom: 30px; }
+    .meal-options label { 
+      display: flex; align-items: center; gap: 10px; cursor: pointer; 
+      background: white; padding: 15px 25px; border-radius: 15px; 
+      border: 2px solid #BBDEFB; font-size: 28px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: all 0.2s ease;
+    }
+    .meal-options label:active { transform: scale(0.95); }
+    input[type="radio"] { transform: scale(1.8); margin-right: 5px; accent-color: var(--pt-pink); }
+    
+    .signature-wrapper { border: 3px dashed #90CAF9; background: white; border-radius: 15px; margin-bottom: 20px; width: 100%; overflow: hidden; }
+    canvas { display: block; touch-action: none; width: 100%; cursor: crosshair; }
+    
+    .btn-submit { background: linear-gradient(135deg, #1E88E5, #1565C0); font-size: 32px; padding: 20px; color: white; border: none; border-radius: 15px; width: 100%; font-weight: bold; box-shadow: 0 6px 12px rgba(0,0,0,0.15); transition: 0.2s; cursor: pointer;}
+    .btn-submit:active { transform: scale(0.97); }
+    .btn-clear { background: #9E9E9E; font-size: 24px; padding: 15px; color: white; border: none; border-radius: 10px; margin-bottom: 20px; width: 100%; transition: 0.2s; cursor: pointer;}
+    .btn-clear:active { transform: scale(0.97); background: #757575; }
 
-        .school-title {
-            font-size: 3.5rem;
-            font-weight: 900;
-            margin-bottom: 25px;
-            color: #ffffff;
-        }
-</style>
+    .form-group { width: 100%; margin-bottom: 20px; text-align: left; }
+    .form-group label { display: block; font-size: 24px; font-weight: bold; margin-bottom: 10px; color: var(--pt-blue); }
+    .form-group input { width: 100%; padding: 18px; font-size: 24px; border: 2px solid #BBDEFB; border-radius: 12px; background: rgba(255,255,255,0.9); outline: none; transition: 0.2s; }
+    .form-group input:focus { border-color: var(--pt-pink); box-shadow: 0 0 8px rgba(233,30,99,0.3); }
+    .color-picker { display: flex; justify-content: center; gap: 15px; margin-bottom: 15px; }
+    .color-btn { width: 40px; height: 40px; border-radius: 50%; border: 3px solid transparent; cursor: pointer; transition: 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+    .color-btn.selected { border-color: #E91E63; transform: scale(1.15); }
+
+    /* === QR Code === */
+    .qr-container {
+      margin-top: 30px; padding: 20px; background: rgba(255,255,255,0.9); border-radius: 20px; box-shadow: inset 0 0 10px rgba(0,0,0,0.05); display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    .qr-text { font-size: 18px; color: #555; font-weight: bold; margin-bottom: 15px; }
+
+    /* === 底邊 === */
+    .totem-footer {
+      position: fixed; bottom: 0; left: 0; width: 100%; height: 25px; z-index: 99;
+      background: repeating-linear-gradient( 45deg, #000, #000 10px, #E91E63 10px, #E91E63 20px, #80D0F0 20px, #80D0F0 30px ); opacity: 0.8;
+    }
+
+    /* === 後台管理面板 === */
+    .admin-header { font-size: 36px; font-weight: bold; margin-bottom: 20px; color: #E91E63; }
+    .admin-stat { 
+      background: white; padding: 20px; border-radius: 15px; margin-bottom: 15px; 
+      font-size: 24px; font-weight: bold; box-shadow: var(--glass-shadow); cursor: pointer; transition: 0.2s; display: flex; justify-content: space-between; align-items: center; border: 2px solid transparent;
+    }
+    .admin-stat:active { transform: scale(0.98); border-color: var(--pt-blue); }
+    .admin-stat span { font-size: 36px; color: var(--pt-pink); }
+    .sub-hint { font-size:16px; color:#888; margin-left: 5px; }
+    
+    .record-item { 
+      display: flex; justify-content: space-between; align-items: center; 
+      background: #F5F5F5; padding: 15px; border-radius: 10px; margin-bottom: 10px; 
+      font-size: 20px; font-weight: bold; text-align: left; box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .btn-delete { background: #F44336; color: white; border: none; padding: 10px 15px; border-radius: 8px; font-size: 18px; cursor: pointer; transition: 0.2s; }
+    .btn-delete:active { transform: scale(0.9); background: #D32F2F; }
+
+    @keyframes breathe {
+      0% { box-shadow: 0 0 10px rgba(255,0,0,0.5); border-color: rgba(255,0,0,0.5); }
+      50% { box-shadow: 0 0 30px rgba(255,0,0,1); border-color: rgba(255,0,0,1); transform: scale(1.05); }
+      100% { box-shadow: 0 0 10px rgba(255,0,0,0.5); border-color: rgba(255,0,0,0.5); }
+    }
+    .breathing-box {
+      position: absolute;
+      border: 4px solid red;
+      border-radius: 5px;
+      animation: breathe 1.5s infinite;
+      display: none;
+      background: transparent;
+      z-index: 10;
+    }
+  
+    @media (max-width: 768px) {
+      .meal-options { flex-direction: column; align-items: center; }
+      .meal-options label { width: 100%; justify-content: center; }
+    }
+  </style>
+
 </head>
 <body>
-    <button style="position: absolute; top: 20px; left: 20px; z-index: 1000; background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.3); color: white; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 16px; backdrop-filter: blur(10px); transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.3);" onclick="window.location.href='index.html'" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">← 返回首頁</button>
-    
-    <button id="theme-toggle-btn" style="position: absolute; top: 20px; right: 20px; z-index: 1000; background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.3); color: white; padding: 10px; border-radius: 50%; cursor: pointer; backdrop-filter: blur(10px); transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; width: 48px; height: 48px;" onclick="toggleTheme(event)" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">
-        <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
-        <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
-    </button>
-    
 
 
-    <!-- 背景 Canvas：星空、流星、海浪、礁岩岸邊、燈塔水平光束、碎石浪花 -->
-    <canvas id="bg-canvas"></canvas>
-    
-    <!-- 日版背景圖 -->
-    <div id="day-bg-image" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; pointer-events: none; opacity: 0; background-image: url('115principalday.jfif'); background-size: cover; background-position: center; transition: opacity 0.8s ease;"></div>
 
-    <!-- 簡報頁面 -->
-    <div class="presentation" style="z-index: 10;">
-        <div id="presentation-stage" style="width: 1920px; height: 1080px; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: flex; justify-content: center; align-items: center; transform-origin: center center;">
-
-        <!-- Slide 1: 封面 -->
-        
-        <div class="slide title-slide active">
-            <div class="ptc-logo-container" style="text-align: center; margin-bottom: 30px; position: relative; top: -20px;">
-                <img src="ptclogo.png" alt="屏東縣政府" style="height: 180px; object-fit: contain; filter: drop-shadow(0 0 25px rgba(56,189,248,1));">
-            </div>
-            <h1 class="metallic-title">屏東縣115學年度第一學期<br>中小學校長行政會議</h1>
-            <div class="slogan-container">
-                <span class="slogan-item" style="animation-delay: 0s;">厚植學力</span>
-                <span class="slogan-item" style="animation-delay: 2s;">科技賦能</span>
-                <span class="slogan-item" style="animation-delay: 4s;">國際接軌</span>
-                <span class="slogan-item" style="animation-delay: 6s;">人文永續</span>
-            </div>
-            
-            <div class="meta-info">
-                <div>國立內埔高級農工職業學校</div>
-                <div>115年8月20日</div>
-            </div>
-        </div>
-        <!-- Slide 2: 宣導 1 -->
-        <div class="slide">
-            <div class="speaker-card">
-                <h2 style="margin-bottom:10px; color:#cbd5e1; font-weight:400;">業務宣導</h2>
-                <div class="speaker-name">政風處重點業務宣導</div>
-                <div style="font-size:1.8rem; color:#94a3b8; margin-top:20px;">政風處政風預防科 吳季璇科長</div>
-                <a href="政風處.pptx" target="_blank" style="display: inline-block; margin-top: 30px; padding: 12px 24px; background: rgba(0,242,254,0.15); border: 1px solid rgba(0,242,254,0.4); color: #fff; text-decoration: none; border-radius: 8px; font-size: 1.5rem; transition: all 0.3s; backdrop-filter: blur(5px);" onmouseover="this.style.background='rgba(0,242,254,0.25)'" onmouseout="this.style.background='rgba(0,242,254,0.15)'">📄 點此閱讀簡報</a>
-            </div>
-        </div>
-
-        <!-- Slide 3: 長官致詞 -->
-        <div class="slide">
-            <div class="speaker-card" style="padding-top: 60px; padding-bottom: 60px;">
-                <h2 style="margin-bottom:15px; color:#cbd5e1; font-weight:400;">長官致詞</h2>
-                <div class="speaker-name" style="font-size: 3.2rem;">屏東縣 周春米 縣長</div>
-            </div>
-        </div>
-
-        <!-- Slide 3-1: 來賓致詞 -->
-        <div class="slide">
-            <div class="speaker-card" style="padding-top: 60px; padding-bottom: 60px;">
-                <h2 style="margin-bottom:15px; color:#cbd5e1; font-weight:400;">來賓致詞</h2>
-                <div class="speaker-name" style="font-size: 3.2rem;">霧臺鄉 巴正義 鄉長</div>
-            </div>
-        </div>
-
-        <!-- Slide 4: 頒獎 1 -->
-        <div class="slide">
-            <div class="glass-panel">
-                <div class="award-badge">視力保健績優學校 ✦ 特優</div>
-                <div class="school-title">瑞光國小</div>
-                <p class="award-desc">學校持續改善教室照明與課桌椅配置，打造明亮舒適的護眼環境。積極落實「3010護眼行動」、「戶外活動120分鐘」及下課教室淨空，培養學生良好護眼習慣。</p>
-                <p class="award-desc">同時推廣遠視儲備與戶外戴帽觀念，提升親師生對近視預防的重視。在全校共同努力下，學生視力不良率逐年穩定下降。</p>
-            </div>
-        </div>
-
-        <!-- Slide 4: 頒獎 2 -->
-        <div class="slide">
-            <div class="glass-panel">
-                <div class="award-badge">口腔保健績優學校 ✦ 優等</div>
-                <div class="school-title">青山國小</div>
-                <p class="award-desc">學校從幼兒園扎根口腔保健，落實早餐後潔牙，並由校長、護理師及「潔牙小天使」共同推動正確潔牙。另結合社區文健站辦理老幼共學，將健康理念延伸至家庭與社區。</p>
-                <p class="award-desc">學生齲齒率逐年下降，齲齒矯治率、窩溝封填率及塗氟率皆接近100%，成效卓著。</p>
-            </div>
-        </div>
-
-        <!-- Slide 5: 頒獎 3 -->
-        <div class="slide">
-            <div class="glass-panel">
-                <div class="award-badge">健康體位績優學校 ✦ 優良</div>
-                <div class="school-title">崇蘭國小</div>
-                <p class="award-desc">學校以學生健康為核心，營造健康、活力且友善的校園環境。透過健康體位推動策略，將「五正四樂」融入課程與日常生活，引導學生建立正確飲食與運動觀念。</p>
-                <p class="award-desc">前後測顯示學生健康知能與行為均明顯進步，健康理念已深植校園。</p>
-            </div>
-        </div>
-
-        <!-- Slide 6: 頒獎 4 -->
-        <div class="slide">
-            <div class="glass-panel">
-                <div class="award-badge">菸檳防制教育推廣績優 ✦ 優良</div>
-                <div class="school-title">內埔國中</div>
-                <p class="award-desc">學校結合衛生政策、健康教育、表演藝術及多元宣導，推動反菸拒檳與電子煙防制。課程著重危害認知、拒絕技巧及健康生活能力，協助學生做出自主選擇。</p>
-                <p class="award-desc">並整合家長、社區與衛生單位資源，共同營造無菸、無檳、安全友善的健康校園。</p>
-            </div>
-        </div>
-
-        <!-- Slide 7: 頒獎 5 -->
-        <div class="slide">
-            <div class="glass-panel">
-                <div class="award-badge">「前後測成效評價」成果評選 ✦ 特優</div>
-                <div class="school-title">惠農國小</div>
-                <p class="award-desc">學校以「正向心理『惠』健康，『農』心戮力愛健保」為主題，推動正向心理健康、全民健保與正確用藥行動研究。透過問卷掌握學生及家長的認知與行為，據以規劃適切策略。</p>
-                <p class="award-desc">藉此提升親師生對健保與用藥安全的重視，建立正確就醫、用藥觀念及負責任的健康態度。</p>
-            </div>
-        </div>
-
-        <!-- Slide 8: 頒獎 6 -->
-        <div class="slide">
-            <div class="glass-panel">
-                <div class="award-badge">校園健康主播 ✦ 佳作</div>
-                <div class="school-title">滿州國中</div>
-                <p class="award-desc">學校以「滿州韌性・健康起飛」為核心，結合自然生態、在地文化與產業，將健康促進融入校本課程及日常生活。</p>
-                <p class="award-desc">透過多元課程與實際行動，引導學生從生活中學習健康、從土地中認識家鄉。並培養學生守護自我、關懷在地與實踐健康生活的行動力。</p>
-            </div>
-        </div>
-
-        <!-- Slide 9: 頒獎 7 -->
-        <div class="slide">
-            <div class="glass-panel">
-                <div class="award-badge">校園珍惜健保AI創作實境秀 (國中組) ✦ 特優</div>
-                <div class="school-title">鶴聲國中</div>
-                <p class="award-desc">學校企劃《校園健康守護特報》實境秀，將珍惜健保、正確用藥及分級醫療融入校園生活。影片結合親師宣誓、棒球隊情境演繹、童軍社區服務、AR桌遊及AI共創主題曲。</p>
-                <p class="award-desc">成功串聯校園、家庭與社區，將健保政策轉化為溫暖且具行動力的健康教育。</p>
-            </div>
-        </div>
-
-        <!-- Slide 10: 頒獎 8 -->
-        <div class="slide">
-            <div class="glass-panel">
-                <div class="award-badge">校園珍惜健保AI創作實境秀 (國小組) ✦ 佳作</div>
-                <div class="school-title">長榮百合國小</div>
-                <p class="award-desc">學校以「珍惜健保、正確用藥」為主題，全片運用AI技術創作，突破傳統拍攝在場景、角色與表現形式上的限制。</p>
-                <p class="award-desc">活潑且富想像力的呈現方式提升影片吸引力，引發學生觀看、討論與分享。透過創新媒材深化健康知能，讓健保與用藥教育更貼近孩子。</p>
-            </div>
-        </div>
-
-        <!-- Slide 11: 頒獎 9 -->
-        <div class="slide">
-            <div class="glass-panel">
-                <div class="award-badge">第10屆國家環境教育獎 ✦ 優等</div>
-                <div class="school-title">餉潭國小</div>
-                <p class="award-desc">餉潭國小積極推動「ECO餉潭學」校本課程，結合在地生態、台美生態學校認證與老幼共學繪本創作，展現永續教育成效，榮獲第10屆國家環境教育獎學校組優等獎殊榮。</p>
-            </div>
-        </div>
-
-        <!-- Slide 12: 頒獎 10 -->
-        <div class="slide">
-            <div class="glass-panel">
-                <div class="award-badge">115年度教育部戶外教育成效卓著獎 ✦ 學校績優獎</div>
-                <div class="school-title">石門國小 ✦ 恆春國小</div>
-                <p class="award-desc">石門國小與恆春國小長期深耕戶外教育有成，本次榮獲115年度「教育部戶外教育成效卓著獎」學校績優獎</p>
-                <p class="award-desc"><b>石門國小：</b>以「跟著luli蝸牛遊學趣」為主題，將排灣族文化與山林智慧融入課程，帶領孩子「從土地出發、朝夢想長大」，培育具文化根基與行動力的下一代。</p>
-                <p class="award-desc"><b>恆春國小：</b>以「半島TOUR趣，行動永留續」為核心，結合古城、民謠與國家公園優勢，建構安全的螺旋式戶外學習，實踐「在地行動、永續共好」的素養教育！</p>
-            </div>
-        </div>
-
-        <!-- Slide 13: 頒獎 11 -->
-        <div class="slide">
-            <div class="glass-panel">
-                <div class="award-badge">115年閱讀磐石學校組</div>
-                <div class="school-title">滿州國中 ✦ 五溝國小 ✦ 仁和國小 ✦ 民和國小</div>
-                <p class="award-desc">教育部公布115年閱讀磐石獎，屏東縣推薦學校全數獲獎！</p>
-                <p class="award-desc">滿州國中、仁和國小、五溝國小及民和國小四校團隊將嚴苛的環境轉化為向上盤旋的動力，讓屏東的孩子們透過閱讀，讓閱讀的種子在家庭與學校扎根。</p>
-            </div>
-        </div>
-
-        <!-- Slide 13-1: 頒獎 12 -->
-        <div class="slide">
-            <div class="glass-panel">
-                <div class="award-badge">2026馬路好行評選 ✦ 教育宣導人本交通類整體優良</div>
-                <div class="school-title">長興國小</div>
-                <p class="award-desc">參加內政部國土署2026馬路好行評選，獲評「教育宣導人本交通類」整體優良，展現學校推動人本交通及交通安全教育的成果。</p>
-            </div>
-        </div>
-
-        <!-- Slide 13-2: 頒獎 13 -->
-        <div class="slide">
-            <div class="glass-panel">
-                <div class="award-badge">114學年度各級學校交通安全教育訪視 ✦ 國小組特優</div>
-                <div class="school-title">勝利國小</div>
-                <p class="award-desc">勝利國小榮獲教育部114學年度各級學校交通安全教育訪視「國小組特優」，展現學校推動交通安全教育的優良成果，值得肯定與鼓勵。</p>
-            </div>
-        </div>
-
-        
-        <!-- Slide 14: 人事處 -->
-        <div class="slide">
-            <div class="speaker-card">
-                <h2 style="margin-bottom:10px; color:var(--text-muted); font-weight:400;" class="trans-text">業務宣導</h2>
-                <div class="speaker-name trans-title">人事處重點業務宣導</div>
-                <div style="font-size:1.8rem; color:var(--text-muted); margin-top:20px;" class="trans-text">人事處 陳惠蓉處長</div>
-            </div>
-        </div>
-
-        <!-- Slide 15: 教育處 -->
-        <div class="slide">
-            <div class="speaker-card">
-                <h2 style="margin-bottom:10px; color:var(--text-muted); font-weight:400;" class="trans-text">業務宣導</h2>
-                <div class="speaker-name trans-title">教育處重點業務宣導</div>
-                <div style="font-size:1.8rem; color:var(--text-muted); margin-top:20px;" class="trans-text">教育處 陳國祥處長</div>
-                <a href="handbook-ptc.pdf" target="_blank" style="display: inline-block; margin-top: 30px; padding: 12px 24px; background: rgba(0,242,254,0.15); border: 1px solid rgba(0,242,254,0.4); color: #fff; text-decoration: none; border-radius: 8px; font-size: 1.5rem; transition: all 0.3s; backdrop-filter: blur(5px);" onmouseover="this.style.background='rgba(0,242,254,0.25)'" onmouseout="this.style.background='rgba(0,242,254,0.15)'">📄 點此閱讀演講簡報</a>
-            </div>
-        </div>
-        
-        <!-- Slide 16: 茶敘 -->
-        <div class="slide">
-            <div class="speaker-card" style="text-align: center;">
-                <h2 style="justify-content: center; margin-bottom:10px; color:var(--text-muted); font-weight:400;" class="trans-text">Tea Break</h2>
-                <div class="speaker-name trans-title" style="font-size:3.5rem;">茶敘交流</div>
-            </div>
-        </div>
-
-        <!-- Slide 17: 政策說明 -->
-        <div class="slide">
-            <div class="speaker-card">
-                <h2 style="margin-bottom:10px; color:var(--text-muted); font-weight:400;" class="trans-text">重點說明</h2>
-                <div class="speaker-name trans-title">本縣教育政策重點說明</div>
-                <div style="font-size:1.8rem; color:var(--text-muted); margin-top:20px;" class="trans-text">教育處科長、中心主任、督學</div>
-                <a href="handbook-ptc.pdf" target="_blank" style="display: inline-block; margin-top: 30px; padding: 12px 24px; background: rgba(0,242,254,0.15); border: 1px solid rgba(0,242,254,0.4); color: #fff; text-decoration: none; border-radius: 8px; font-size: 1.5rem; transition: all 0.3s; backdrop-filter: blur(5px);" onmouseover="this.style.background='rgba(0,242,254,0.25)'" onmouseout="this.style.background='rgba(0,242,254,0.15)'">📄 點此閱讀手冊</a>
-            </div>
-        </div>
-        
-        <!-- Slide 18: 專題演講 -->
-        <div class="slide">
-            <div class="speaker-card">
-                <h2 style="margin-bottom:10px; color:var(--text-muted); font-weight:400;" class="trans-text">專題演講</h2>
-                <div class="speaker-name trans-title" style="font-size:2.2rem; line-height: 1.4;">《把劣勢，精算成禮物<br>校園治理的系統思考》</div>
-                <div style="font-size:1.8rem; color:var(--text-muted); margin-top:20px;" class="trans-text">滿州國中 于福豪校長</div>
-                <a href="manzhou.html" target="_blank" style="display: inline-block; margin-top: 30px; padding: 12px 24px; background: rgba(0,242,254,0.15); border: 1px solid rgba(0,242,254,0.4); color: #fff; text-decoration: none; border-radius: 8px; font-size: 1.5rem; transition: all 0.3s; backdrop-filter: blur(5px);" onmouseover="this.style.background='rgba(0,242,254,0.25)'" onmouseout="this.style.background='rgba(0,242,254,0.15)'">📄 點此閱讀演講簡報</a>
-            </div>
-        </div>
-
-        <!-- Slide 19: 午餐 -->
-        <div class="slide">
-            <div class="speaker-card" style="text-align: center;">
-                <h2 style="justify-content: center; margin-bottom:10px; color:var(--text-muted); font-weight:400;" class="trans-text">Lunch Break</h2>
-                <div class="speaker-name trans-title metallic-sweep" style="font-size:3.5rem;">午餐</div>
-            </div>
-        </div>
-
-        <!-- Slide 20: 霸凌法規 -->
-        <div class="slide">
-            <div class="speaker-card">
-                <h2 style="margin-bottom:10px; color:var(--text-muted); font-weight:400;" class="trans-text neon-outline">法規宣導</h2>
-                <div class="speaker-name trans-title neon-outline" style="color: #fff; -webkit-text-fill-color: #fff;">職場霸凌法規宣導</div>
-                <div style="font-size:1.8rem; color:var(--text-muted); margin-top:20px;" class="trans-text neon-outline">南區職業安全衛生中心 趙懋勳技正</div>
-                <a href="bullying.pdf" target="_blank" style="display: inline-block; margin-top: 30px; padding: 12px 24px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.4); color: #fff; text-decoration: none; border-radius: 8px; font-size: 1.5rem; transition: all 0.3s; backdrop-filter: blur(5px);" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">📄 點此閱讀演講簡報</a>
-            </div>
-        </div>
-
-        <!-- Slide 21: 茶敘 2 -->
-        <div class="slide">
-            <div class="speaker-card" style="text-align: center;">
-                <h2 style="justify-content: center; margin-bottom:10px; color:var(--text-muted); font-weight:400;" class="trans-text">Tea Break</h2>
-                <div class="speaker-name trans-title" style="font-size:3.5rem;">茶敘交流</div>
-            </div>
-        </div>
-
-        <!-- Slide 22: 議題討論 -->
-        <div class="slide">
-            <div class="speaker-card">
-                <h2 style="margin-bottom:10px; color:var(--text-muted); font-weight:400;" class="trans-text">策略討論</h2>
-                <div class="speaker-name trans-title">教育議題推動及執行策略討論及分享</div>
-                <div style="font-size:1.8rem; color:var(--text-muted); margin-top:20px;" class="trans-text">教育處科長、中心主任、督學</div>
-            </div>
-        </div>
-
-        <!-- Slide 23: 綜合座談 -->
-        <div class="slide">
-            <div class="speaker-card">
-                <h2 style="margin-bottom:10px; color:var(--text-muted); font-weight:400;" class="trans-text">提案討論</h2>
-                <div class="speaker-name trans-title">綜合座談</div>
-                <div style="font-size:1.8rem; color:var(--text-muted); margin-top:20px;" class="trans-text">教育處 陳國祥處長</div>
-            </div>
-        </div>
-
-        <!-- Slide 24: 賦歸 -->
-        <div class="slide">
-            <div class="speaker-card" style="text-align: center; background: transparent; border: none; padding-top: 80px; box-shadow: none; backdrop-filter: none;">
-                <div class="speaker-name trans-title" style="font-size:4rem; color:var(--accent-cyan);">✦ 賦歸 ✦</div>
-                <div style="font-size:1.5rem; color:var(--text-muted); margin-top:30px;" class="trans-text">感謝各位長官及校長的參與，祝平安順心</div>
-            </div>
-        </div>
-        </div>
+  <!-- 置頂導覽列 -->
+  <div class="top-bar">
+    <button id="btn-back" class="btn-nav hidden" onclick="goBack()" data-i18n="back">🔙 上一頁</button>
+    <div id="secret-title" class="top-bar-title" data-i18n="title">屏東縣115學年度第一學期<br>中小學校長行政會議</div>
+    <div style="display:flex; gap:10px;">
+        <button id="btn-lang" class="btn-nav" style="background:#E91E63;" onclick="toggleLanguage()">EN</button>
+        <button class="btn-nav" onclick="goHome()" data-i18n="home">🏠 首頁</button>
     </div>
+  </div>
 
-    <!-- 底部進度條 -->
-    <div class="progress-bar-container">
-        <div class="progress-bar" id="progress"></div>
+
+  <!-- 首頁 -->
+  <div id="screen-home" class="screen active">
+    <div class="glass-panel">
+      <div style="font-size:36px; font-weight:bold; margin-bottom: 10px; color: var(--pt-blue);" data-i18n="welcome">歡迎蒞臨</div>
+      <div style="font-size:28px; margin-bottom: 20px;" data-i18n="selectAction">請選擇您的動作</div>
+      <button id="btn-signin-main" class="btn-massive btn-signin" onclick="setAction('簽到')" disabled>資料載入中...</button>
+      <button id="btn-signout-main" class="btn-massive btn-signout" onclick="setAction('簽退')" disabled>資料載入中...</button>
+      <button class="btn-massive btn-nav" style="margin-top:15px; background: linear-gradient(135deg, #1E88E5, #1565C0);" onclick="window.location.href='meeting.html'" data-i18n="presentation">進入會議簡報</button>
+      <button id="btn-status-main" class="btn-massive btn-nav" style="margin-top:15px; background: linear-gradient(135deg, #009688, #00796B);" onclick="renderStatusOverview()" disabled>資料載入中...</button>
+      <button id="btn-search-main" class="btn-massive btn-nav" style="margin-top:15px; background: linear-gradient(135deg, #8E24AA, #6A1B9A);" onclick="setAction('查詢座位')" disabled>資料載入中...</button>
+      
+      <div class="qr-container">
+        <div class="qr-text" data-i18n="qrText">📱 掃描 QR Code，手機免網址直接簽到</div>
+        <div id="qrcode"></div>
+      </div>
     </div>
+  </div>
 
-    <!-- 頁碼計數 -->
-    <div class="page-indicator" id="counter">1 / 15</div>
-
-    <!-- 控制按鈕 -->
-    <div class="controls">
-        <div class="ctrl-btn" onclick="prevSlide(event)">❮</div>
-        <div class="ctrl-btn" onclick="nextSlide(event)">❯</div>
+  <!-- 選擇身分類別 -->
+  <div id="screen-type" class="screen">
+    <div class="glass-panel">
+      <div id="type-title" style="font-size:34px; font-weight:bold; color: var(--pt-blue);" data-i18n="selectType">請選擇服務機關類別</div>
+      <div class="list-container">
+        <button class="btn-list" style="border-left: 8px solid #E91E63;" onclick="selectType('gov')" data-i18n="gov">🏛️ 屏東縣政府</button>
+        <button class="btn-list" style="border-left: 8px solid #4CAF50;" onclick="selectType('school')" data-i18n="school">🏫 各級學校</button>
+        <button id="btn-type-other" class="btn-list" style="border-left: 8px solid #FF9800;" onclick="selectType('other')" data-i18n="other">✏️ 其他 (來賓/工作人員自填)</button>
+      </div>
     </div>
+  </div>
 
-    <script>
-        // Set default to Day mode
-        window.manualMode = 1; // null: auto, 0: night, 1: day
+  <!-- 縣府專屬 -->
+  <div id="screen-gov-vip" class="screen">
+    <div class="glass-panel">
+      <div style="font-size:34px; font-weight:bold; color: var(--pt-blue);" data-i18n="govUnit">屏東縣政府 長官與單位</div>
+      <div id="vip-list" class="list-container"></div>
+    </div>
+  </div>
 
-        function toggleTheme(event) {
-            if (event) event.stopPropagation(); // 防止點擊按鈕觸發換頁
-            if (window.manualMode === null) {
-                window.manualMode = window.targetCurve >= 0.5 ? 0 : 1;
-            } else {
-                window.manualMode = window.manualMode === 1 ? 0 : 1;
-            }
-            updateThemeIcon();
-            window.targetCurve = window.manualMode;
-            
-            // 強制更新畫面樣式，不切換投影片
-            updateSlide(true);
+  <!-- 學校選鄉鎮 -->
+  <div id="screen-school-town" class="screen">
+    <div class="glass-panel">
+      <div style="font-size:34px; font-weight:bold; color: var(--pt-blue);" data-i18n="town">請選擇鄉鎮市</div>
+      <div id="town-list" class="list-container"></div>
+    </div>
+  </div>
+
+  <!-- 縣府選單位 -->
+  <div id="screen-gov-unit" class="screen">
+    <div class="glass-panel">
+      <div style="font-size:34px; font-weight:bold; color: var(--pt-blue);" data-i18n="govUnit">請選擇處室/單位</div>
+      <div id="gov-unit-list" class="list-container"></div>
+    </div>
+  </div>
+
+  <!-- 選擇姓名 -->
+  <div id="screen-name-list" class="screen">
+    <div class="glass-panel">
+      <div id="name-list-title" style="font-size:34px; font-weight:bold; color: var(--pt-blue);" data-i18n="selectName">請選擇姓名</div>
+      <div id="name-list-container" class="list-container"></div>
+    </div>
+  </div>
+
+  <!-- 其他自填 -->
+  <div id="screen-other-form" class="screen">
+    <div class="glass-panel">
+      <div style="font-size:34px; font-weight:bold; color: var(--pt-blue); margin-bottom: 20px;" data-i18n="basicInfo">請填寫基本資料</div>
+      <div class="form-group"><label data-i18n="otherAgency">服務機關 (如: 某某基金會)</label><input type="text" id="other-agency"></div>
+      <div class="form-group"><label data-i18n="otherUnit">單位/處室 (選填)</label><input type="text" id="other-unit"></div>
+      <div class="form-group"><label data-i18n="otherTitle">職稱 (選填)</label><input type="text" id="other-title"></div>
+      <div class="form-group"><label data-i18n="otherName">您的姓名 (必填)</label><input type="text" id="other-name"></div>
+      <button class="btn-submit" style="margin-top:20px;" onclick="checkAndSignOther()" data-i18n="nextStep">下一步：餐點與簽名</button>
+    </div>
+  </div>
+
+  <!-- 簽名頁 -->
+  <div id="screen-sign" class="screen">
+    <div class="glass-panel">
+      <div id="greeting" class="info-display">歡迎載入中...</div>
+      
+      <div id="meal-section">
+        <div style="font-size:28px; font-weight:bold; margin-bottom:15px;" data-i18n="mealTitle">您今日的午餐用餐需求為：</div>
+        <div class="meal-options">
+          <label style="display:inline-flex; align-items:center;"><input type="radio" name="meal" value="葷食"> <span data-i18n="meat">🍱 葷食</span></label> <button type="button" onclick="document.getElementById('lunch-modal').style.display='flex'" style="background:#FF9800; color:white; border:none; padding:5px 10px; border-radius:5px; font-size:16px; cursor:pointer; margin-left: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);"><span data-i18n="menuBtn">看菜色 📸</span></button>
+          <label><input type="radio" name="meal" value="素食"> <span data-i18n="veg">🥗 素食</span></label>
+          <label><input type="radio" name="meal" value="不用餐"> <span data-i18n="none">❌ 不用餐</span></label>
+        </div>
+      </div>
+
+      <div style="font-size:28px; font-weight:bold; margin-bottom:15px; color: var(--pt-pink);" data-i18n="signTitle">請在下方方框內簽下您的大名：</div>
+      <div class="color-picker">
+        <div class="color-btn selected" style="background: #000000;" onclick="setPenColor('#000000', this)"></div>
+        <div class="color-btn" style="background: #0077C0;" onclick="setPenColor('#0077C0', this)"></div>
+        <div class="color-btn" style="background: #00008B;" onclick="setPenColor('#00008B', this)"></div>
+      </div>
+      <div class="signature-wrapper"><canvas id="signature-pad"></canvas></div>
+      <button class="btn-clear" onclick="signaturePad.clear()" data-i18n="clearBtn">↺ 簽名不滿意，清除重簽</button>
+      <button id="submit-btn" class="btn-submit" onclick="submitData()" data-i18n="submitBtn">確認送出</button>
+    </div>
+  </div>
+
+  <!-- ==================== 後台管理中心 ==================== -->
+  
+  <!-- 後台 L1: 總覽 -->
+  <div id="screen-admin-dashboard" class="screen">
+    <div class="glass-panel">
+      <div class="admin-header">⚙️ 報到管理中心</div>
+      
+      <div class="admin-stat" style="background:#f0f4c3; cursor:default;">
+        <div>應到總人數</div><span id="stat-total" style="color:#555;">0</span>
+      </div>
+      <div class="admin-stat" onclick="openAdminCategory('signed')">
+        <div>已簽到人數 <span class="sub-hint">(點擊看分類)</span></div><span id="stat-signed">0</span>
+      </div>
+      <div class="admin-stat" style="background:#E3F2FD;" onclick="openAdminCategory('signed_out')">
+        <div>已簽退人數 <span class="sub-hint">(點擊看分類)</span></div><span id="stat-signedout" style="color:#1976D2;">0</span>
+      </div>
+      <div class="admin-stat" style="background:#ffebee;" onclick="openAdminCategory('missing')">
+        <div>尚未簽到人數 <span class="sub-hint">(點擊看分類)</span></div><span id="stat-missing" style="color:#D32F2F;">0</span>
+      </div>
+      
+      <hr style="margin: 20px 0; border: 1px solid #ddd;">
+      
+      <div class="admin-stat" onclick="openAdminCategory('meat')">
+        <div>葷食需求 (簽到) <span class="sub-hint">(點擊看分類)</span></div><span id="stat-meat" style="color:var(--pt-blue);">0</span>
+      </div>
+      <div class="admin-stat" onclick="openAdminCategory('veg')">
+        <div>素食需求 (簽到) <span class="sub-hint">(點擊看分類)</span></div><span id="stat-veg" style="color:#4CAF50;">0</span>
+      </div>
+      <div class="admin-stat" onclick="openAdminCategory('none')">
+        <div>不用餐需求 (簽到) <span class="sub-hint">(點擊看分類)</span></div><span id="stat-none" style="color:#757575;">0</span>
+      </div>
+
+      <hr style="margin: 20px 0; border: 1px solid #ddd;">
+      <button class="btn-massive btn-signout" style="padding:20px; font-size:26px; border-radius:15px; margin-top:0;" onclick="setAction('管理刪除')">
+        🗑️ 依機關尋找並刪除指定簽名
+      </button>
+      <button class="btn-massive btn-signin" style="padding:20px; font-size:26px; border-radius:15px; margin-top:15px;" onclick="exportSignaturesWord(this)">
+        📄 一鍵下載所有簽名 (Word可編輯)
+      </button>
+      <button class="btn-massive btn-signin" style="padding:20px; font-size:26px; border-radius:15px; margin-top:15px; background: linear-gradient(135deg, #FF9800, #F57C00);" onclick="exportSignaturesExcel(this)">
+        📊 一鍵下載所有簽名 (Excel可編輯)
+      </button>
+    </div>
+  </div>
+
+  <!-- 後台 L2: 分類 -->
+  <div id="screen-admin-category" class="screen">
+    <div class="glass-panel">
+      <div id="admin-category-title" class="admin-header">分類列表</div>
+      <div class="list-container" id="admin-category-list"></div>
+    </div>
+  </div>
+
+  <!-- 後台 L3: 名單 -->
+  <div id="screen-admin-list" class="screen">
+    <div class="glass-panel">
+      <div id="admin-list-title" class="admin-header">詳細名單</div>
+      <div id="admin-list-hint" style="text-align:left; color:#E91E63; margin-bottom:10px; font-weight:bold;">提示：點擊右側刪除按鈕可讓該員重新簽到</div>
+      <div id="admin-record-list" style="max-height: 50vh; overflow-y: auto; padding-right:10px;"></div>
+    </div>
+  </div>
+
+  <div class="totem-footer"></div>
+
+
+  <!-- 成功與座位提示頁 -->
+  <div id="screen-success" class="screen">
+    <div class="glass-panel" style="max-width: 900px; padding: 30px;">
+      <h2 id="success-header" style="color: #4CAF50; font-size: 36px; margin-bottom: 10px;" data-i18n="successIn">✅ 簽到成功！</h2>
+      <div id="success-sub" style="font-size: 24px; margin-bottom: 20px; color: #333;" data-i18n="thanksIn">感謝您的參與，已收到您的用餐資訊，祝您有愉快的一天。</div>
+      
+      <div id="seat-info-container" style="display: none;">
+        <div id="seat-text" style="font-size: 32px; font-weight: bold; color: #E91E63; margin-bottom: 20px; background: #FFF3E0; padding: 15px; border-radius: 10px; border: 2px dashed #FF9800;"></div>
+        <div style="font-size: 16px; color: #666; margin-bottom: 10px; font-weight: bold;" data-i18n="zoomHint">🔍 支援手指滑動，或點擊圖片放大/縮小查看</div>
+        <div id="zoom-outer-container" style="position: relative; display: block; width: 100%; max-width: 800px; margin: 0 auto; border: 3px solid #ddd; border-radius: 12px; overflow: auto; background: #fff; box-shadow: 0 10px 20px rgba(0,0,0,0.1); max-height: 60vh;">
+          <div id="seat-map-zoom-wrapper" style="position: relative; width: 100%; transition: width 0.3s ease; transform-origin: top left; cursor: zoom-in;" onclick="toggleZoom()">
+            <img src="115seats.jpg" style="width: 100%; height: auto; display: block;" id="seat-map-img">
+            <!-- 這裡會加上呼吸燈紅框 (若有設定座標) -->
+            <div id="seat-highlight" class="breathing-box"></div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-massive btn-back" style="margin-top: 30px; max-width: 300px; font-size: 24px; margin-left:auto; margin-right:auto; display:block;" onclick="goHome()" data-i18n="backHomeWait">回首頁 (或等待自動跳轉)</button>
+    </div>
+  </div>
+
+
+  <div id="screen-status" class="screen">
+    <div class="glass-panel" style="max-width: 1200px; width: 95%;">
+      <div style="font-size:32px; font-weight:bold; color: var(--pt-blue); margin-bottom: 20px;" data-i18n="statusTitle">目前簽到退情形總覽</div>
+      <div id="status-loading" style="font-size: 24px;" data-i18n="loading">資料載入中...</div>
+      <div style="overflow-x: auto; max-height: 60vh; overflow-y: auto; border: 2px solid #ddd; border-radius: 8px;">
+        <table id="status-table" style="width: 100%; border-collapse: collapse; text-align: center; min-width: 800px; display: none;">
+          <thead style="background: var(--pt-blue); color: white; position: sticky; top: 0; z-index: 2;">
+            <tr>
+              <th style="padding: 10px; border: 1px solid #ccc;" data-i18n="thNum">編號</th>
+              <th style="padding: 10px; border: 1px solid #ccc;" data-i18n="thAgency">機關/學校</th>
+              <th style="padding: 10px; border: 1px solid #ccc;" data-i18n="thUnit">單位/鄉鎮</th>
+              <th style="padding: 10px; border: 1px solid #ccc;" data-i18n="thTitle">職稱</th>
+              <th style="padding: 10px; border: 1px solid #ccc;" data-i18n="thName">姓名</th>
+              <th style="padding: 10px; border: 1px solid #ccc;" data-i18n="thSignIn">手寫簽到</th>
+              <th style="padding: 10px; border: 1px solid #ccc;" data-i18n="thSignOut">手寫簽退</th>
+            </tr>
+          </thead>
+          <tbody id="status-tbody" style="background: white;">
+          </tbody>
+        </table>
+      </div>
+      <button class="btn-massive btn-back" style="margin-top: 20px;" onclick="goHome()" data-i18n="backHome">回首頁</button>
+    </div>
+  </div>
+
+  <script>
+
+    let currentLang = 'zh';
+    const translations = {
+      zh: {
+        back: "🔙 上一頁",
+        home: "🏠 首頁",
+        title: "屏東縣115學年度第一學期<br>中小學校長行政會議",
+        welcome: "歡迎蒞臨",
+        selectAction: "請選擇您的動作",
+        signinBtn: "我要簽到",
+        signoutBtn: "我要簽退",
+        presentation: "進入會議簡報",
+        statusBtn: "📝 目前簽到退情形總覽",
+        searchBtn: "快速查詢座位",
+        qrText: "📱 掃描 QR Code，手機免網址直接簽到",
+        selectType: "請選擇服務機關類別",
+        gov: "🏛️ 屏東縣政府",
+        school: "🏫 各級學校",
+        other: "✏️ 其他 (來賓/工作人員自填)",
+        govUnit: "請選擇處室/單位",
+        town: "請選擇鄉鎮市",
+        selectName: "請選擇姓名",
+        basicInfo: "請填寫基本資料",
+        otherAgency: "服務機關 (如: 某某基金會)",
+        otherUnit: "單位/處室 (選填)",
+        otherTitle: "職稱 (選填)",
+        otherName: "您的姓名 (必填)",
+        nextStep: "下一步：餐點與簽名",
+        mealTitle: "您今日的午餐用餐需求為：",
+        meat: "🍱 葷食",
+        veg: "🥗 素食",
+        none: "❌ 不用餐",
+        menuBtn: "看菜色 📸",
+        signTitle: "請在下方方框內簽下您的大名：",
+        clearBtn: "↺ 簽名不滿意，清除重簽",
+        submitBtn: "確認送出",
+        successIn: "✅ 簽到成功！",
+        successOut: "✅ 簽退成功！",
+        thanksIn: "感謝您的參與，已收到您的用餐資訊，祝您有愉快的一天。",
+        thanksOut: "感謝您的參與，祝您有愉快的一天，期待下次再見。",
+        zoomHint: "🔍 支援手指滑動，或點擊圖片放大/縮小查看",
+        backHomeWait: "回首頁 (或等待自動跳轉)",
+        statusTitle: "目前簽到退情形總覽",
+        loading: "資料載入中...",
+        thNum: "編號",
+        thAgency: "機關/學校",
+        thUnit: "單位/鄉鎮",
+        thTitle: "職稱",
+        thName: "姓名",
+        thSignIn: "手寫簽到",
+        thSignOut: "手寫簽退",
+        backHome: "回首頁",
+        voiceSelectAction: "請選擇您的動作",
+        voiceSelectType: "請選擇服務機關類別",
+        voiceSelectUnit: "請選擇處室或單位",
+        voiceSelectTown: "請選擇鄉鎮市",
+        voiceSelectName: "請選擇您的姓名",
+        voiceSearchSeat: "請輸入您的姓名查詢座位",
+        voiceSignInOk: "簽到成功",
+        voiceSignOutOk: "簽退成功",
+        voiceGreeting: "您好，",
+        voiceSeatMsg: "，您的座位在",
+        searchSeatTitle: "請輸入姓名查詢",
+        searchAction: "查詢",
+        seatInfo: "座位資訊",
+      },
+      en: {
+        back: "🔙 Back",
+        home: "🏠 Home",
+        title: "Pingtung County 115th Semester 1<br>Principals Meeting",
+        welcome: "Welcome",
+        selectAction: "Please select an action",
+        signinBtn: "Sign In",
+        signoutBtn: "Sign Out",
+        presentation: "View Presentation",
+        statusBtn: "📝 Sign In/Out Status",
+        searchBtn: "Quick Seat Search",
+        qrText: "📱 Scan QR Code to sign in via mobile",
+        selectType: "Please select your organization",
+        gov: "🏛️ Pingtung County Government",
+        school: "🏫 Schools",
+        other: "✏️ Other (Guests/Staff)",
+        govUnit: "Please select Department/Unit",
+        town: "Please select Township",
+        selectName: "Please select your Name",
+        basicInfo: "Please fill in basic info",
+        otherAgency: "Agency (e.g. Foundation)",
+        otherUnit: "Unit/Dept (Optional)",
+        otherTitle: "Title (Optional)",
+        otherName: "Your Name (Required)",
+        nextStep: "Next: Meal & Signature",
+        mealTitle: "Your lunch preference today:",
+        meat: "🍱 Meat",
+        veg: "🥗 Vegetarian",
+        none: "❌ No Meal",
+        menuBtn: "View Menu 📸",
+        signTitle: "Please sign your name in the box below:",
+        clearBtn: "↺ Clear and Resign",
+        submitBtn: "Submit",
+        successIn: "✅ Sign In Successful!",
+        successOut: "✅ Sign Out Successful!",
+        thanksIn: "Thank you for participating. Your meal info has been received. Have a great day!",
+        thanksOut: "Thank you for participating. Have a great day and see you next time!",
+        zoomHint: "🔍 Swipe or tap to zoom the image",
+        backHomeWait: "Back to Home (or wait for auto redirect)",
+        statusTitle: "Sign In / Sign Out Overview",
+        loading: "Loading data...",
+        thNum: "No.",
+        thAgency: "Agency/School",
+        thUnit: "Unit/Town",
+        thTitle: "Title",
+        thName: "Name",
+        thSignIn: "Sign In",
+        thSignOut: "Sign Out",
+        backHome: "Back to Home",
+        voiceSelectAction: "Please select an action",
+        voiceSelectType: "Please select your organization category",
+        voiceSelectUnit: "Please select your department or unit",
+        voiceSelectTown: "Please select your township",
+        voiceSelectName: "Please select your name",
+        voiceSearchSeat: "Please enter your name to search for your seat",
+        voiceSignInOk: "Sign in successful",
+        voiceSignOutOk: "Sign out successful",
+        voiceGreeting: "Hello, ",
+        voiceSeatMsg: ", your seat is at ",
+        searchSeatTitle: "Enter Name to Search",
+        searchAction: "Search",
+        seatInfo: "Seat Information",
+      }
+    };
+
+    function toggleLanguage() {
+      currentLang = (currentLang === 'zh') ? 'en' : 'zh';
+      document.getElementById('btn-lang').innerText = (currentLang === 'zh') ? 'EN' : '中文';
+      updateI18n();
+    }
+
+    function t(key) {
+      return translations[currentLang][key] || key;
+    }
+
+    function updateI18n() {
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (translations[currentLang][key]) {
+          if (key === 'title') {
+             el.innerHTML = translations[currentLang][key];
+          } else {
+             el.innerText = translations[currentLang][key];
+          }
         }
+      });
+      
+      const setPlaceholder = (id, key) => {
+        const el = document.getElementById(id);
+        if(el) el.placeholder = t(key);
+      };
+      
+      if (!document.getElementById('btn-signin-main').disabled) {
+         document.getElementById('btn-signin-main').innerText = t('signinBtn');
+         document.getElementById('btn-signout-main').innerText = t('signoutBtn');
+         document.getElementById('btn-status-main').innerText = t('statusBtn');
+         document.getElementById('btn-search-main').innerText = t('searchBtn');
+      }
+      
+      // search input
+      setPlaceholder('search-input', 'otherName');
+    }
 
-        function updateThemeIcon() {
-            const moon = document.getElementById('moon-icon');
-            const sun = document.getElementById('sun-icon');
-            let isDay = window.manualMode === 1;
-            if (window.manualMode === null) isDay = window.targetCurve >= 0.5;
-            
-            if (isDay) {
-                moon.style.display = 'none';
-                sun.style.display = 'block';
-            } else {
-                moon.style.display = 'block';
-                sun.style.display = 'none';
-            }
+    // 在這裡可以填寫每個座位在圖片上的相對座標 (百分比 %)
+    // 例如 "2-15": { x: 30.5, y: 40.2, w: 5, h: 4 }
+    // 若沒有填寫座標，系統仍會報讀並顯示全圖，但不畫紅框。
+        const rawSeatCoordinates = {
+  "0-1": { "x": 10.0, "y": 23.4, "w": 4.5, "h": 4.4 },
+  "黃柏翰": { "x": 10.0, "y": 23.4, "w": 4.5, "h": 4.4 },
+  "0-2": { "x": 14.4, "y": 23.4, "w": 4.5, "h": 4.4 },
+  "廖怡倫": { "x": 14.4, "y": 23.4, "w": 4.5, "h": 4.4 },
+  "0-3": { "x": 18.7, "y": 23.4, "w": 4.5, "h": 4.4 },
+  "涂燕玲": { "x": 18.7, "y": 23.4, "w": 4.5, "h": 4.4 },
+  "0-4": { "x": 23.1, "y": 23.4, "w": 4.5, "h": 4.4 },
+  "張瓊升": { "x": 23.1, "y": 23.4, "w": 4.5, "h": 4.4 },
+  "0-5": { "x": 27.4, "y": 23.4, "w": 4.5, "h": 4.4 },
+  "陳尚奕": { "x": 27.4, "y": 23.4, "w": 4.5, "h": 4.4 },
+  "0-6": { "x": 31.8, "y": 23.4, "w": 4.5, "h": 4.4 },
+  "唐郁卉": { "x": 31.8, "y": 23.4, "w": 4.5, "h": 4.4 },
+  "0-7": { "x": 36.1, "y": 23.4, "w": 4.5, "h": 4.4 },
+  "方翠綺": { "x": 36.1, "y": 23.4, "w": 4.5, "h": 4.4 },
+  "0-8": { "x": 40.5, "y": 23.4, "w": 4.5, "h": 4.4 },
+  "吳佩珊": { "x": 40.5, "y": 23.4, "w": 4.5, "h": 4.4 },
+  "0-9": { "x": 44.8, "y": 23.4, "w": 4.5, "h": 4.4 },
+  "陳國祥": { "x": 44.8, "y": 23.4, "w": 4.5, "h": 4.4 },
+  "0-10": { "x": 49.2, "y": 23.4, "w": 4.5, "h": 4.4 },
+  "周春米": { "x": 49.2, "y": 23.4, "w": 4.5, "h": 4.4 },
+  "0-11": { "x": 53.5, "y": 23.4, "w": 4.5, "h": 4.4 },
+  "巴正義": { "x": 53.5, "y": 23.4, "w": 4.5, "h": 4.4 },
+  "0-12": { "x": 57.9, "y": 23.4, "w": 4.5, "h": 4.4 },
+  "陳惠馨": { "x": 57.9, "y": 23.4, "w": 4.5, "h": 4.4 },
+  "0-13": { "x": 62.2, "y": 23.4, "w": 4.5, "h": 4.4 },
+  "張茂泉": { "x": 62.2, "y": 23.4, "w": 4.5, "h": 4.4 },
+  "0-14": { "x": 66.6, "y": 23.4, "w": 4.5, "h": 4.4 },
+  "吳季璇": { "x": 66.6, "y": 23.4, "w": 4.5, "h": 4.4 },
+  "0-15": { "x": 70.9, "y": 23.4, "w": 4.5, "h": 4.4 },
+  "陳菁徽": { "x": 70.9, "y": 23.4, "w": 4.5, "h": 4.4 },
+  "0-16": { "x": 75.3, "y": 23.4, "w": 4.5, "h": 4.4 },
+  "林淑眞": { "x": 75.3, "y": 23.4, "w": 4.5, "h": 4.4 },
+  "0-17": { "x": 79.6, "y": 23.4, "w": 4.5, "h": 4.4 },
+  "郭小蘋": { "x": 79.6, "y": 23.4, "w": 4.5, "h": 4.4 },
+  "0-18": { "x": 84.0, "y": 23.4, "w": 4.5, "h": 4.4 },
+  "蔡學斌": { "x": 84.0, "y": 23.4, "w": 4.5, "h": 4.4 },
+
+  "1-1": { "x": 10.0, "y": 30.0, "w": 5.0, "h": 4.4 },
+  "林俊傑": { "x": 10.0, "y": 30.0, "w": 5.0, "h": 4.4 },
+  "1-2": { "x": 14.9, "y": 30.0, "w": 5.0, "h": 4.4 },
+  "劉瑞富": { "x": 14.9, "y": 30.0, "w": 5.0, "h": 4.4 },
+  "1-3": { "x": 19.9, "y": 30.0, "w": 5.0, "h": 4.4 },
+  "鄭雅靜": { "x": 19.9, "y": 30.0, "w": 5.0, "h": 4.4 },
+  "1-4": { "x": 24.8, "y": 30.0, "w": 5.0, "h": 4.4 },
+  "黃賢德": { "x": 24.8, "y": 30.0, "w": 5.0, "h": 4.4 },
+  "1-5": { "x": 29.7, "y": 30.0, "w": 5.0, "h": 4.4 },
+  "謝惠如": { "x": 29.7, "y": 30.0, "w": 5.0, "h": 4.4 },
+  "1-6": { "x": 34.7, "y": 30.0, "w": 5.0, "h": 4.4 },
+  "賴詠清": { "x": 34.7, "y": 30.0, "w": 5.0, "h": 4.4 },
+  "1-7": { "x": 39.6, "y": 30.0, "w": 5.0, "h": 4.4 },
+  "陳冠良": { "x": 39.6, "y": 30.0, "w": 5.0, "h": 4.4 },
+  "1-8": { "x": 44.5, "y": 30.0, "w": 5.0, "h": 4.4 },
+  "印永生": { "x": 44.5, "y": 30.0, "w": 5.0, "h": 4.4 },
+  "1-9": { "x": 49.5, "y": 30.0, "w": 5.0, "h": 4.4 },
+  "鍾祥憑": { "x": 49.5, "y": 30.0, "w": 5.0, "h": 4.4 },
+  "1-10": { "x": 54.4, "y": 30.0, "w": 5.0, "h": 4.4 },
+  "宋佩陵": { "x": 54.4, "y": 30.0, "w": 5.0, "h": 4.4 },
+  "1-11": { "x": 59.3, "y": 30.0, "w": 5.0, "h": 4.4 },
+  "黃文聰": { "x": 59.3, "y": 30.0, "w": 5.0, "h": 4.4 },
+  "1-12": { "x": 64.3, "y": 30.0, "w": 5.0, "h": 4.4 },
+  "模俐諾.卡札妮嵐": { "x": 64.3, "y": 30.0, "w": 5.0, "h": 4.4 },
+  "1-13": { "x": 69.2, "y": 30.0, "w": 5.0, "h": 4.4 },
+  "高至誠": { "x": 69.2, "y": 30.0, "w": 5.0, "h": 4.4 },
+  "1-14": { "x": 74.1, "y": 30.0, "w": 5.0, "h": 4.4 },
+  "陳宏圖": { "x": 74.1, "y": 30.0, "w": 5.0, "h": 4.4 },
+  "1-15": { "x": 79.1, "y": 30.0, "w": 5.0, "h": 4.4 },
+  "曾昱山": { "x": 79.1, "y": 30.0, "w": 5.0, "h": 4.4 },
+  "1-16": { "x": 84.0, "y": 30.0, "w": 5.0, "h": 4.4 },
+  "賴俊宏": { "x": 84.0, "y": 30.0, "w": 5.0, "h": 4.4 },
+
+  "2-1": { "x": 10.0, "y": 34.5, "w": 5.0, "h": 4.4 },
+  "陳亮谷": { "x": 10.0, "y": 34.5, "w": 5.0, "h": 4.4 },
+  "2-2": { "x": 14.9, "y": 34.5, "w": 5.0, "h": 4.4 },
+  "郭瓊揚": { "x": 14.9, "y": 34.5, "w": 5.0, "h": 4.4 },
+  "2-3": { "x": 19.9, "y": 34.5, "w": 5.0, "h": 4.4 },
+  "謝旻蒼": { "x": 19.9, "y": 34.5, "w": 5.0, "h": 4.4 },
+  "2-4": { "x": 24.8, "y": 34.5, "w": 5.0, "h": 4.4 },
+  "李立群": { "x": 24.8, "y": 34.5, "w": 5.0, "h": 4.4 },
+  "2-5": { "x": 29.7, "y": 34.5, "w": 5.0, "h": 4.4 },
+  "陳寶郎": { "x": 29.7, "y": 34.5, "w": 5.0, "h": 4.4 },
+  "2-6": { "x": 34.7, "y": 34.5, "w": 5.0, "h": 4.4 },
+  "鄭宗文": { "x": 34.7, "y": 34.5, "w": 5.0, "h": 4.4 },
+  "2-7": { "x": 39.6, "y": 34.5, "w": 5.0, "h": 4.4 },
+  "盧劍峰": { "x": 39.6, "y": 34.5, "w": 5.0, "h": 4.4 },
+  "2-8": { "x": 44.5, "y": 34.5, "w": 5.0, "h": 4.4 },
+  "傅勤展": { "x": 44.5, "y": 34.5, "w": 5.0, "h": 4.4 },
+  "2-9": { "x": 49.5, "y": 34.5, "w": 5.0, "h": 4.4 },
+  "許裕呈": { "x": 49.5, "y": 34.5, "w": 5.0, "h": 4.4 },
+  "2-10": { "x": 54.4, "y": 34.5, "w": 5.0, "h": 4.4 },
+  "黃善祺": { "x": 54.4, "y": 34.5, "w": 5.0, "h": 4.4 },
+  "2-11": { "x": 59.3, "y": 34.5, "w": 5.0, "h": 4.4 },
+  "陳惠美": { "x": 59.3, "y": 34.5, "w": 5.0, "h": 4.4 },
+  "2-12": { "x": 64.3, "y": 34.5, "w": 5.0, "h": 4.4 },
+  "陳世聰": { "x": 64.3, "y": 34.5, "w": 5.0, "h": 4.4 },
+  "2-13": { "x": 69.2, "y": 34.5, "w": 5.0, "h": 4.4 },
+  "賴慶安": { "x": 69.2, "y": 34.5, "w": 5.0, "h": 4.4 },
+  "2-14": { "x": 74.1, "y": 34.5, "w": 5.0, "h": 4.4 },
+  "鄭志隆": { "x": 74.1, "y": 34.5, "w": 5.0, "h": 4.4 },
+  "2-15": { "x": 79.1, "y": 34.5, "w": 5.0, "h": 4.4 },
+  "梁吉成": { "x": 79.1, "y": 34.5, "w": 5.0, "h": 4.4 },
+  "2-16": { "x": 84.0, "y": 34.5, "w": 5.0, "h": 4.4 },
+  "周淑琴": { "x": 84.0, "y": 34.5, "w": 5.0, "h": 4.4 },
+
+  "3-1": { "x": 10.0, "y": 39.1, "w": 5.0, "h": 4.4 },
+  "楊蕙萍": { "x": 10.0, "y": 39.1, "w": 5.0, "h": 4.4 },
+  "3-2": { "x": 14.9, "y": 39.1, "w": 5.0, "h": 4.4 },
+  "黃彗瑄": { "x": 14.9, "y": 39.1, "w": 5.0, "h": 4.4 },
+  "3-3": { "x": 19.9, "y": 39.1, "w": 5.0, "h": 4.4 },
+  "湯博榮": { "x": 19.9, "y": 39.1, "w": 5.0, "h": 4.4 },
+  "3-4": { "x": 24.8, "y": 39.1, "w": 5.0, "h": 4.4 },
+  "張浩鳴": { "x": 24.8, "y": 39.1, "w": 5.0, "h": 4.4 },
+  "3-5": { "x": 29.7, "y": 39.1, "w": 5.0, "h": 4.4 },
+  "柯文成": { "x": 29.7, "y": 39.1, "w": 5.0, "h": 4.4 },
+  "3-6": { "x": 34.7, "y": 39.1, "w": 5.0, "h": 4.4 },
+  "陳朝賢": { "x": 34.7, "y": 39.1, "w": 5.0, "h": 4.4 },
+  "3-7": { "x": 39.6, "y": 39.1, "w": 5.0, "h": 4.4 },
+  "孫訢益": { "x": 39.6, "y": 39.1, "w": 5.0, "h": 4.4 },
+  "3-8": { "x": 44.5, "y": 39.1, "w": 5.0, "h": 4.4 },
+  "林容如": { "x": 44.5, "y": 39.1, "w": 5.0, "h": 4.4 },
+  "3-9": { "x": 49.5, "y": 39.1, "w": 5.0, "h": 4.4 },
+  "祝玉麟": { "x": 49.5, "y": 39.1, "w": 5.0, "h": 4.4 },
+  "3-10": { "x": 54.4, "y": 39.1, "w": 5.0, "h": 4.4 },
+  "賴維振": { "x": 54.4, "y": 39.1, "w": 5.0, "h": 4.4 },
+  "3-11": { "x": 59.3, "y": 39.1, "w": 5.0, "h": 4.4 },
+  "林伯奇": { "x": 59.3, "y": 39.1, "w": 5.0, "h": 4.4 },
+  "3-12": { "x": 64.3, "y": 39.1, "w": 5.0, "h": 4.4 },
+  "潘德忠": { "x": 64.3, "y": 39.1, "w": 5.0, "h": 4.4 },
+  "3-13": { "x": 69.2, "y": 39.1, "w": 5.0, "h": 4.4 },
+  "林志光": { "x": 69.2, "y": 39.1, "w": 5.0, "h": 4.4 },
+  "3-14": { "x": 74.1, "y": 39.1, "w": 5.0, "h": 4.4 },
+  "郭鴻明": { "x": 74.1, "y": 39.1, "w": 5.0, "h": 4.4 },
+  "3-15": { "x": 79.1, "y": 39.1, "w": 5.0, "h": 4.4 },
+  "黃順利": { "x": 79.1, "y": 39.1, "w": 5.0, "h": 4.4 },
+  "3-16": { "x": 84.0, "y": 39.1, "w": 5.0, "h": 4.4 },
+  "林國義": { "x": 84.0, "y": 39.1, "w": 5.0, "h": 4.4 },
+
+  "4-1": { "x": 10.0, "y": 43.6, "w": 5.0, "h": 4.4 },
+  "劉文宗": { "x": 10.0, "y": 43.6, "w": 5.0, "h": 4.4 },
+  "4-2": { "x": 14.9, "y": 43.6, "w": 5.0, "h": 4.4 },
+  "陳英邦": { "x": 14.9, "y": 43.6, "w": 5.0, "h": 4.4 },
+  "4-3": { "x": 19.9, "y": 43.6, "w": 5.0, "h": 4.4 },
+  "曾淑勤": { "x": 19.9, "y": 43.6, "w": 5.0, "h": 4.4 },
+  "4-4": { "x": 24.8, "y": 43.6, "w": 5.0, "h": 4.4 },
+  "羅彥文": { "x": 24.8, "y": 43.6, "w": 5.0, "h": 4.4 },
+  "4-5": { "x": 29.7, "y": 43.6, "w": 5.0, "h": 4.4 },
+  "林上智": { "x": 29.7, "y": 43.6, "w": 5.0, "h": 4.4 },
+  "4-6": { "x": 34.7, "y": 43.6, "w": 5.0, "h": 4.4 },
+  "李惠瓊": { "x": 34.7, "y": 43.6, "w": 5.0, "h": 4.4 },
+  "4-7": { "x": 39.6, "y": 43.6, "w": 5.0, "h": 4.4 },
+  "張鑑堂": { "x": 39.6, "y": 43.6, "w": 5.0, "h": 4.4 },
+  "4-8": { "x": 44.5, "y": 43.6, "w": 5.0, "h": 4.4 },
+  "楊政家": { "x": 44.5, "y": 43.6, "w": 5.0, "h": 4.4 },
+  "4-9": { "x": 49.5, "y": 43.6, "w": 5.0, "h": 4.4 },
+  "高佩文": { "x": 49.5, "y": 43.6, "w": 5.0, "h": 4.4 },
+  "4-10": { "x": 54.4, "y": 43.6, "w": 5.0, "h": 4.4 },
+  "林志仙": { "x": 54.4, "y": 43.6, "w": 5.0, "h": 4.4 },
+  "4-11": { "x": 59.3, "y": 43.6, "w": 5.0, "h": 4.4 },
+  "蔡保生": { "x": 59.3, "y": 43.6, "w": 5.0, "h": 4.4 },
+  "4-12": { "x": 64.3, "y": 43.6, "w": 5.0, "h": 4.4 },
+  "李嘉慶": { "x": 64.3, "y": 43.6, "w": 5.0, "h": 4.4 },
+  "4-13": { "x": 69.2, "y": 43.6, "w": 5.0, "h": 4.4 },
+  "高立宏": { "x": 69.2, "y": 43.6, "w": 5.0, "h": 4.4 },
+  "4-14": { "x": 74.1, "y": 43.6, "w": 5.0, "h": 4.4 },
+  "許嘉政": { "x": 74.1, "y": 43.6, "w": 5.0, "h": 4.4 },
+  "4-15": { "x": 79.1, "y": 43.6, "w": 5.0, "h": 4.4 },
+  "林群智": { "x": 79.1, "y": 43.6, "w": 5.0, "h": 4.4 },
+  "4-16": { "x": 84.0, "y": 43.6, "w": 5.0, "h": 4.4 },
+  "楊秋南": { "x": 84.0, "y": 43.6, "w": 5.0, "h": 4.4 },
+
+  "5-1": { "x": 10.0, "y": 48.1, "w": 5.0, "h": 4.4 },
+  "林一煒": { "x": 10.0, "y": 48.1, "w": 5.0, "h": 4.4 },
+  "5-2": { "x": 14.9, "y": 48.1, "w": 5.0, "h": 4.4 },
+  "于福豪": { "x": 14.9, "y": 48.1, "w": 5.0, "h": 4.4 },
+  "5-3": { "x": 19.9, "y": 48.1, "w": 5.0, "h": 4.4 },
+  "吳淑惠": { "x": 19.9, "y": 48.1, "w": 5.0, "h": 4.4 },
+  "5-4": { "x": 24.8, "y": 48.1, "w": 5.0, "h": 4.4 },
+  "陳冠明": { "x": 24.8, "y": 48.1, "w": 5.0, "h": 4.4 },
+  "5-5": { "x": 29.7, "y": 48.1, "w": 5.0, "h": 4.4 },
+  "侯淑禎": { "x": 29.7, "y": 48.1, "w": 5.0, "h": 4.4 },
+  "5-6": { "x": 34.7, "y": 48.1, "w": 5.0, "h": 4.4 },
+  "賴俠伶": { "x": 34.7, "y": 48.1, "w": 5.0, "h": 4.4 },
+  "5-7": { "x": 39.6, "y": 48.1, "w": 5.0, "h": 4.4 },
+  "陳科名": { "x": 39.6, "y": 48.1, "w": 5.0, "h": 4.4 },
+  "5-8": { "x": 44.5, "y": 48.1, "w": 5.0, "h": 4.4 },
+  "陳志偉": { "x": 44.5, "y": 48.1, "w": 5.0, "h": 4.4 },
+  "5-9": { "x": 49.5, "y": 48.1, "w": 5.0, "h": 4.4 },
+  "陳垣佐": { "x": 49.5, "y": 48.1, "w": 5.0, "h": 4.4 },
+  "5-10": { "x": 54.4, "y": 48.1, "w": 5.0, "h": 4.4 },
+  "莊逸萍": { "x": 54.4, "y": 48.1, "w": 5.0, "h": 4.4 },
+  "5-11": { "x": 59.3, "y": 48.1, "w": 5.0, "h": 4.4 },
+  "王照仁": { "x": 59.3, "y": 48.1, "w": 5.0, "h": 4.4 },
+  "5-12": { "x": 64.3, "y": 48.1, "w": 5.0, "h": 4.4 },
+  "李國政": { "x": 64.3, "y": 48.1, "w": 5.0, "h": 4.4 },
+  "5-13": { "x": 69.2, "y": 48.1, "w": 5.0, "h": 4.4 },
+  "白博仁": { "x": 69.2, "y": 48.1, "w": 5.0, "h": 4.4 },
+  "5-14": { "x": 74.1, "y": 48.1, "w": 5.0, "h": 4.4 },
+  "鍾炳雄": { "x": 74.1, "y": 48.1, "w": 5.0, "h": 4.4 },
+  "5-15": { "x": 79.1, "y": 48.1, "w": 5.0, "h": 4.4 },
+  "利宛倫": { "x": 79.1, "y": 48.1, "w": 5.0, "h": 4.4 },
+  "5-16": { "x": 84.0, "y": 48.1, "w": 5.0, "h": 4.4 },
+  "林春如": { "x": 84.0, "y": 48.1, "w": 5.0, "h": 4.4 },
+
+  "6-1": { "x": 10.0, "y": 52.6, "w": 5.0, "h": 4.4 },
+  "李欣蔓": { "x": 10.0, "y": 52.6, "w": 5.0, "h": 4.4 },
+  "6-2": { "x": 14.9, "y": 52.6, "w": 5.0, "h": 4.4 },
+  "柯文賢": { "x": 14.9, "y": 52.6, "w": 5.0, "h": 4.4 },
+  "6-3": { "x": 19.9, "y": 52.6, "w": 5.0, "h": 4.4 },
+  "王致皓": { "x": 19.9, "y": 52.6, "w": 5.0, "h": 4.4 },
+  "6-4": { "x": 24.8, "y": 52.6, "w": 5.0, "h": 4.4 },
+  "林純宇": { "x": 24.8, "y": 52.6, "w": 5.0, "h": 4.4 },
+  "6-5": { "x": 29.7, "y": 52.6, "w": 5.0, "h": 4.4 },
+  "温昇泓": { "x": 29.7, "y": 52.6, "w": 5.0, "h": 4.4 },
+  "6-6": { "x": 34.7, "y": 52.6, "w": 5.0, "h": 4.4 },
+  "李嘉齡": { "x": 34.7, "y": 52.6, "w": 5.0, "h": 4.4 },
+  "6-7": { "x": 39.6, "y": 52.6, "w": 5.0, "h": 4.4 },
+  "黃玉麟": { "x": 39.6, "y": 52.6, "w": 5.0, "h": 4.4 },
+  "6-8": { "x": 44.5, "y": 52.6, "w": 5.0, "h": 4.4 },
+  "邱照麟": { "x": 44.5, "y": 52.6, "w": 5.0, "h": 4.4 },
+  "6-9": { "x": 49.5, "y": 52.6, "w": 5.0, "h": 4.4 },
+  "馮麗珍": { "x": 49.5, "y": 52.6, "w": 5.0, "h": 4.4 },
+  "6-10": { "x": 54.4, "y": 52.6, "w": 5.0, "h": 4.4 },
+  "吳子宏": { "x": 54.4, "y": 52.6, "w": 5.0, "h": 4.4 },
+  "6-11": { "x": 59.3, "y": 52.6, "w": 5.0, "h": 4.4 },
+  "陳誼璟": { "x": 59.3, "y": 52.6, "w": 5.0, "h": 4.4 },
+  "6-12": { "x": 64.3, "y": 52.6, "w": 5.0, "h": 4.4 },
+  "高建民": { "x": 64.3, "y": 52.6, "w": 5.0, "h": 4.4 },
+  "6-13": { "x": 69.2, "y": 52.6, "w": 5.0, "h": 4.4 },
+  "郭忠憲": { "x": 69.2, "y": 52.6, "w": 5.0, "h": 4.4 },
+  "6-14": { "x": 74.1, "y": 52.6, "w": 5.0, "h": 4.4 },
+  "黃錦雄": { "x": 74.1, "y": 52.6, "w": 5.0, "h": 4.4 },
+  "6-15": { "x": 79.1, "y": 52.6, "w": 5.0, "h": 4.4 },
+  "謝天德": { "x": 79.1, "y": 52.6, "w": 5.0, "h": 4.4 },
+  "6-16": { "x": 84.0, "y": 52.6, "w": 5.0, "h": 4.4 },
+  "劉寶元": { "x": 84.0, "y": 52.6, "w": 5.0, "h": 4.4 },
+
+  "7-1": { "x": 10.0, "y": 57.2, "w": 5.0, "h": 4.4 },
+  "鍾文馨": { "x": 10.0, "y": 57.2, "w": 5.0, "h": 4.4 },
+  "7-2": { "x": 14.9, "y": 57.2, "w": 5.0, "h": 4.4 },
+  "陳奇男": { "x": 14.9, "y": 57.2, "w": 5.0, "h": 4.4 },
+  "7-3": { "x": 19.9, "y": 57.2, "w": 5.0, "h": 4.4 },
+  "蔡文雄": { "x": 19.9, "y": 57.2, "w": 5.0, "h": 4.4 },
+  "7-4": { "x": 24.8, "y": 57.2, "w": 5.0, "h": 4.4 },
+  "黃志賢": { "x": 24.8, "y": 57.2, "w": 5.0, "h": 4.4 },
+  "7-5": { "x": 29.7, "y": 57.2, "w": 5.0, "h": 4.4 },
+  "黃素英": { "x": 29.7, "y": 57.2, "w": 5.0, "h": 4.4 },
+  "7-6": { "x": 34.7, "y": 57.2, "w": 5.0, "h": 4.4 },
+  "艾旭毅": { "x": 34.7, "y": 57.2, "w": 5.0, "h": 4.4 },
+  "7-7": { "x": 39.6, "y": 57.2, "w": 5.0, "h": 4.4 },
+  "曾祥豪": { "x": 39.6, "y": 57.2, "w": 5.0, "h": 4.4 },
+  "7-8": { "x": 44.5, "y": 57.2, "w": 5.0, "h": 4.4 },
+  "王美玲": { "x": 44.5, "y": 57.2, "w": 5.0, "h": 4.4 },
+  "7-9": { "x": 49.5, "y": 57.2, "w": 5.0, "h": 4.4 },
+  "賴建戎": { "x": 49.5, "y": 57.2, "w": 5.0, "h": 4.4 },
+  "7-10": { "x": 54.4, "y": 57.2, "w": 5.0, "h": 4.4 },
+  "陳淑蕙": { "x": 54.4, "y": 57.2, "w": 5.0, "h": 4.4 },
+  "7-11": { "x": 59.3, "y": 57.2, "w": 5.0, "h": 4.4 },
+  "鄒美華": { "x": 59.3, "y": 57.2, "w": 5.0, "h": 4.4 },
+  "7-12": { "x": 64.3, "y": 57.2, "w": 5.0, "h": 4.4 },
+  "黃建榮": { "x": 64.3, "y": 57.2, "w": 5.0, "h": 4.4 },
+  "7-13": { "x": 69.2, "y": 57.2, "w": 5.0, "h": 4.4 },
+  "王家瑞": { "x": 69.2, "y": 57.2, "w": 5.0, "h": 4.4 },
+  "7-14": { "x": 74.1, "y": 57.2, "w": 5.0, "h": 4.4 },
+  "李禮錦": { "x": 74.1, "y": 57.2, "w": 5.0, "h": 4.4 },
+  "7-15": { "x": 79.1, "y": 57.2, "w": 5.0, "h": 4.4 },
+  "季永明": { "x": 79.1, "y": 57.2, "w": 5.0, "h": 4.4 },
+  "7-16": { "x": 84.0, "y": 57.2, "w": 5.0, "h": 4.4 },
+  "賴信甫": { "x": 84.0, "y": 57.2, "w": 5.0, "h": 4.4 },
+
+  "8-1": { "x": 10.0, "y": 61.7, "w": 5.0, "h": 4.4 },
+  "高珠鈴": { "x": 10.0, "y": 61.7, "w": 5.0, "h": 4.4 },
+  "8-2": { "x": 14.9, "y": 61.7, "w": 5.0, "h": 4.4 },
+  "郭宗烈": { "x": 14.9, "y": 61.7, "w": 5.0, "h": 4.4 },
+  "8-3": { "x": 19.9, "y": 61.7, "w": 5.0, "h": 4.4 },
+  "王靜怡": { "x": 19.9, "y": 61.7, "w": 5.0, "h": 4.4 },
+  "8-4": { "x": 24.8, "y": 61.7, "w": 5.0, "h": 4.4 },
+  "鄒慶宗": { "x": 24.8, "y": 61.7, "w": 5.0, "h": 4.4 },
+  "8-5": { "x": 29.7, "y": 61.7, "w": 5.0, "h": 4.4 },
+  "李文欽": { "x": 29.7, "y": 61.7, "w": 5.0, "h": 4.4 },
+  "8-6": { "x": 34.7, "y": 61.7, "w": 5.0, "h": 4.4 },
+  "黃如瑩": { "x": 34.7, "y": 61.7, "w": 5.0, "h": 4.4 },
+  "8-7": { "x": 39.6, "y": 61.7, "w": 5.0, "h": 4.4 },
+  "陳和貴": { "x": 39.6, "y": 61.7, "w": 5.0, "h": 4.4 },
+  "8-8": { "x": 44.5, "y": 61.7, "w": 5.0, "h": 4.4 },
+  "田子奇": { "x": 44.5, "y": 61.7, "w": 5.0, "h": 4.4 },
+  "8-9": { "x": 49.5, "y": 61.7, "w": 5.0, "h": 4.4 },
+  "林傳傑": { "x": 49.5, "y": 61.7, "w": 5.0, "h": 4.4 },
+  "8-10": { "x": 54.4, "y": 61.7, "w": 5.0, "h": 4.4 },
+  "藍乙琳": { "x": 54.4, "y": 61.7, "w": 5.0, "h": 4.4 },
+  "8-11": { "x": 59.3, "y": 61.7, "w": 5.0, "h": 4.4 },
+  "李秉穆": { "x": 59.3, "y": 61.7, "w": 5.0, "h": 4.4 },
+  "8-12": { "x": 64.3, "y": 61.7, "w": 5.0, "h": 4.4 },
+  "林淑芳": { "x": 64.3, "y": 61.7, "w": 5.0, "h": 4.4 },
+  "8-13": { "x": 69.2, "y": 61.7, "w": 5.0, "h": 4.4 },
+  "陳昭廷": { "x": 69.2, "y": 61.7, "w": 5.0, "h": 4.4 },
+  "8-14": { "x": 74.1, "y": 61.7, "w": 5.0, "h": 4.4 },
+  "吳神佑": { "x": 74.1, "y": 61.7, "w": 5.0, "h": 4.4 },
+  "8-15": { "x": 79.1, "y": 61.7, "w": 5.0, "h": 4.4 },
+  "王錦裕": { "x": 79.1, "y": 61.7, "w": 5.0, "h": 4.4 },
+  "8-16": { "x": 84.0, "y": 61.7, "w": 5.0, "h": 4.4 },
+  "李國賢": { "x": 84.0, "y": 61.7, "w": 5.0, "h": 4.4 },
+
+  "9-1": { "x": 10.0, "y": 66.2, "w": 5.0, "h": 4.4 },
+  "李福明": { "x": 10.0, "y": 66.2, "w": 5.0, "h": 4.4 },
+  "9-2": { "x": 14.9, "y": 66.2, "w": 5.0, "h": 4.4 },
+  "余美瑩": { "x": 14.9, "y": 66.2, "w": 5.0, "h": 4.4 },
+  "9-3": { "x": 19.9, "y": 66.2, "w": 5.0, "h": 4.4 },
+  "鄭慧華": { "x": 19.9, "y": 66.2, "w": 5.0, "h": 4.4 },
+  "9-4": { "x": 24.8, "y": 66.2, "w": 5.0, "h": 4.4 },
+  "謝相如": { "x": 24.8, "y": 66.2, "w": 5.0, "h": 4.4 },
+  "9-5": { "x": 29.7, "y": 66.2, "w": 5.0, "h": 4.4 },
+  "曾思潔": { "x": 29.7, "y": 66.2, "w": 5.0, "h": 4.4 },
+  "9-6": { "x": 34.7, "y": 66.2, "w": 5.0, "h": 4.4 },
+  "蔡順清": { "x": 34.7, "y": 66.2, "w": 5.0, "h": 4.4 },
+  "9-7": { "x": 39.6, "y": 66.2, "w": 5.0, "h": 4.4 },
+  "黃大峰": { "x": 39.6, "y": 66.2, "w": 5.0, "h": 4.4 },
+  "9-8": { "x": 44.5, "y": 66.2, "w": 5.0, "h": 4.4 },
+  "邱廷榮": { "x": 44.5, "y": 66.2, "w": 5.0, "h": 4.4 },
+  "9-9": { "x": 49.5, "y": 66.2, "w": 5.0, "h": 4.4 },
+  "黃俊傑": { "x": 49.5, "y": 66.2, "w": 5.0, "h": 4.4 },
+  "9-10": { "x": 54.4, "y": 66.2, "w": 5.0, "h": 4.4 },
+  "羅世杰": { "x": 54.4, "y": 66.2, "w": 5.0, "h": 4.4 },
+  "9-11": { "x": 59.3, "y": 66.2, "w": 5.0, "h": 4.4 },
+  "張文忠": { "x": 59.3, "y": 66.2, "w": 5.0, "h": 4.4 },
+  "9-12": { "x": 64.3, "y": 66.2, "w": 5.0, "h": 4.4 },
+  "吳進源": { "x": 64.3, "y": 66.2, "w": 5.0, "h": 4.4 },
+  "9-13": { "x": 69.2, "y": 66.2, "w": 5.0, "h": 4.4 },
+  "林秀娟": { "x": 69.2, "y": 66.2, "w": 5.0, "h": 4.4 },
+  "9-14": { "x": 74.1, "y": 66.2, "w": 5.0, "h": 4.4 },
+  "李忠屏": { "x": 74.1, "y": 66.2, "w": 5.0, "h": 4.4 },
+  "9-15": { "x": 79.1, "y": 66.2, "w": 5.0, "h": 4.4 },
+  "張育欽": { "x": 79.1, "y": 66.2, "w": 5.0, "h": 4.4 },
+  "9-16": { "x": 84.0, "y": 66.2, "w": 5.0, "h": 4.4 },
+  "唐世勇": { "x": 84.0, "y": 66.2, "w": 5.0, "h": 4.4 },
+
+  "10-1": { "x": 10.0, "y": 70.7, "w": 5.0, "h": 4.4 },
+  "林廣文": { "x": 10.0, "y": 70.7, "w": 5.0, "h": 4.4 },
+  "10-2": { "x": 14.9, "y": 70.7, "w": 5.0, "h": 4.4 },
+  "盧政吉": { "x": 14.9, "y": 70.7, "w": 5.0, "h": 4.4 },
+  "10-3": { "x": 19.9, "y": 70.7, "w": 5.0, "h": 4.4 },
+  "趙信光": { "x": 19.9, "y": 70.7, "w": 5.0, "h": 4.4 },
+  "10-4": { "x": 24.8, "y": 70.7, "w": 5.0, "h": 4.4 },
+  "盧亭妤": { "x": 24.8, "y": 70.7, "w": 5.0, "h": 4.4 },
+  "10-5": { "x": 29.7, "y": 70.7, "w": 5.0, "h": 4.4 },
+  "劉富連": { "x": 29.7, "y": 70.7, "w": 5.0, "h": 4.4 },
+  "10-6": { "x": 34.7, "y": 70.7, "w": 5.0, "h": 4.4 },
+  "林秀玲": { "x": 34.7, "y": 70.7, "w": 5.0, "h": 4.4 },
+  "10-7": { "x": 39.6, "y": 70.7, "w": 5.0, "h": 4.4 },
+  "宋炫志": { "x": 39.6, "y": 70.7, "w": 5.0, "h": 4.4 },
+  "10-8": { "x": 44.5, "y": 70.7, "w": 5.0, "h": 4.4 },
+  "林政昌": { "x": 44.5, "y": 70.7, "w": 5.0, "h": 4.4 },
+  "10-9": { "x": 49.5, "y": 70.7, "w": 5.0, "h": 4.4 },
+  "李文益": { "x": 49.5, "y": 70.7, "w": 5.0, "h": 4.4 },
+  "10-10": { "x": 54.4, "y": 70.7, "w": 5.0, "h": 4.4 },
+  "鍾秀鳳": { "x": 54.4, "y": 70.7, "w": 5.0, "h": 4.4 },
+  "10-11": { "x": 59.3, "y": 70.7, "w": 5.0, "h": 4.4 },
+  "吳明宗": { "x": 59.3, "y": 70.7, "w": 5.0, "h": 4.4 },
+  "10-12": { "x": 64.3, "y": 70.7, "w": 5.0, "h": 4.4 },
+  "林秀英": { "x": 64.3, "y": 70.7, "w": 5.0, "h": 4.4 },
+  "10-13": { "x": 69.2, "y": 70.7, "w": 5.0, "h": 4.4 },
+  "簡麗玉": { "x": 69.2, "y": 70.7, "w": 5.0, "h": 4.4 },
+  "10-14": { "x": 74.1, "y": 70.7, "w": 5.0, "h": 4.4 },
+  "莊忠勳": { "x": 74.1, "y": 70.7, "w": 5.0, "h": 4.4 },
+  "10-15": { "x": 79.1, "y": 70.7, "w": 5.0, "h": 4.4 },
+  "王承光": { "x": 79.1, "y": 70.7, "w": 5.0, "h": 4.4 },
+  "10-16": { "x": 84.0, "y": 70.7, "w": 5.0, "h": 4.4 },
+  "陳寶全": { "x": 84.0, "y": 70.7, "w": 5.0, "h": 4.4 },
+
+  "11-1": { "x": 10.0, "y": 75.3, "w": 5.0, "h": 4.4 },
+  "趙錫清": { "x": 10.0, "y": 75.3, "w": 5.0, "h": 4.4 },
+  "11-2": { "x": 14.9, "y": 75.3, "w": 5.0, "h": 4.4 },
+  "黃鳳珠": { "x": 14.9, "y": 75.3, "w": 5.0, "h": 4.4 },
+  "11-3": { "x": 19.9, "y": 75.3, "w": 5.0, "h": 4.4 },
+  "陳富銘": { "x": 19.9, "y": 75.3, "w": 5.0, "h": 4.4 },
+  "11-4": { "x": 24.8, "y": 75.3, "w": 5.0, "h": 4.4 },
+  "李宗鴻": { "x": 24.8, "y": 75.3, "w": 5.0, "h": 4.4 },
+  "11-5": { "x": 29.7, "y": 75.3, "w": 5.0, "h": 4.4 },
+  "陳現義": { "x": 29.7, "y": 75.3, "w": 5.0, "h": 4.4 },
+  "11-6": { "x": 34.7, "y": 75.3, "w": 5.0, "h": 4.4 },
+  "李榮哲": { "x": 34.7, "y": 75.3, "w": 5.0, "h": 4.4 },
+  "11-7": { "x": 39.6, "y": 75.3, "w": 5.0, "h": 4.4 },
+  "蘇良瓊": { "x": 39.6, "y": 75.3, "w": 5.0, "h": 4.4 },
+  "11-8": { "x": 44.5, "y": 75.3, "w": 5.0, "h": 4.4 },
+  "楊司維": { "x": 44.5, "y": 75.3, "w": 5.0, "h": 4.4 },
+  "11-9": { "x": 49.5, "y": 75.3, "w": 5.0, "h": 4.4 },
+  "郭明固": { "x": 49.5, "y": 75.3, "w": 5.0, "h": 4.4 },
+  "11-10": { "x": 54.4, "y": 75.3, "w": 5.0, "h": 4.4 },
+  "洪永恕": { "x": 54.4, "y": 75.3, "w": 5.0, "h": 4.4 },
+  "11-11": { "x": 59.3, "y": 75.3, "w": 5.0, "h": 4.4 },
+  "田永成": { "x": 59.3, "y": 75.3, "w": 5.0, "h": 4.4 },
+  "11-12": { "x": 64.3, "y": 75.3, "w": 5.0, "h": 4.4 },
+  "李清偉": { "x": 64.3, "y": 75.3, "w": 5.0, "h": 4.4 },
+  "11-13": { "x": 69.2, "y": 75.3, "w": 5.0, "h": 4.4 },
+  "陳國民": { "x": 69.2, "y": 75.3, "w": 5.0, "h": 4.4 },
+  "11-14": { "x": 74.1, "y": 75.3, "w": 5.0, "h": 4.4 },
+  "黃拓榮": { "x": 74.1, "y": 75.3, "w": 5.0, "h": 4.4 },
+  "11-15": { "x": 79.1, "y": 75.3, "w": 5.0, "h": 4.4 },
+  "蘇曉憶": { "x": 79.1, "y": 75.3, "w": 5.0, "h": 4.4 },
+  "11-16": { "x": 84.0, "y": 75.3, "w": 5.0, "h": 4.4 },
+  "郭希得": { "x": 84.0, "y": 75.3, "w": 5.0, "h": 4.4 },
+
+  "12-1": { "x": 10.0, "y": 79.8, "w": 5.0, "h": 4.4 },
+  "王芳姿": { "x": 10.0, "y": 79.8, "w": 5.0, "h": 4.4 },
+  "12-2": { "x": 14.9, "y": 79.8, "w": 5.0, "h": 4.4 },
+  "廖淑珍": { "x": 14.9, "y": 79.8, "w": 5.0, "h": 4.4 },
+  "12-3": { "x": 19.9, "y": 79.8, "w": 5.0, "h": 4.4 },
+  "吳春瑩": { "x": 19.9, "y": 79.8, "w": 5.0, "h": 4.4 },
+  "12-4": { "x": 24.8, "y": 79.8, "w": 5.0, "h": 4.4 },
+  "賴欣怡": { "x": 24.8, "y": 79.8, "w": 5.0, "h": 4.4 },
+  "12-5": { "x": 29.7, "y": 79.8, "w": 5.0, "h": 4.4 },
+  "蔡柏緯": { "x": 29.7, "y": 79.8, "w": 5.0, "h": 4.4 },
+  "12-6": { "x": 34.7, "y": 79.8, "w": 5.0, "h": 4.4 },
+  "林季福": { "x": 34.7, "y": 79.8, "w": 5.0, "h": 4.4 },
+  "12-7": { "x": 39.6, "y": 79.8, "w": 5.0, "h": 4.4 },
+  "蔡世弘": { "x": 39.6, "y": 79.8, "w": 5.0, "h": 4.4 },
+  "12-8": { "x": 44.5, "y": 79.8, "w": 5.0, "h": 4.4 },
+  "蔡信東": { "x": 44.5, "y": 79.8, "w": 5.0, "h": 4.4 },
+  "12-9": { "x": 49.5, "y": 79.8, "w": 5.0, "h": 4.4 },
+  "陳俊毓": { "x": 49.5, "y": 79.8, "w": 5.0, "h": 4.4 },
+  "12-10": { "x": 54.4, "y": 79.8, "w": 5.0, "h": 4.4 },
+  "鐘敏翠": { "x": 54.4, "y": 79.8, "w": 5.0, "h": 4.4 },
+  "12-11": { "x": 59.3, "y": 79.8, "w": 5.0, "h": 4.4 },
+  "吳勝智": { "x": 59.3, "y": 79.8, "w": 5.0, "h": 4.4 },
+  "12-12": { "x": 64.3, "y": 79.8, "w": 5.0, "h": 4.4 },
+  "蔡錦豐": { "x": 64.3, "y": 79.8, "w": 5.0, "h": 4.4 },
+  "12-13": { "x": 69.2, "y": 79.8, "w": 5.0, "h": 4.4 },
+  "陳德宗": { "x": 69.2, "y": 79.8, "w": 5.0, "h": 4.4 },
+  "12-14": { "x": 74.1, "y": 79.8, "w": 5.0, "h": 4.4 },
+  "劉富陞": { "x": 74.1, "y": 79.8, "w": 5.0, "h": 4.4 },
+  "12-15": { "x": 79.1, "y": 79.8, "w": 5.0, "h": 4.4 },
+  "詹孟傑": { "x": 79.1, "y": 79.8, "w": 5.0, "h": 4.4 },
+  "12-16": { "x": 84.0, "y": 79.8, "w": 5.0, "h": 4.4 },
+  "謝惠芬": { "x": 84.0, "y": 79.8, "w": 5.0, "h": 4.4 },
+
+  "13-1": { "x": 10.0, "y": 84.3, "w": 5.0, "h": 4.4 },
+  "顏乾明": { "x": 10.0, "y": 84.3, "w": 5.0, "h": 4.4 },
+  "13-2": { "x": 14.9, "y": 84.3, "w": 5.0, "h": 4.4 },
+  "李明相": { "x": 14.9, "y": 84.3, "w": 5.0, "h": 4.4 },
+  "13-3": { "x": 19.9, "y": 84.3, "w": 5.0, "h": 4.4 },
+  "林育毅": { "x": 19.9, "y": 84.3, "w": 5.0, "h": 4.4 },
+  "13-4": { "x": 24.8, "y": 84.3, "w": 5.0, "h": 4.4 },
+  "謝郁如": { "x": 24.8, "y": 84.3, "w": 5.0, "h": 4.4 },
+  "13-5": { "x": 29.7, "y": 84.3, "w": 5.0, "h": 4.4 },
+  "鄭鴻博": { "x": 29.7, "y": 84.3, "w": 5.0, "h": 4.4 },
+  "13-6": { "x": 34.7, "y": 84.3, "w": 5.0, "h": 4.4 },
+  "柯仕偉": { "x": 34.7, "y": 84.3, "w": 5.0, "h": 4.4 },
+  "13-7": { "x": 39.6, "y": 84.3, "w": 5.0, "h": 4.4 },
+  "王怡萱": { "x": 39.6, "y": 84.3, "w": 5.0, "h": 4.4 },
+  "13-8": { "x": 44.5, "y": 84.3, "w": 5.0, "h": 4.4 },
+  "楊瑞麟": { "x": 44.5, "y": 84.3, "w": 5.0, "h": 4.4 },
+  "13-9": { "x": 49.5, "y": 84.3, "w": 5.0, "h": 4.4 },
+  "王俞揮": { "x": 49.5, "y": 84.3, "w": 5.0, "h": 4.4 },
+  "13-10": { "x": 54.4, "y": 84.3, "w": 5.0, "h": 4.4 },
+  "許勝斐": { "x": 54.4, "y": 84.3, "w": 5.0, "h": 4.4 },
+  "13-11": { "x": 59.3, "y": 84.3, "w": 5.0, "h": 4.4 },
+  "許淑眞": { "x": 59.3, "y": 84.3, "w": 5.0, "h": 4.4 },
+  "13-12": { "x": 64.3, "y": 84.3, "w": 5.0, "h": 4.4 },
+  "李美秀": { "x": 64.3, "y": 84.3, "w": 5.0, "h": 4.4 },
+  "13-13": { "x": 69.2, "y": 84.3, "w": 5.0, "h": 4.4 },
+  "李炎宗": { "x": 69.2, "y": 84.3, "w": 5.0, "h": 4.4 },
+  "13-14": { "x": 74.1, "y": 84.3, "w": 5.0, "h": 4.4 },
+  "鍾玉潔": { "x": 74.1, "y": 84.3, "w": 5.0, "h": 4.4 },
+  "13-15": { "x": 79.1, "y": 84.3, "w": 5.0, "h": 4.4 },
+  "李晋榮": { "x": 79.1, "y": 84.3, "w": 5.0, "h": 4.4 },
+  "13-16": { "x": 84.0, "y": 84.3, "w": 5.0, "h": 4.4 },
+
+  "14-7": { "x": 39.6, "y": 88.8, "w": 5.0, "h": 4.4 },
+  "宋莉瑛": { "x": 39.6, "y": 88.8, "w": 5.0, "h": 4.4 },
+  "14-8": { "x": 44.5, "y": 88.8, "w": 5.0, "h": 4.4 },
+  "江怡蓉": { "x": 44.5, "y": 88.8, "w": 5.0, "h": 4.4 },
+  "14-9": { "x": 49.5, "y": 88.8, "w": 5.0, "h": 4.4 },
+  "羅曉婷": { "x": 49.5, "y": 88.8, "w": 5.0, "h": 4.4 },
+  "14-10": { "x": 54.4, "y": 88.8, "w": 5.0, "h": 4.4 },
+  "張凱": { "x": 54.4, "y": 88.8, "w": 5.0, "h": 4.4 }
+}
+;
+
+    const seatCoordinates = {};
+    if (typeof rawSeatCoordinates !== 'undefined') {
+      for (const key in rawSeatCoordinates) {
+           const coord = rawSeatCoordinates[key];
+           seatCoordinates[key] = {
+             x: coord.x,
+             y: coord.y,
+             w: coord.w,
+             h: coord.h
+           };
+      }
+    }
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyB1Dtt-ex6Ap9ZzCZFf7Ga0nrIiAgooasg",
+      authDomain: "principal-e3ece.firebaseapp.com",
+      projectId: "principal-e3ece",
+      storageBucket: "principal-e3ece.firebasestorage.app",
+      messagingSenderId: "977803509373",
+      appId: "1:977803509373:web:ea8978454a173f469b3b14"
+    };
+    firebase.initializeApp(firebaseConfig);
+    // ★ 使用 Cloud Firestore（規則已在主控台開放到 2026/9/5）
+    // ★ 不再使用 Realtime Database（databaseURL 設定留著無害，但不會被呼叫）
+    const db = firebase.firestore();
+    const DB_PATH = 'Meeting_Records_2026';   // Firestore 集合：完整紀錄 (含簽名圖片)，只在匯出時才下載
+    const STATUS_PATH = 'Meeting_Status_2026'; // Firestore 集合：輕量狀態 (不含圖片)，所有裝置常駐監聽
+
+    const sheet1Url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRvK7PuLJ3dWq8WBY2-WP6sDrTl1II7cKDQoAVmBpi9pDvJ1mlQxXeyd2znvniPQ0Aqc2qhlUaNuKZO/pub?gid=1682828826&single=true&output=csv";
+    const sheet2Url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRvK7PuLJ3dWq8WBY2-WP6sDrTl1II7cKDQoAVmBpi9pDvJ1mlQxXeyd2znvniPQ0Aqc2qhlUaNuKZO/pub?gid=1933178382&single=true&output=csv";
+    const sheetPrefillUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQFb3G3ufca4x2ncJQTr-0kiSYohyS-sNk29dzzHnCDopHsn-tAc4kWKDiPZ_1HLBV97y_yPGDEEqds/pub?gid=20234494&single=true&output=csv";
+    
+    let rawDataGov = [], rawDataSchool = [], firebaseRecords = [], prefillData = {};
+    let currentAction = "", userType = "", currentSelection = {}; 
+    let historyStack = [], currentScreenId = 'screen-home';
+    let idleTimer, secretClickCount = 0, secretClickTimer;
+
+    const canvas = document.getElementById('signature-pad');
+    const signaturePad = new SignaturePad(canvas, { minWidth: 2.5, maxWidth: 6 });
+    // 簽名過程中持續有動作，就不應該被閒置計時器強制跳回首頁
+    signaturePad.addEventListener('beginStroke', () => resetIdleTimer(currentScreenId));
+    signaturePad.addEventListener('endStroke', () => resetIdleTimer(currentScreenId));
+
+    window.onload = () => { loadAllData(); listenToFirebase(); generateQRCode(); };
+
+    function generateQRCode() {
+      new QRCode(document.getElementById("qrcode"), {
+        text: window.location.href.split('?')[0], width: 160, height: 160,
+        colorDark : "#0077C0", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.L
+      });
+    }
+
+    async function loadAllData() {
+      try {
+        const [res1, res2, res3] = await Promise.all([ fetch(sheet1Url), fetch(sheet2Url), fetch(sheetPrefillUrl) ]);
+        parseGovCSV(await res1.text()); parseSchoolCSV(await res2.text()); parsePrefillCSV(await res3.text());
+        document.getElementById('btn-signin-main').disabled = false; document.getElementById('btn-signin-main').innerText = t("signinBtn");
+        document.getElementById('btn-signout-main').disabled = false; document.getElementById('btn-signout-main').innerText = t("signoutBtn"); 
+        document.getElementById('btn-status-main').disabled = false; document.getElementById('btn-status-main').innerText = t("statusBtn"); 
+        document.getElementById('btn-search-main').disabled = false; document.getElementById('btn-search-main').innerText = t("searchBtn");
+      } catch(e) { alert(currentLang === "en" ? "Failed to load list. Please check your network connection." : "名單載入失敗，請檢查網路連線。"); }
+    }
+
+    function parseGovCSV(csv) {
+      rawDataGov = []; const rows = csv.split('\n');
+      for (let i = 1; i < rows.length; i++) {
+        if (!rows[i].trim()) continue;
+        const cols = rows[i].split(',').map(c => c.replace(/(^"|"$)/g, '').trim());
+        if (cols.length >= 5) rawDataGov.push({ agency: cols[1]||'屏東縣政府', unit: cols[2]||'', title: cols[3]||'', name: cols[4]||'' });
+      }
+    }
+
+    
+    function parsePrefillCSV(csv) {
+      prefillData = {};
+      const rows = csv.split('\n');
+      for (let i = 1; i < rows.length; i++) {
+        if (!rows[i].trim()) continue;
+        const cols = rows[i].split(',').map(c => c.replace(/(^"|"$)/g, '').trim());
+        if (cols.length >= 7) {
+          const name = cols[5];
+          const meal = cols[6]; // 用餐意願
+          const seat = cols.length >= 10 ? cols[9] : ''; // 座位
+          if (name) {
+             prefillData[name] = { meal: meal, seat: seat };
+          }
         }
+      }
+    }
 
-        /* === 投影片切換控制邏輯 === */
-        const slides = document.querySelectorAll('.slide');
-        const progress = document.getElementById('progress');
-        const counter = document.getElementById('counter');
-        let currentSlide = 0;
+    function parseSchoolCSV(csv) {
+      rawDataSchool = []; const rows = csv.split('\n');
+      for (let i = 1; i < rows.length; i++) {
+        if (!rows[i].trim()) continue;
+        const cols = rows[i].split(',').map(c => c.replace(/(^"|"$)/g, '').trim());
+        if (cols.length >= 5) rawDataSchool.push({ town: cols[1]||'', school: cols[2]||'', title: cols[3]||'', name: cols[4]||'' });
+      }
+    }
 
-        function updateSlide() {
-            try {
-                const allSlides = document.querySelectorAll('.slide');
-                allSlides.forEach((slide, idx) => {
-                    if (idx === currentSlide) {
-                        slide.classList.add('active');
-                        slide.style.opacity = '1';
-                        slide.style.visibility = 'visible';
-                    } else {
-                        slide.classList.remove('active');
-                        slide.style.opacity = '0';
-                        slide.style.visibility = 'hidden';
-                    }
-                });
-                const pct = ((currentSlide + 1) / allSlides.length) * 100;
-                progress.style.width = pct + '%';
-                counter.textContent = `${currentSlide + 1} / ${allSlides.length}`;
-                
-                // 3-Phase Color Logic via Tweening
-                let slideCurve = 0;
-                // Index 19 is Slide 20 (after adding 1 slide).
-                if (currentSlide >= 19) {
-                    let t = (currentSlide - 19) / (allSlides.length - 1 - 19);
-                    if (t < 0) t = 0;
-                    if (t > 1) t = 1;
-                    slideCurve = t;
-                }
-                
-                if (window.manualMode !== null) {
-                    window.targetCurve = window.manualMode;
-                } else {
-                    window.targetCurve = slideCurve;
-                }
-                updateThemeIcon();
+    function listenToFirebase() {
+      // 只監聽「輕量狀態集合」(不含圖片)，避免大量簽名圖片拖慢每台裝置的即時同步速度
+      db.collection(STATUS_PATH).onSnapshot((snapshot) => {
+        firebaseRecords = [];
+        snapshot.forEach((doc) => { firebaseRecords.push({ firebaseId: doc.id, ...doc.data() }); });
+        if(currentScreenId.startsWith('screen-admin')) updateAdminDashboard();
+      }, (error) => {
+        // Firestore 規則拒絕 or 網路問題，明確告知使用者
+        console.error('Firestore 讀取失敗:', error);
+        alert('⚠️ 無法連接資料庫 (錯誤：' + error.code + ')。\n' +
+              '請到 Firebase 主控台 → Firestore Database → Rules，確認規則允許讀寫。\n' +
+              '（目前規則應開放到 2026/9/5，若已過期請重新設定）');
+      });
+    }
 
-                if (!window.colorLoopStarted) {
-                    window.colorLoopStarted = true;
-                    // 如果初始模式是白天，讓 currentCurve 也預設為白天，避免載入時背景閃爍
-                    window.currentCurve = window.manualMode === 1 ? 1 : 0;
+    // === 畫面切換邏輯 (嚴格控制上一頁歷史) ===
+    function showScreen(screenId, isBack = false) {
+      // 確保跨層級紀錄堆疊正確
+      if (!isBack && currentScreenId !== screenId) {
+        historyStack.push(currentScreenId);
+      }
+      
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(screenId).classList.add('active');
+      window.scrollTo(0, 0); 
+      currentScreenId = screenId;
 
-                    const bgNight = [[3, 7, 18], [7, 19, 38], [2, 9, 20]];
-                    const bgDawn = [[112, 161, 215], [255, 208, 161], [190, 110, 80]];
-                    const bgDay = [[20, 150, 255], [120, 200, 255], [180, 230, 255]];
-                    
-                    const textNight = [203, 213, 225];
-                    const textDawn = [51, 65, 85];
-                    const textDay = [15, 23, 42];
+      const backBtn = document.getElementById('btn-back');
+      // 抵達首頁或後台總覽，直接清空歷史紀錄並隱藏返回鈕
+      if (screenId === 'screen-home' || screenId === 'screen-admin-dashboard') {
+        historyStack = []; 
+        backBtn.classList.add('hidden'); 
+      } else {
+        backBtn.classList.remove('hidden');
+      }
+      resetIdleTimer(screenId);
+    }
 
-                    const grad1Night = [255, 255, 255]; 
-                    const grad2Night = [0, 242, 254]; 
-                    const grad1Dawn = [15, 23, 42]; 
-                    const grad2Dawn = [190, 24, 93]; 
-                    const grad1Day = [3, 105, 161]; 
-                    const grad2Day = [15, 23, 42]; 
-                    
-                    // Glassmorphism tweaked for high transparency (毛玻璃效果)
-                    const cardNight = [0, 242, 254, 0.05];
-                    const cardDawn = [255, 255, 255, 0.15]; 
-                    const cardDay = [255, 255, 255, 0.25];
+    function goBack() {
+      if (historyStack.length > 0) {
+        showScreen(historyStack.pop(), true);
+      } else {
+        goHome();
+      }
+    }
 
-                    function lerp(a, b, t) { return a + (b - a) * t; }
-                    function lerpColor(c1, c2, t) {
-                        return [Math.round(lerp(c1[0], c2[0], t)), Math.round(lerp(c1[1], c2[1], t)), Math.round(lerp(c1[2], c2[2], t))];
-                    }
-                    function lerpAlpha(c1, c2, t) {
-                        return [Math.round(lerp(c1[0], c2[0], t)), Math.round(lerp(c1[1], c2[1], t)), Math.round(lerp(c1[2], c2[2], t)), lerp(c1[3], c2[3], t)];
-                    }
+    
+    let isZoomed = false;
+    function toggleZoom() {
+      const wrapper = document.getElementById('seat-map-zoom-wrapper');
+      isZoomed = !isZoomed;
+      if (isZoomed) {
+        wrapper.style.width = 'max(400%, 2500px)';
+        wrapper.style.cursor = 'zoom-out';
+      } else {
+        wrapper.style.width = '100%';
+        wrapper.style.cursor = 'zoom-in';
+      }
+    }
 
-                    window.appLerp = function(cNight, cDawn, cDay, t) {
-                        if (t < 0.5) return lerpColor(cNight, cDawn, t * 2);
-                        return lerpColor(cDawn, cDay, (t - 0.5) * 2);
-                    };
-                    window.appLerpAlpha = function(cNight, cDawn, cDay, t) {
-                        if (t < 0.5) return lerpAlpha(cNight, cDawn, t * 2);
-                        return lerpAlpha(cDawn, cDay, (t - 0.5) * 2);
-                    };
-
-                    function applyCurve(curve) {
-                        window.dawnRatio = curve; // Pass to Canvas
-
-                        // Background
-                        const rTop = window.appLerp(bgNight[0], bgDawn[0], bgDay[0], curve);
-                        const rMid = window.appLerp(bgNight[1], bgDawn[1], bgDay[1], curve);
-                        const rBot = window.appLerp(bgNight[2], bgDawn[2], bgDay[2], curve);
-                        document.body.style.background = `linear-gradient(180deg, rgb(${rTop}), rgb(${rMid}), rgb(${rBot}))`;
-                        
-                        // Text & Gradients
-                        const root = document.documentElement;
-                        const textMuted = window.appLerp(textNight, textDawn, textDay, curve);
-                        root.style.setProperty('--text-muted', `rgb(${textMuted[0]}, ${textMuted[1]}, ${textMuted[2]})`);
-                        
-                        const g1 = window.appLerp(grad1Night, grad1Dawn, grad1Day, curve);
-                        const g2 = window.appLerp(grad2Night, grad2Dawn, grad2Day, curve);
-                        root.style.setProperty('--title-grad-1', `rgb(${g1[0]}, ${g1[1]}, ${g1[2]})`);
-                        root.style.setProperty('--title-grad-2', `rgb(${g2[0]}, ${g2[1]}, ${g2[2]})`);
-                        
-                        // Glass Card Background
-                        const cBg = window.appLerpAlpha(cardNight, cardDawn, cardDay, curve);
-                        root.style.setProperty('--card-bg', `rgba(${cBg[0]}, ${cBg[1]}, ${cBg[2]}, ${cBg[3].toFixed(3)})`);
-
-                        // Day Image Background Opacity
-                        const dayBgImg = document.getElementById('day-bg-image');
-                        if (dayBgImg) {
-                            dayBgImg.style.opacity = curve > 0.5 ? 1 : 0;
-                        }
-                        
-                        // Toggle Day Mode CSS
-                        if (curve > 0.5) {
-                            document.body.classList.add('day-mode');
-                        } else {
-                            document.body.classList.remove('day-mode');
-                        }
-
-                        // Dynamic end-slide border removal
-                        const cards = document.querySelectorAll('.speaker-card');
-                        cards.forEach((c, idx) => {
-                            if (idx === cards.length - 1 && curve > 0.9) {
-                                c.style.border = 'none';
-                            } else {
-                                c.style.border = '1px solid var(--glass-border)';
-                            }
-                        });
-                    }
-
-                    function colorLoop() {
-                        const diff = window.targetCurve - window.currentCurve;
-                        if (Math.abs(diff) > 0.001) {
-                            window.currentCurve += diff * 0.05;
-                            applyCurve(window.currentCurve);
-                        }
-                        requestAnimationFrame(colorLoop);
-                    }
-                    
-                    applyCurve(window.currentCurve); // Ensure immediately applied on load
-                    colorLoop();
-                }
-            } catch (err) {
-                console.error("Error in updateSlide:", err);
-            }
+    
+    let lastFullRecordsFetch = 0;
+    let cachedFullRecords = [];
+    async function renderStatusOverview() {
+      showScreen('screen-status');
+      const now = Date.now();
+      const loading = document.getElementById('status-loading');
+      const table = document.getElementById('status-table');
+      const tbody = document.getElementById('status-tbody');
+      
+      if (now - lastFullRecordsFetch > 5000 || cachedFullRecords.length === 0) {
+        loading.style.display = 'block';
+        table.style.display = 'none';
+        try {
+          cachedFullRecords = await fetchFullRecords();
+          lastFullRecordsFetch = now;
+        } catch(e) {
+          alert('讀取失敗，請重試');
+          goHome();
+          return;
         }
-
-        function nextSlide() {
-            if (currentSlide < slides.length - 1) {
-                currentSlide++;
-                updateSlide();
-            }
-        }
-
-        function prevSlide() {
-            if (currentSlide > 0) {
-                currentSlide--;
-                updateSlide();
-            }
-        }
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowRight' || e.key === 'Space') nextSlide();
-            else if (e.key === 'ArrowLeft') prevSlide();
+      }
+      
+      loading.style.display = 'none';
+      table.style.display = 'table';
+      tbody.innerHTML = '';
+      
+      const allExpected = [...rawDataGov, ...rawDataSchool];
+      const otherRecords = cachedFullRecords.filter(r => r.type === 'other');
+      const otherNames = [...new Set(otherRecords.map(r => r.name))];
+      otherNames.forEach(name => {
+        const r = otherRecords.find(x => x.name === name);
+        allExpected.push({
+          agency: r.agency || '',
+          unit: r.unit || r.school || '',
+          title: r.title || '',
+          name: name,
+          isOther: true
         });
+      });
 
-        document.addEventListener('click', (e) => {
-            if (!e.target.closest('.controls')) nextSlide();
+      let tableHtml = '';
+      allExpected.forEach((person, idx) => {
+        const pRecords = cachedFullRecords.filter(r => r.name === person.name);
+        const signIn = pRecords.find(r => r.action === '簽到');
+        const signOut = pRecords.find(r => r.action === '簽退');
+        
+        const signInImg = signIn && signIn.signature ? `<img src="${signIn.signature}" style="height: 40px;">` : `<span style="color:#aaa;">未簽到</span>`;
+        const signOutImg = signOut && signOut.signature ? `<img src="${signOut.signature}" style="height: 40px;">` : `<span style="color:#aaa;">未簽退</span>`;
+        
+        tableHtml += `
+          <tr>
+            <td style="padding: 8px; border: 1px solid #ccc;">${idx + 1}</td>
+            <td style="padding: 8px; border: 1px solid #ccc;">${person.agency || person.school || '其他'}</td>
+            <td style="padding: 8px; border: 1px solid #ccc;">${person.unit || person.town || ''}</td>
+            <td style="padding: 8px; border: 1px solid #ccc;">${person.title || ''}</td>
+            <td style="padding: 8px; border: 1px solid #ccc; font-weight: bold;">${person.name}</td>
+            <td style="padding: 8px; border: 1px solid #ccc;">${signInImg}</td>
+            <td style="padding: 8px; border: 1px solid #ccc;">${signOutImg}</td>
+          </tr>
+        `;
+      });
+      tbody.innerHTML = tableHtml;
+    }
+
+    function goHome() { showScreen('screen-home'); }
+
+    function resetIdleTimer(screenId) {
+      clearTimeout(idleTimer);
+      if (screenId === 'screen-home' || screenId.startsWith('screen-admin')) return;
+      idleTimer = setTimeout(() => { goHome(); }, (screenId === 'screen-sign') ? 60000 : 30000); 
+    }
+    document.addEventListener('touchstart', () => resetIdleTimer(currentScreenId));
+
+    // === 流程控制 ===
+
+    let successTimer = null;
+    function showSuccessScreen(seatStr) {
+      document.getElementById('seat-info-container').style.display = 'block';
+      
+      const isSearch = (currentAction === '查詢座位');
+      const isSignOut = (currentAction === '簽退');
+      
+      if (isSearch) {
+         document.getElementById('success-header').innerText = (currentLang === 'en') ? '📍 Seat Search' : '📍 座位查詢';
+         document.getElementById('success-sub').innerText = (currentLang === 'en') ? 'Found the following seat info:' : '為您找到以下座位資訊：';
+      } else {
+         const actMap = {
+           '簽到': t('successIn'),
+           '簽退': t('successOut')
+         };
+         document.getElementById('success-header').innerText = actMap[currentAction] || '✅ ' + currentAction + '成功！';
+         document.getElementById('success-sub').innerText = isSignOut ? t('thanksOut') : t('thanksIn');
+      }
+
+      let voiceText = "";
+      const vAct = isSearch ? "" : (isSignOut ? t('voiceSignOutOk') : t('voiceSignInOk'));
+      
+      const match = seatStr.match(/(\d+)-(\d+)/);
+      let displaySeat = seatStr;
+      
+      if (match) {
+        const row = match[1];
+        const num = match[2];
+        if (currentLang === 'en') {
+          voiceText = isSearch ? `Your seat is at row ${row}, number ${num}.` : `${vAct}. Thank you. Your seat is at row ${row}, number ${num}.`;
+          displaySeat = `📍 Your seat is: Row ${row}, Number ${row}-${num}`;
+        } else {
+          voiceText = isSearch ? `為您播報座位資訊。您的座位在，第${row}排，編號${row}之${num}。` : `${vAct}。感謝您的參與。您的座位在，第${row}排，編號${row}之${num}。`;
+          displaySeat = `📍 您的座位在：第 ${row} 排，編號 ${row}-${num}`;
+        }
+      } else {
+        if (currentLang === 'en') {
+          voiceText = isSearch ? `Your seat is: ${seatStr}` : `${vAct}. Your seat is: ${seatStr}`;
+          displaySeat = `📍 Your seat is: ${seatStr}`;
+        } else {
+          voiceText = isSearch ? `為您播報座位資訊。您的座位在：${seatStr}` : `${vAct}。您的座位在：${seatStr}`;
+          displaySeat = `📍 您的座位在：${seatStr}`;
+        }
+      }
+      
+      document.getElementById('seat-text').innerText = displaySeat;
+
+      // 語音播報
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const msg = new SpeechSynthesisUtterance(voiceText);
+        msg.lang = currentLang === 'en' ? 'en-US' : 'zh-TW';
+        msg.rate = 1.1;
+        window.speechSynthesis.speak(msg);
+      }
+
+      // 座位圖標記
+      
+      const highlight = document.getElementById('seat-highlight');
+      // We use rawSeatCoordinates or seatCoordinates, both have percentage coordinates.
+      // seatCoordinates has adjusted x,y,w,h for better red box size.
+      const pos = seatCoordinates[seatStr] || (typeof rawSeatCoordinates !== 'undefined' ? rawSeatCoordinates[seatStr] : null);
+      if (pos) {
+          highlight.style.display = 'block';
+          highlight.style.left = pos.x + '%';
+          highlight.style.top = pos.y + '%';
+          highlight.style.width = pos.w + '%';
+          highlight.style.height = pos.h + '%';
+      } else {
+          highlight.style.display = 'none';
+      }
+showScreen('screen-success');
+
+      clearTimeout(successTimer);
+      successTimer = setTimeout(() => {
+        if (currentScreenId === 'screen-success') goHome();
+      }, 15000); // 15秒後自動回首頁
+    }
+
+    function setAction(action) {
+      if (action === '簽退') {
+        const now = new Date();
+        const disableStart = new Date('2026-08-20T00:00:00+08:00');
+        // User mentioned 2026/08/26 16:00, which might be a typo for 2026/08/20 16:00.
+        // We will disable it until the later date specified to be safe.
+        const disableEnd = new Date('2026-08-20T16:00:00+08:00');
+        if (now >= disableStart && now < disableEnd) {
+          alert('簽退時間尚未開始，請於16:00後簽退。');
+          return;
+        }
+      }
+      currentAction = action;
+      document.getElementById('meal-section').style.display = (action === '簽退' || action === '查詢座位') ? 'none' : 'block';
+      document.getElementById('btn-type-other').style.display = (action === '管理刪除' || action === '查詢座位') ? 'none' : 'block';
+      
+      if(action === '管理刪除') {
+        document.getElementById('type-title').innerHTML = "<span style='color:#D32F2F;'>🗑️ 管理員模式：請選擇機關尋找刪除</span>";
+      } else {
+        document.getElementById('type-title').innerText = t("selectType");
+      }
+      showScreen('screen-type');
+    }
+
+    function selectType(type) {
+      userType = type;
+      if (type === 'gov') renderGovVipScreen();
+      else if (type === 'school') renderSchoolTowns();
+      else if (type === 'other') {
+        document.getElementById('other-agency').value = ''; document.getElementById('other-name').value = '';
+        showScreen('screen-other-form');
+      }
+    }
+
+    // 處理點擊名字 (含防呆狀態與刪除)
+    function checkAndSign(person) {
+      if (currentAction === '管理刪除') {
+        const pRecords = firebaseRecords.filter(d => d.name === person.name);
+        if (pRecords.length === 0) { alert("系統查無此人的任何簽到/簽退紀錄。"); return; }
+        if (confirm(`確定要清除「${person.name}」的所有紀錄嗎？\n(包含簽到與簽退皆會刪除，清除後該員可重新操作)`)) {
+          const batch = db.batch();
+          pRecords.forEach(r => {
+            batch.delete(db.collection(DB_PATH).doc(r.firebaseId));
+            batch.delete(db.collection(STATUS_PATH).doc(r.firebaseId));
+          });
+          batch.commit().then(() => {
+            alert("✅ 已成功清除紀錄！"); goBack();
+          }).catch(() => alert("刪除失敗，請檢查網路連線後再試一次。"));
+        }
+        return;
+      }
+      if (currentAction === '查詢座位') {
+        currentSelection = person;
+        let seatStr = '';
+        if (prefillData[person.name] && prefillData[person.name].seat) {
+            seatStr = prefillData[person.name].seat;
+        } else {
+            seatStr = person.name;
+        }
+        showSuccessScreen(seatStr);
+        return;
+      }
+      currentSelection = person; prepareSignScreen();
+    }
+
+    function checkAndSignOther() {
+      const name = document.getElementById('other-name').value.trim();
+      if (!name) { alert(currentLang === 'en' ? 'Please enter your name!' : '請至少填寫您的姓名！'); return; }
+      const hasRecord = firebaseRecords.some(d => d.name === name && d.action === currentAction);
+      if (hasRecord) { alert(currentLang === "en" ? `The system shows you have already completed this action.` : `系統顯示您已完成${currentAction}。`); return; }
+      
+      currentSelection = { agency: document.getElementById('other-agency').value || '未填寫機關', unit: document.getElementById('other-unit').value || '', title: document.getElementById('other-title').value || '', name: name, type: 'other' };
+      prepareSignScreen();
+    }
+
+    function renderGovVipScreen() {
+      const container = document.getElementById('vip-list'); container.innerHTML = "";
+      rawDataGov.filter(item => item.unit === '').forEach(p => {
+        container.appendChild(createNameBtn(p, false));
+      });
+      const deptBtn = document.createElement('button'); deptBtn.className = 'btn-list btn-dept'; deptBtn.innerText = `🏢 屏東縣政府教育處 (及各單位)`;
+      deptBtn.onclick = () => renderGovUnits(); container.appendChild(deptBtn);
+      showScreen('screen-gov-vip');
+    }
+
+    function renderGovUnits() {
+      const units = [...new Set(rawDataGov.map(item => item.unit).filter(u => u !== ''))];
+      const container = document.getElementById('gov-unit-list'); container.innerHTML = "";
+      units.forEach(unit => {
+        const btn = document.createElement('button'); btn.className = 'btn-list'; btn.innerText = unit;
+        btn.onclick = () => renderNames(rawDataGov.filter(item => item.unit === unit)); container.appendChild(btn);
+      });
+      showScreen('screen-gov-unit');
+    }
+
+    function renderSchoolTowns() {
+      const towns = [...new Set(rawDataSchool.map(item => item.town).filter(t => t !== ''))];
+      const container = document.getElementById('town-list'); container.innerHTML = "";
+      towns.forEach(town => {
+        const btn = document.createElement('button'); btn.className = 'btn-list'; btn.innerText = town;
+        btn.onclick = () => renderNames(rawDataSchool.filter(item => item.town === town), true); container.appendChild(btn);
+      });
+      showScreen('screen-school-town');
+    }
+
+    // 建立姓名按鈕的核心函數 (處理灰階與防呆)
+    function createNameBtn(p, isSchool) {
+      const btn = document.createElement('button');
+      btn.className = 'btn-list'; 
+      if(p.unit === '') btn.classList.add('btn-vip'); // VIP專屬
+      btn.innerText = isSchool ? `${p.school} - ${p.name} ${p.title}` : `${p.title} - ${p.name}`;
+      
+      const hasRecord = firebaseRecords.some(d => d.name === p.name);
+      const isActionDone = firebaseRecords.some(d => d.name === p.name && d.action === currentAction);
+
+      if (currentAction === '管理刪除') {
+        if (hasRecord) {
+           btn.style.backgroundColor = '#FFEBEE'; btn.style.borderColor = '#F44336'; btn.innerText += " 🗑️ (有紀錄)";
+        } else {
+           btn.style.opacity = '0.4'; btn.innerText += " (尚無紀錄)";
+        }
+        btn.onclick = () => checkAndSign(p);
+      } else {
+        if (isActionDone) {
+          btn.classList.add('signed-disabled');
+          btn.innerText += ` (已${currentAction})`;
+          btn.onclick = () => alert(currentLang === "en" ? `The system shows you have already completed this action.` : `系統顯示您已完成${currentAction}。`);
+        } else {
+          btn.onclick = () => checkAndSign(p);
+        }
+      }
+      return btn;
+    }
+
+    function renderNames(peopleList, isSchool = false) {
+      const container = document.getElementById('name-list-container'); container.innerHTML = "";
+      document.getElementById('name-list-title').innerText = (currentAction === '管理刪除') ? "🗑️ 點選紅色姓名刪除紀錄" : "請選擇姓名";
+
+      if (isSchool) peopleList.sort((a, b) => { const w = (s) => s.includes('高中') ? 1 : s.includes('國中') ? 2 : s.includes('國小') ? 3 : 4; return w(a.school) - w(b.school); });
+      peopleList.forEach(p => { container.appendChild(createNameBtn(p, isSchool)); });
+      showScreen('screen-name-list');
+    }
+
+    // 設定簽名顏色
+    function setPenColor(color, element) {
+      signaturePad.penColor = color;
+      document.querySelectorAll('.color-btn').forEach(btn => btn.classList.remove('selected'));
+      element.classList.add('selected');
+    }
+
+    // ============================================================
+    // 匯出報表：改用「真正的」docx/xlsx二進位格式，圖片以OOXML內嵌媒體方式寫入，
+    // 不再用 data URI 塞進 <img src>。因為 Excel 完全不支援 data URI 圖片，
+    // Word 也視版本/安全性設定而不一定支援，這是紅色X的真正原因。
+    // ============================================================
+    const EXPORT_HEADERS = ['機關/學校', '單位/鄉鎮', '職稱', '姓名', '動作', '用餐', '時間'];
+
+    function sortRecordsForExport(records) {
+      return [...records].sort((a, b) => {
+        if (a.type !== b.type) return a.type.localeCompare(b.type);
+        return (a.timestamp || '').localeCompare(b.timestamp || '');
+      });
+    }
+
+    function recordToRowValues(r) {
+      return [
+        r.agency || r.school || '其他',
+        r.unit || r.town || '',
+        r.title || '',
+        r.name || '',
+        r.action || '',
+        r.meal || '',
+        r.timestamp || ''
+      ];
+    }
+
+    // 將簽名的 data URI (data:image/jpeg;base64,xxxx) 轉成 docx.js 需要的 Uint8Array
+    function dataUriToUint8Array(dataUri) {
+      const base64 = dataUri.split(',')[1] || '';
+      const binaryStr = atob(base64);
+      const bytes = new Uint8Array(binaryStr.length);
+      for (let i = 0; i < binaryStr.length; i++) bytes[i] = binaryStr.charCodeAt(i);
+      return bytes;
+    }
+
+    // 完整紀錄 (含簽名圖片) 只在按下匯出時才下載一次，平時不佔用即時同步流量
+    async function fetchFullRecords() {
+      const snapshot = await db.collection(DB_PATH).get();
+      let list = [];
+      snapshot.forEach((doc) => list.push({ firebaseId: doc.id, ...doc.data() }));
+      return list;
+    }
+
+    function downloadBlob(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url; link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+
+    // 產生「真正的」.docx 檔案，簽名圖片以 OOXML 內嵌媒體方式寫入 (word/media/*.jpg)
+    async function buildWordBlob(records) {
+      const sorted = sortRecordsForExport(records);
+
+      const headerRow = new docx.TableRow({
+        tableHeader: true,
+        children: EXPORT_HEADERS.concat('簽名').map(h => new docx.TableCell({
+          shading: { fill: "F2F2F2" },
+          verticalAlign: docx.VerticalAlign.CENTER,
+          children: [new docx.Paragraph({ alignment: docx.AlignmentType.CENTER, children: [new docx.TextRun({ text: h, bold: true })] })]
+        }))
+      });
+
+      const dataRows = sorted.map(r => {
+        const cells = recordToRowValues(r).map(v => new docx.TableCell({
+          verticalAlign: docx.VerticalAlign.CENTER,
+          children: [new docx.Paragraph({ alignment: docx.AlignmentType.CENTER, text: String(v) })]
+        }));
+
+        let sigChildren = [new docx.TextRun('')];
+        if (r.signature) {
+          try {
+            sigChildren = [new docx.ImageRun({ data: dataUriToUint8Array(r.signature), transformation: { width: 90, height: 54 }, type: "jpg" })];
+          } catch (e) {
+            sigChildren = [new docx.TextRun('(圖片讀取失敗)')];
+          }
+        }
+        cells.push(new docx.TableCell({
+          verticalAlign: docx.VerticalAlign.CENTER,
+          children: [new docx.Paragraph({ alignment: docx.AlignmentType.CENTER, children: sigChildren })]
+        }));
+        return new docx.TableRow({ children: cells });
+      });
+
+      const table = new docx.Table({
+        width: { size: 100, type: docx.WidthType.PERCENTAGE },
+        rows: [headerRow, ...dataRows]
+      });
+
+      const doc = new docx.Document({
+        sections: [{
+          children: [
+            new docx.Paragraph({ text: "屏東縣中小學校長行政會議 簽到退報表", heading: docx.HeadingLevel.HEADING_2, alignment: docx.AlignmentType.CENTER }),
+            new docx.Paragraph({ text: "" }),
+            table
+          ]
+        }]
+      });
+
+      return await docx.Packer.toBlob(doc);
+    }
+
+    // 產生「真正的」.xlsx 檔案，簽名圖片以 OOXML 內嵌媒體方式寫入 (xl/media/*.jpeg)
+    async function buildExcelBlob(records) {
+      const sorted = sortRecordsForExport(records);
+      const wb = new ExcelJS.Workbook();
+      const ws = wb.addWorksheet('簽到退報表');
+      ws.columns = [
+        { header: '機關/學校', key: 'agency', width: 20 },
+        { header: '單位/鄉鎮', key: 'unit', width: 16 },
+        { header: '職稱', key: 'title', width: 12 },
+        { header: '姓名', key: 'name', width: 12 },
+        { header: '動作', key: 'action', width: 8 },
+        { header: '用餐', key: 'meal', width: 8 },
+        { header: '時間', key: 'timestamp', width: 20 },
+        { header: '簽名', key: 'sig', width: 20 },
+      ];
+      ws.getRow(1).font = { bold: true };
+      ws.getRow(1).alignment = { horizontal: 'center', vertical: 'middle' };
+
+      sorted.forEach((r, idx) => {
+        const rowIdx = idx + 2; // 第1列是標題列
+        const [agency, unit, title, name, action, meal, timestamp] = recordToRowValues(r);
+        ws.addRow({ agency, unit, title, name, action, meal, timestamp });
+        ws.getRow(rowIdx).height = 46;
+        ws.getRow(rowIdx).alignment = { horizontal: 'center', vertical: 'middle' };
+        if (r.signature) {
+          try {
+            const imgId = wb.addImage({ base64: r.signature, extension: 'jpeg' });
+            ws.addImage(imgId, { tl: { col: 7, row: rowIdx - 1 }, ext: { width: 100, height: 60 } });
+          } catch (e) { /* 單張圖片異常時跳過，不影響其他資料 */ }
+        }
+      });
+
+      const buffer = await wb.xlsx.writeBuffer();
+      return new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    }
+
+    async function exportSignaturesWord(btn) {
+      const originalText = btn ? btn.innerText : null;
+      if (btn) { btn.disabled = true; btn.innerText = "匯出中，產生Word檔請稍候..."; }
+      try {
+        const fullRecords = await fetchFullRecords();
+        const blob = await buildWordBlob(fullRecords);
+        downloadBlob(blob, `簽名報表_${new Date().getTime()}.docx`);
+      } catch (e) {
+        console.error(e);
+        alert("匯出失敗，請檢查網路連線後再試一次。");
+      } finally {
+        if (btn) { btn.disabled = false; btn.innerText = originalText; }
+      }
+    }
+
+    async function exportSignaturesExcel(btn) {
+      const originalText = btn ? btn.innerText : null;
+      if (btn) { btn.disabled = true; btn.innerText = "匯出中，產生Excel檔請稍候..."; }
+      try {
+        const fullRecords = await fetchFullRecords();
+        const blob = await buildExcelBlob(fullRecords);
+        downloadBlob(blob, `簽名報表_${new Date().getTime()}.xlsx`);
+      } catch (e) {
+        console.error(e);
+        alert("匯出失敗，請檢查網路連線後再試一次。");
+      } finally {
+        if (btn) { btn.disabled = false; btn.innerText = originalText; }
+      }
+    }
+
+    function prepareSignScreen() {
+      let titleName = (currentSelection.title) ? `${currentSelection.title} ${currentSelection.name}` : currentSelection.name;
+      document.getElementById('greeting').innerHTML = `歡迎！<br><span>「${titleName}」</span>`;
+      
+      const submitBtn = document.getElementById('submit-btn'); 
+      submitBtn.disabled = false; submitBtn.innerText = currentLang === "en" ? "Submit" : `確認送出 (${currentAction})`;
+
+      // 處理預設用餐意願
+      document.querySelectorAll('input[name="meal"]').forEach(el => el.checked = false); // 清空預設
+      const personData = prefillData[currentSelection.name];
+      const isBeforeDeadline = new Date() < new Date('2026-08-20T00:00:00+08:00');
+      if (isBeforeDeadline && personData && personData.meal) {
+         const radio = Array.from(document.querySelectorAll('input[name="meal"]')).find(r => personData.meal.includes(r.value));
+         if (radio) radio.checked = true;
+      }
+
+      showScreen('screen-sign'); 
+      
+      // 確保在畫面顯示後才計算寬度，並且不再隨手機滑動而重置畫布
+      setTimeout(() => {
+        const targetWidth = canvas.offsetWidth;
+        const targetHeight = targetWidth * (3 / 5); // 寬5:高3
+        canvas.width = targetWidth; 
+        canvas.height = targetHeight; 
+        canvas.style.height = targetHeight + 'px';
+        signaturePad.clear();
+        setPenColor('#000000', document.querySelector('.color-btn[style*="#000000"]'));
+      }, 150);
+    }
+
+    async function submitData() {
+      if (signaturePad.isEmpty()) { alert(currentLang === "en" ? "Signature cannot be empty. Please sign your name!" : "簽名欄不可空白，請簽下您的大名！"); return; }
+      const confirmMsg = currentLang === "en" ? `Are you sure you want to complete this action?\nPress OK to submit, Cancel to clear.` : `您確認要完成「${currentAction}」手續嗎？\n按下「確定」送出，按下「取消」清除重簽。`; if (!confirm(confirmMsg)) { signaturePad.clear(); return; }
+      
+      const submitBtn = document.getElementById('submit-btn'); 
+      submitBtn.disabled = true; submitBtn.innerText = "資料寫入中請稍候...";
+      
+      if (currentAction !== '簽退') {
+        const mealSelected = document.querySelector('input[name="meal"]:checked');
+        if (!mealSelected) {
+           alert(currentLang === "en" ? "Please select your meal preference!" : "請選擇用餐意願！");
+           submitBtn.disabled = false;
+           submitBtn.innerText = `確認送出 (${currentAction})`;
+           return;
+        }
+      }
+      const meal = (currentAction === '簽退') ? '無' : document.querySelector('input[name="meal"]:checked').value;
+      
+      // 輸出固定比例的畫布 (寬5cm:高3cm = 5:3)，不管簽名時用手機還是平板、螢幕多寬，
+      // 存出來的簽名圖片比例都一致，貼到報表的簽名欄位時才不會忽寬忽窄、變形。
+      // 用「等比縮放置中」的方式貼上，多出來的邊補白色，簽名本身絕不會被拉伸變形。
+      const outputW = 240, outputH = 144; // 240:144 = 5:3
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = outputW; tempCanvas.height = outputH;
+      const ctx = tempCanvas.getContext('2d');
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, outputW, outputH);
+
+      const srcRatio = canvas.width / canvas.height;
+      const dstRatio = outputW / outputH;
+      let drawW, drawH, dx, dy;
+      if (srcRatio > dstRatio) { drawW = outputW; drawH = outputW / srcRatio; dx = 0; dy = (outputH - drawH) / 2; }
+      else { drawH = outputH; drawW = outputH * srcRatio; dx = (outputW - drawW) / 2; dy = 0; }
+      ctx.drawImage(canvas, dx, dy, drawW, drawH);
+
+      // JPEG 品質 0.7：畫布本身已經很小 (240x144)，品質稍微提高簽名線條依然清晰，檔案仍然只有幾KB
+      const signatureBase64 = tempCanvas.toDataURL("image/jpeg", 0.7); 
+
+      const timestamp = new Date().toLocaleString('zh-TW');
+      const fullRecord   = { ...currentSelection, action: currentAction, meal: meal, type: userType, timestamp, signature: signatureBase64 };
+      const statusRecord = { ...currentSelection, action: currentAction, meal: meal, type: userType, timestamp }; // 不含圖片，供即時監聽用
+
+      // 用 Firestore batch write 同時寫入「完整紀錄」與「輕量狀態」兩個集合，原子性一次完成
+      const batch = db.batch();
+      const newDocRef = db.collection(DB_PATH).doc();  // 自動產生唯一 ID
+      const newKey = newDocRef.id;
+      batch.set(newDocRef, fullRecord);
+      batch.set(db.collection(STATUS_PATH).doc(newKey), statusRecord);
+
+      // 逾時保護：若15秒內伺服器沒有回應（常見於網路不穩或校內Wi-Fi限制），
+      // 明確告知使用者並恢復按鈕，而不是讓畫面永遠停在「資料寫入中」
+      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 15000));
+
+      try {
+        await Promise.race([batch.commit(), timeoutPromise]);
+        if (currentAction === '簽到' && userType !== 'other') {
+           let seatStr = '';
+           if (prefillData[currentSelection.name] && prefillData[currentSelection.name].seat) {
+               seatStr = prefillData[currentSelection.name].seat;
+           } else {
+               seatStr = currentSelection.name;
+           }
+           showSuccessScreen(seatStr);
+        } else {
+           alert(`✅ ${currentAction}成功！`);
+           goHome();
+        }
+      } catch (err) {
+        if (err && err.message === 'TIMEOUT') {
+          alert("上傳時間過長，可能是網路連線不穩定或校內網路限制。請確認網路後再試一次。\n(若剛才的資料其實已經送出成功，重新整理頁面後名單會顯示已簽到，不會重複。)");
+        } else {
+          alert("連線失敗，請檢查網路後再試一次。\n" + (err && err.code ? ('錯誤代碼：' + err.code) : ''));
+        }
+        submitBtn.disabled = false; 
+        submitBtn.innerText = `確認送出 (${currentAction})`;
+      }
+    }
+
+    // === 後台管理模組 (多層級鑽取) ===
+    document.getElementById('secret-title').addEventListener('click', () => {
+      secretClickCount++; clearTimeout(secretClickTimer); secretClickTimer = setTimeout(() => { secretClickCount = 0; }, 2000);
+      if (secretClickCount >= 5) {
+        secretClickCount = 0; if (prompt("請輸入管理員密碼：") === "wt7902230") { updateAdminDashboard(); showScreen('screen-admin-dashboard'); } else { alert("密碼錯誤"); }
+      }
+    });
+
+    let currentAdminFilterType = ''; 
+
+    function updateAdminDashboard() {
+      const expectedTotal = rawDataGov.length + rawDataSchool.length;
+      const signedInList = firebaseRecords.filter(d => d.action === '簽到');
+      const signedOutList = firebaseRecords.filter(d => d.action === '簽退');
+      const officialSignedNames = signedInList.filter(d => d.type === 'gov' || d.type === 'school').map(d => d.name);
+      
+      document.getElementById('stat-total').innerText = expectedTotal;
+      document.getElementById('stat-signed').innerText = signedInList.length;
+      document.getElementById('stat-signedout').innerText = signedOutList.length;
+      document.getElementById('stat-missing').innerText = expectedTotal - officialSignedNames.length;
+      
+      document.getElementById('stat-meat').innerText = signedInList.filter(d => d.meal === '葷食').length;
+      document.getElementById('stat-veg').innerText = signedInList.filter(d => d.meal === '素食').length;
+      document.getElementById('stat-none').innerText = signedInList.filter(d => d.meal === '不用餐').length;
+    }
+
+    function openAdminCategory(filterType) {
+      currentAdminFilterType = filterType;
+      const signedInPeople = firebaseRecords.filter(d => d.action === '簽到');
+      const signedOutPeople = firebaseRecords.filter(d => d.action === '簽退');
+      const signedInNames = signedInPeople.map(d=>d.name);
+      
+      let govCount=0, schoolCount=0, otherCount=0;
+      let titleMap = { 'signed': '已簽到總人數', 'signed_out': '已簽退總人數', 'meat': '葷食需求', 'veg': '素食需求', 'none': '不用餐', 'missing': '尚未簽到人數' };
+      
+      if (filterType === 'missing') {
+        govCount = rawDataGov.filter(p => !signedInNames.includes(p.name)).length;
+        schoolCount = rawDataSchool.filter(p => !signedInNames.includes(p.name)).length;
+      } else if (filterType === 'signed_out') {
+        govCount = signedOutPeople.filter(d => d.type === 'gov').length;
+        schoolCount = signedOutPeople.filter(d => d.type === 'school').length;
+        otherCount = signedOutPeople.filter(d => d.type === 'other').length;
+      } else {
+        let baseList = signedInPeople;
+        if (filterType === 'meat') baseList = signedInPeople.filter(d => d.meal === '葷食');
+        if (filterType === 'veg') baseList = signedInPeople.filter(d => d.meal === '素食');
+        if (filterType === 'none') baseList = signedInPeople.filter(d => d.meal === '不用餐');
+        govCount = baseList.filter(d => d.type === 'gov').length;
+        schoolCount = baseList.filter(d => d.type === 'school').length;
+        otherCount = baseList.filter(d => d.type === 'other').length;
+      }
+
+      document.getElementById('admin-category-title').innerText = `分類列表 (${titleMap[filterType]})`;
+      const container = document.getElementById('admin-category-list');
+      
+      const otherBtnHTML = (filterType === 'missing') ? "" : `<button class="btn-list" style="border-left:8px solid #FF9800;" onclick="openAdminList('other')">✏️ 其他來賓 (${otherCount} 人)</button>`;
+      
+      container.innerHTML = `
+        <button class="btn-list btn-dept" onclick="openAdminList('gov')">🏛️ 屏東縣政府 (${govCount} 人)</button>
+        <button class="btn-list" style="border-left:8px solid #4CAF50;" onclick="openAdminList('school')">🏫 各級學校 (${schoolCount} 人)</button>
+        ${otherBtnHTML}
+      `;
+      showScreen('screen-admin-category');
+    }
+
+    function openAdminList(userTypeFilter) {
+      const signedInPeople = firebaseRecords.filter(d => d.action === '簽到');
+      const signedOutPeople = firebaseRecords.filter(d => d.action === '簽退');
+      const signedInNames = signedInPeople.map(d=>d.name);
+      let finalList = [];
+      let isMissingMode = (currentAdminFilterType === 'missing');
+
+      if (isMissingMode) {
+        if (userTypeFilter === 'gov') finalList = rawDataGov.filter(p => !signedInNames.includes(p.name));
+        if (userTypeFilter === 'school') finalList = rawDataSchool.filter(p => !signedInNames.includes(p.name));
+        document.getElementById('admin-list-hint').innerText = "提示：以下為尚未簽到名單，供大會查閱";
+      } else if (currentAdminFilterType === 'signed_out') {
+        finalList = signedOutPeople.filter(d => d.type === userTypeFilter);
+        document.getElementById('admin-list-hint').innerText = "提示：點擊右側刪除按鈕可讓該員重新簽退";
+      } else {
+        let baseList = signedInPeople;
+        if (currentAdminFilterType === 'meat') baseList = signedInPeople.filter(d => d.meal === '葷食');
+        if (currentAdminFilterType === 'veg') baseList = signedInPeople.filter(d => d.meal === '素食');
+        if (currentAdminFilterType === 'none') baseList = signedInPeople.filter(d => d.meal === '不用餐');
+        finalList = baseList.filter(d => d.type === userTypeFilter);
+        document.getElementById('admin-list-hint').innerText = "提示：點擊右側刪除按鈕可讓該員重新簽到";
+      }
+      
+      const typeName = userTypeFilter === 'gov' ? '屏東縣政府' : (userTypeFilter === 'school' ? '各級學校' : '其他來賓');
+      document.getElementById('admin-list-title').innerText = `${typeName} (${finalList.length}人)`;
+
+      const container = document.getElementById('admin-record-list'); container.innerHTML = "";
+      if (finalList.length === 0) {
+        container.innerHTML = "<div style='color:#666;'>無資料</div>";
+      } else {
+        finalList.forEach(r => {
+          const div = document.createElement('div'); div.className = 'record-item';
+          
+          if (isMissingMode) {
+            div.innerHTML = `<div>${r.agency || r.town || ''} ${r.school || r.unit || ''} <br><b style="font-size:22px; color:#D32F2F;">${r.name}</b> ${r.title}</div>`;
+          } else {
+            const mealText = (r.action === '簽到') ? `<span style="color:#E91E63;">(${r.meal})</span>` : '';
+            div.innerHTML = `
+              <div>
+                <span style="color:#1976D2; font-size:14px;">${r.timestamp} [${r.action}]</span><br>
+                ${r.agency || r.school || ''} ${r.unit || ''} <br>
+                <b style="font-size:22px;">${r.name}</b> ${mealText}
+              </div>
+              <button class="btn-delete" onclick="deleteRecord('${r.firebaseId}')">刪除</button>
+            `;
+          }
+          container.appendChild(div);
         });
+      }
+      showScreen('screen-admin-list');
+    }
 
-        updateSlide();
+    function deleteRecord(firebaseId) {
+      if(confirm("確定要刪除這筆紀錄嗎？\n刪除後該員可在前台重新進行操作。")) {
+        const batch = db.batch();
+        batch.delete(db.collection(DB_PATH).doc(firebaseId));
+        batch.delete(db.collection(STATUS_PATH).doc(firebaseId));
+        batch.commit().then(() => { alert("刪除成功！"); goBack(); })
+          .catch(() => alert("刪除失敗，請檢查網路連線後再試一次。"));
+      }
+    }
+  </script>
 
-        /* === Canvas 特效：燈塔、礁岩海岸、不規則浪潮、碎石浪花、夜空呼吸星點、隨機流星 === */
-        const canvas = document.getElementById('bg-canvas');
-        const ctx = canvas.getContext('2d');
-        let W = window.innerWidth, H = window.innerHeight;
-
-        function resizeCanvas() {
-            W = window.innerWidth;
-            H = window.innerHeight;
-            canvas.width = W;
-            canvas.height = H;
-            initStars();
-        }
-        window.addEventListener('resize', resizeCanvas);
-
-        // 1. 呼吸星點初始化
-        let stars = [];
-        function initStars() {
-            stars = [];
-            const count = Math.floor((W * H) / 4500); // 依解析度分佈
-            for (let i = 0; i < count; i++) {
-                stars.push({
-                    x: Math.random() * W,
-                    y: Math.random() * (H * 0.72), // 主要分佈在上半部
-                    size: Math.random() * 1.5 + 0.6,
-                    baseAlpha: Math.random() * 0.4 + 0.2,
-                    speed: Math.random() * 0.002 + 0.001,
-                    phase: Math.random() * Math.PI * 2
-                });
-            }
-        }
-
-        // 2. 流星系統 (隨機、降低頻率、降低數量)
-        let meteors = [];
-        function spawnMeteor() {
-            // 數量減為一半(1)，出現機率減為一半(0.004)
-            if (meteors.length < 1 && Math.random() < 0.004) { 
-                meteors.push({
-                    x: Math.random() * (W * 0.8),
-                    y: Math.random() * (H * 0.35),
-                    length: Math.random() * 120 + 80,
-                    speed: Math.random() * 8 + 7,
-                    angle: Math.PI / 6, // 30度往右下劃過
-                    alpha: 1,
-                    decay: Math.random() * 0.012 + 0.008
-                });
-            }
-        }
-
-        // 3. 浪花泡沫粒子系統 (規模減半、亮度降低)
-        let splashes = [];
-        function spawnSplash(x, y) {
-            for (let i = 0; i < 4; i++) {
-                splashes.push({
-                    x: x + (Math.random() * 20 - 10), // 擴散範圍縮半
-                    y: y + (Math.random() * 5 - 2.5),  
-                    vx: (Math.random() - 0.7) * 1.25, // 噴發水平速度縮半
-                    vy: -Math.random() * 1.25 - 0.5,  // 噴發垂直高度縮半
-                    size: Math.random() * 1.75 + 0.75, // 泡沫尺寸縮半
-                    alpha: 0.4, // 亮度降低
-                    decay: Math.random() * 0.02 + 0.015
-                });
-            }
-        }
-
-        let time = 0;
-
-        function animate() {
-            time += 0.02;
-            let dr = window.dawnRatio || 0;
-            
-            const starAlpha = Math.max(0, 1 - dr * 2.5);
-            ctx.clearRect(0, 0, W, H);
-
-            // If the custom background image is fully shown (day mode), skip drawing the details but keep loop running
-            if (dr > 0.5) {
-                requestAnimationFrame(animate);
-                return;
-            }
-
-            // A. 繪製呼吸星點
-            stars.forEach(s => {
-                const alpha = s.baseAlpha + Math.sin(time * s.speed * 100 + s.phase) * 0.3;
-                ctx.fillStyle = `rgba(224, 242, 254, ${Math.max(0, alpha) * starAlpha})`;
-                ctx.beginPath();
-                ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
-                ctx.fill();
-            });
-
-            // B. 繪製流星
-            spawnMeteor();
-            for (let i = meteors.length - 1; i >= 0; i--) {
-                const m = meteors[i];
-                const tailX = m.x - Math.cos(m.angle) * m.length;
-                const tailY = m.y - Math.sin(m.angle) * m.length;
-
-                const grad = ctx.createLinearGradient(m.x, m.y, tailX, tailY);
-                grad.addColorStop(0, `rgba(255, 255, 255, ${m.alpha * starAlpha})`);
-                grad.addColorStop(0.3, `rgba(0, 242, 254, ${m.alpha * 0.6 * starAlpha})`);
-                grad.addColorStop(1, 'rgba(0, 242, 254, 0)');
-                ctx.strokeStyle = grad;
-                ctx.lineWidth = 1.5;
-                ctx.beginPath();
-                ctx.moveTo(m.x, m.y);
-                ctx.lineTo(tailX, tailY);
-                ctx.stroke();
-
-                m.x += Math.cos(m.angle) * m.speed;
-                m.y += Math.sin(m.angle) * m.speed;
-                m.alpha -= m.decay;
-
-                if (m.alpha <= 0 || m.x > W || m.y > H) {
-                    meteors.splice(i, 1);
-                }
-            }
-
-            // 幾何設定：燈塔與海岸
-            const towerBaseX = W * 0.85;
-            const towerBaseY = H * 0.86;
-            const towerH = Math.min(H * 0.14, 130);
-            const headY = towerBaseY - towerH;
-
-            // Helper for 3-phase lerp in Canvas
-            function cvsLerp(cNight, cDawn, cDay, t) {
-                if(!window.appLerp) return cNight;
-                return window.appLerp(cNight, cDawn, cDay, t);
-            }
-
-            // C. 繪製夜浪 (不規則起伏海平面)
-            const seaY = H * 0.93;
-            for (let layer = 0; layer < 3; layer++) {
-                ctx.beginPath();
-                ctx.moveTo(0, H);
-                for (let x = 0; x <= W; x += 15) {
-                    const waveY = seaY + layer * 8 +
-                        Math.sin(x * 0.008 + time * 1.2 + layer) * 7 +
-                        Math.cos(x * 0.015 - time * 0.8) * 5;
-                    ctx.lineTo(x, waveY);
-                }
-                ctx.lineTo(W, H);
-                ctx.closePath();
-
-                function lerpColor(c1, c2, t) {
-                    return [
-                        Math.round(c1[0] + (c2[0] - c1[0]) * t),
-                        Math.round(c1[1] + (c2[1] - c1[1]) * t),
-                        Math.round(c1[2] + (c2[2] - c1[2]) * t)
-                    ];
-                }
-                const nightSea0 = [10, 25, 47];
-                const nightSea1 = [7, 18, 36];
-                const nightSea2 = [3, 10, 22];
-                const dawnSea0 = [44, 150, 199];
-                const dawnSea1 = [25, 110, 156];
-                const dawnSea2 = [14, 75, 110];
-                const daySea0 = [0, 119, 190];
-                const daySea1 = [0, 150, 200];
-                const daySea2 = [0, 180, 220];
-
-                let c0 = cvsLerp(nightSea0, dawnSea0, daySea0, dr);
-                let c1 = cvsLerp(nightSea1, dawnSea1, daySea1, dr);
-                let c2 = cvsLerp(nightSea2, dawnSea2, daySea2, dr);
-
-                if (layer === 0) ctx.fillStyle = `rgba(${c0[0]}, ${c0[1]}, ${c0[2]}, 0.8)`;
-                else if (layer === 1) ctx.fillStyle = `rgba(${c1[0]}, ${c1[1]}, ${c1[2]}, 0.9)`;
-                else ctx.fillStyle = `rgba(${c2[0]}, ${c2[1]}, ${c2[2]}, 0.95)`;
-                ctx.fill();
-            }
-
-            // D. 繪製礁岩海岸 (從燈塔腳下一直延伸連到右側)
-            ctx.beginPath();
-            ctx.moveTo(towerBaseX - 90, H);
-            ctx.lineTo(towerBaseX - 65, seaY + 5);
-            ctx.lineTo(towerBaseX - 40, towerBaseY + 15);
-            ctx.lineTo(towerBaseX - 10, towerBaseY);
-            ctx.lineTo(towerBaseX + 50, towerBaseY + 5);
-            ctx.lineTo(towerBaseX + 110, towerBaseY + 25);
-            ctx.lineTo(W, towerBaseY + 20);
-            ctx.lineTo(W, H);
-            ctx.closePath();
-
-            const rockGrad = ctx.createLinearGradient(0, towerBaseY, 0, H);
-            rockGrad.addColorStop(0, '#0c1b2e');
-            rockGrad.addColorStop(1, '#02060d');
-            ctx.fillStyle = rockGrad;
-            ctx.fill();
-            ctx.strokeStyle = 'rgba(56, 189, 248, 0.15)';
-            ctx.lineWidth = 1.5;
-            ctx.stroke();
-
-            // E. 浪花拍打岩石特效
-            if (Math.sin(time * 2.5) > 0.6) {
-                spawnSplash(towerBaseX - 65, seaY + 5);
-            }
-            for (let i = splashes.length - 1; i >= 0; i--) {
-                const sp = splashes[i];
-                ctx.fillStyle = `rgba(120, 150, 175, ${sp.alpha})`;
-                ctx.beginPath();
-                ctx.arc(sp.x, sp.y, sp.size, 0, Math.PI * 2);
-                ctx.fill();
-
-                sp.x += sp.vx;
-                sp.y += sp.vy;
-                sp.vy += 0.08; // 重力
-                sp.alpha -= sp.decay;
-
-                if (sp.alpha <= 0) splashes.splice(i, 1);
-            }
-
-            // F. 繪製燈塔本體
-            // 塔身
-            ctx.beginPath();
-            ctx.moveTo(towerBaseX - 14, towerBaseY);
-            ctx.lineTo(towerBaseX - 8, headY + 18);
-            ctx.lineTo(towerBaseX + 8, headY + 18);
-            ctx.lineTo(towerBaseX + 14, towerBaseY);
-            ctx.closePath();
-            
-            const dayTower2 = [255, 255, 255];
-            const nightTower2 = [15, 36, 58];
-            const dawnTower2 = [210, 220, 230]; const tc2 = cvsLerp(nightTower2, dawnTower2, dayTower2, dr);
-            ctx.fillStyle = `rgb(${tc2[0]}, ${tc2[1]}, ${tc2[2]})`;
-            ctx.fill();
-            ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
-            ctx.lineWidth = 1.2;
-            ctx.stroke();
-
-            // 燈室與圓頂
-            ctx.beginPath();
-            ctx.rect(towerBaseX - 9, headY + 6, 18, 12);
-            ctx.arc(towerBaseX, headY + 6, 8, Math.PI, 0);
-            
-            const dayDome = [255, 255, 255]; // Red dome for daylight
-            const nightDome = [22, 46, 74];
-            const dawnDome = [220, 220, 220]; const tcd = cvsLerp(nightDome, dawnDome, dayDome, dr);
-            ctx.fillStyle = `rgb(${tcd[0]}, ${tcd[1]}, ${tcd[2]})`;
-            ctx.fill();
-            ctx.stroke();
-
-            // G. 燈塔水平光束 360° 旋轉 (水平壓縮 + 呼吸明暗透視)
-            const theta = time * 0.7; // 旋轉速度
-            const depth = Math.cos(theta);     // Z軸：1=面對使用者, -1=背對
-            const projected = Math.sin(theta); // X軸：左右方向
-
-            const facing = Math.max(0, depth);
-            const breathing = Math.pow(facing, 3.2); // 面對時的光暈
-            const sideVis = Math.max(0, depth + 0.3);
-            const glow = 0.05 + 0.35 * sideVis + 0.85 * breathing;
-
-            
-            const beamAlphaMulti = Math.max(0, 1 - dr * 1.5);
-            const maxBeamLen = Math.max(W * 0.95, H * 0.8);
-            const currentLen = maxBeamLen * Math.abs(projected);
-            const beamDirX = projected >= 0 ? 1 : -1;
-
-            const lightCenterY = headY + 12;
-
-            if (glow > 0.06 && currentLen > 5) {
-                const spread = 0.012 + 0.04 * breathing;
-                const baseAng = beamDirX > 0 ? 0 : Math.PI;
-
-                const p1 = baseAng - spread, p2 = baseAng + spread;
-                const x1 = towerBaseX + Math.cos(p1) * currentLen;
-                const y1 = lightCenterY + Math.sin(p1) * currentLen;
-                const x2 = towerBaseX + Math.cos(p2) * currentLen;
-                const y2 = lightCenterY + Math.sin(p2) * currentLen;
-
-                // 光錐漸層
-                const beamGrad = ctx.createLinearGradient(towerBaseX, lightCenterY, (x1 + x2) / 2, (y1 + y2) / 2);
-                beamGrad.addColorStop(0, `rgba(255, 255, 255, ${0.45 * glow * beamAlphaMulti})`);
-                beamGrad.addColorStop(0.08, `rgba(56, 189, 248, ${0.25 * glow * beamAlphaMulti})`);
-                beamGrad.addColorStop(0.4, `rgba(0, 242, 254, ${0.06 * glow * beamAlphaMulti})`);
-                beamGrad.addColorStop(1, 'rgba(0, 242, 254, 0)');
-
-                ctx.fillStyle = beamGrad;
-                ctx.beginPath();
-                ctx.moveTo(towerBaseX, lightCenterY);
-                ctx.lineTo(x1, y1);
-                ctx.lineTo(x2, y2);
-                ctx.closePath();
-                ctx.fill();
-            }
-
-            // 面對使用者時的強烈鏡頭光暈 (Lens flare / Halo)
-            if (breathing > 0.02) {
-                const haloR = 40 + 130 * breathing;
-                const haloGrad = ctx.createRadialGradient(towerBaseX, lightCenterY, 0, towerBaseX, lightCenterY, haloR);
-                haloGrad.addColorStop(0, `rgba(255, 255, 255, ${0.35 * breathing * beamAlphaMulti})`);
-                haloGrad.addColorStop(0.25, `rgba(0, 242, 254, ${0.15 * breathing * beamAlphaMulti})`);
-                haloGrad.addColorStop(1, 'rgba(0, 242, 254, 0)');
-
-                ctx.fillStyle = haloGrad;
-                ctx.beginPath();
-                ctx.arc(towerBaseX, lightCenterY, haloR, 0, Math.PI * 2);
-                ctx.fill();
-            }
-
-            // 燈芯亮點
-            ctx.beginPath();
-            ctx.arc(towerBaseX, lightCenterY, 3 + 3 * breathing, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(255, 255, 255, ${0.3 + 0.7 * breathing})`;
-            ctx.shadowBlur = (10 + 20 * breathing) * beamAlphaMulti;
-            ctx.shadowColor = '#00f2fe';
-            ctx.fill();
-            ctx.shadowBlur = 0;
-
-            requestAnimationFrame(animate);
-        }
-
-        resizeCanvas();
-        animate();
-    
-        function resizeStage() {
-            const stage = document.getElementById('presentation-stage');
-            if(stage) {
-                const scale = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
-                stage.style.transform = `translate(-50%, -50%) scale(${scale})`;
-            }
-        }
-        window.addEventListener('resize', resizeStage);
-        resizeStage();
-
-        // 預設進入時立刻執行一次 updateSlide 來初始化晝夜樣式
-        updateSlide(true);
-    </script>
+  <!-- 葷食菜色彈窗 -->
+  <div id="lunch-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; justify-content:center; align-items:center;">
+    <div style="position:relative; max-width:90%; max-height:90%;">
+      <img src="115lunch.png" style="max-width:100%; max-height:90vh; border-radius:10px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+      <button onclick="document.getElementById('lunch-modal').style.display='none'" style="position:absolute; top:-15px; right:-15px; background:#D32F2F; color:white; border:2px solid white; border-radius:50%; width:45px; height:45px; font-size:24px; font-weight:bold; cursor:pointer; box-shadow:0 4px 10px rgba(0,0,0,0.3); display:flex; justify-content:center; align-items:center;">&times;</button>
+    </div>
+  </div>
 </body>
 </html>
