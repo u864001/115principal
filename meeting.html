@@ -31,10 +31,9 @@
             background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 60%, var(--bg-bottom) 100%);
             color: var(--text-main);
             user-select: none;
-            font-size: 28px; /* 大幅放大基礎字體，實現全部字體與毛玻璃框放大 (16px -> 28px) */
+            font-size: 28px;
         }
 
-        /* 畫布容器 */
         #bg-canvas {
             position: fixed;
             top: 0;
@@ -45,7 +44,6 @@
             pointer-events: none;
         }
 
-        /* 簡報主體容器 */
         .presentation {
             position: relative;
             z-index: 10;
@@ -76,18 +74,17 @@
             transform: translateY(0) scale(1);
         }
 
-        /* 毛玻璃科技面板 */
         .glass-panel {
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
             border-radius: 20px;
-            padding: 60px 80px; /* 增加內距，配合放大的字體 */
+            padding: 60px 80px;
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+            transition: background 0.6s ease, border-color 0.6s ease;
         }
 
-        /* 標題與內文字型樣式 */
         .metallic-title {
             font-size: 3.8rem;
             font-weight: 900;
@@ -124,7 +121,6 @@
             gap: 15px;
         }
 
-        /* 獎項頁面的標題裝飾 */
         .award-slide h2::before {
             content: '';
             display: inline-block;
@@ -151,7 +147,6 @@
             font-weight: 400;
         }
 
-        /* 封面投影片 */
         .slogan-container {
             display: flex;
             justify-content: center;
@@ -223,28 +218,6 @@
             letter-spacing: 2px;
         }
 
-        /* 獎項特別樣式 */
-        .award-badge {
-            display: inline-block;
-            padding: 6px 18px;
-            background: rgba(0, 242, 254, 0.12);
-            border: 1px solid var(--accent-cyan);
-            border-radius: 30px;
-            color: var(--accent-cyan);
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin-bottom: 20px;
-            box-shadow: 0 0 15px rgba(0, 242, 254, 0.2);
-            white-space: nowrap;
-        }
-
-        .school-title {
-            font-size: 3.5rem;
-            font-weight: 900;
-            margin-bottom: 25px;
-            color: #ffffff;
-        }
-
         .award-desc {
             font-size: 1.6rem;
             color: #cbd5e1;
@@ -252,7 +225,6 @@
             text-align: justify;
         }
 
-        /* 演講與宣導獨立頁面卡片樣式 */
         .speaker-card {
             border-left: none; 
             background: var(--card-bg, rgba(0, 242, 254, 0.05)); 
@@ -265,7 +237,7 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            transition: border 0.6s ease;
+            transition: background 0.6s ease, border 0.6s ease;
         }
         
         .speaker-name {
@@ -277,67 +249,6 @@
             font-weight: 700;
         }
 
-        .progress-bar-container {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.05);
-            z-index: 100;
-        }
-
-        .progress-bar {
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan));
-            box-shadow: 0 0 10px var(--accent-cyan);
-            transition: width 0.3s ease;
-        }
-
-        .controls {
-            position: fixed;
-            bottom: 25px;
-            right: 35px;
-            display: flex;
-            gap: 15px;
-            z-index: 100;
-        }
-
-        .ctrl-btn {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background: rgba(15, 23, 42, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            color: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 1.2rem;
-            backdrop-filter: blur(8px);
-            transition: all 0.2s ease;
-        }
-
-        .ctrl-btn:hover {
-            background: var(--accent-cyan);
-            color: #030712;
-            box-shadow: 0 0 15px var(--accent-cyan);
-        }
-
-        .page-indicator {
-            position: fixed;
-            bottom: 30px;
-            left: 35px;
-            color: var(--text-muted);
-            font-size: 1.1rem;
-            font-weight: 300;
-            letter-spacing: 1px;
-            z-index: 100;
-        }
-
-        /* 議程雙欄排版 */
         .agenda-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -370,7 +281,6 @@
             color: var(--accent-cyan);
         }
 
-        /* 底部進度條與控制器 */
         .progress-bar-container {
             position: fixed;
             bottom: 0;
@@ -443,11 +353,7 @@
             filter: drop-shadow(0 0 2px rgba(255,255,255,0.9)) drop-shadow(0 0 5px rgba(255,255,255,0.8)) !important;
         }
 
-        /* 日間模式：白底玻璃、黑字 */
-        body.day-mode .glass-panel, 
-        body.day-mode .speaker-card {
-            background: rgba(255, 255, 255, 0.7) !important;
-            border: 1px solid rgba(255, 255, 255, 0.5) !important;
+        body.day-mode .glass-panel {
             box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important;
         }
         
@@ -475,7 +381,6 @@
             color: #222 !important;
         }
 
-        /* 日間模式：第一頁的標題文字 */
         body.day-mode .metallic-title {
             background: linear-gradient(
                 -45deg, 
@@ -492,7 +397,6 @@
             filter: drop-shadow(0 0 4px rgba(255,255,255,0.85)) !important;
         }
 
-        /* 日間模式：連結按鈕樣式 */
         body.day-mode .slide a[target="_blank"] {
             color: #111 !important;
             border-color: rgba(17, 17, 17, 0.4) !important;
@@ -502,7 +406,6 @@
             background: rgba(17, 17, 17, 0.15) !important;
         }
 
-        /* 首頁返回與切換按鈕日間模式字體顏色與邊框 */
         body.day-mode > button {
             color: #111 !important;
             border-color: rgba(17, 17, 17, 0.4) !important;
@@ -512,7 +415,6 @@
             background: rgba(255, 255, 255, 0.8) !important;
         }
 
-        /* 獎項特別樣式 */
         .award-badge {
             display: inline-block;
             padding: 6px 18px;
@@ -520,7 +422,7 @@
             border: 1px solid var(--accent-cyan);
             border-radius: 30px;
             color: var(--accent-cyan);
-            font-size: 2.3rem; /* Further increased as requested */
+            font-size: 2.3rem;
             font-weight: 700;
             margin-bottom: 20px;
             box-shadow: 0 0 15px rgba(0, 242, 254, 0.2);
@@ -533,7 +435,7 @@
             margin-bottom: 25px;
             color: #ffffff;
         }
-</style>
+    </style>
 </head>
 <body>
     <button style="position: absolute; top: 20px; left: 20px; z-index: 1000; background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.3); color: white; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 16px; backdrop-filter: blur(10px); transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.3);" onclick="window.location.href='index.html'" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">← 返回首頁</button>
@@ -543,20 +445,15 @@
         <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
     </button>
     
-
-
-    <!-- 背景 Canvas：星空、流星、海浪、礁岩岸邊、燈塔水平光束、碎石浪花 -->
     <canvas id="bg-canvas"></canvas>
     
-    <!-- 日版背景圖 -->
-    <div id="day-bg-image" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; pointer-events: none; opacity: 0; background-image: url('115principalday.jfif'); background-size: cover; background-position: center; transition: opacity 0.8s ease;"></div>
+    <!-- 日版背景圖：以左上角(屏東縣政府LOGO)對齊為最高優先，保持圖片原本比例填滿畫面，右下超出視窗裁切可忽略 -->
+    <div id="day-bg-image" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; pointer-events: none; opacity: 0; background-image: url('115principalday.jfif'); background-size: cover; background-repeat: no-repeat; background-position: left top; transition: opacity 0.8s ease;"></div>
 
-    <!-- 簡報頁面 -->
     <div class="presentation" style="z-index: 10;">
         <div id="presentation-stage" style="width: 1920px; height: 1080px; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: flex; justify-content: center; align-items: center; transform-origin: center center;">
 
         <!-- Slide 1: 封面 -->
-        
         <div class="slide title-slide active">
             <div class="ptc-logo-container" style="text-align: center; margin-bottom: 30px; position: relative; top: -20px;">
                 <img src="ptclogo.png" alt="屏東縣政府" style="height: 180px; object-fit: contain; filter: drop-shadow(0 0 25px rgba(56,189,248,1));">
@@ -568,12 +465,12 @@
                 <span class="slogan-item" style="animation-delay: 4s;">國際接軌</span>
                 <span class="slogan-item" style="animation-delay: 6s;">人文永續</span>
             </div>
-            
             <div class="meta-info">
                 <div>國立內埔高級農工職業學校</div>
                 <div>115年8月20日</div>
             </div>
         </div>
+
         <!-- Slide 2: 宣導 1 -->
         <div class="slide">
             <div class="speaker-card">
@@ -857,9 +754,6 @@
             }
             updateThemeIcon();
             window.targetCurve = window.manualMode;
-            
-            // 強制更新畫面樣式，不切換投影片
-            updateSlide(true);
         }
 
         function updateThemeIcon() {
@@ -901,21 +795,8 @@
                 progress.style.width = pct + '%';
                 counter.textContent = `${currentSlide + 1} / ${allSlides.length}`;
                 
-                // 3-Phase Color Logic via Tweening
-                let slideCurve = 0;
-                // Index 19 is Slide 20 (after adding 1 slide).
-                if (currentSlide >= 19) {
-                    let t = (currentSlide - 19) / (allSlides.length - 1 - 19);
-                    if (t < 0) t = 0;
-                    if (t > 1) t = 1;
-                    slideCurve = t;
-                }
-                
-                if (window.manualMode !== null) {
-                    window.targetCurve = window.manualMode;
-                } else {
-                    window.targetCurve = slideCurve;
-                }
+                // targetCurve 固定由 manualMode 決定（0=夜、1=日）
+                window.targetCurve = window.manualMode;
                 updateThemeIcon();
 
                 if (!window.colorLoopStarted) {
@@ -942,6 +823,14 @@
                     const cardNight = [0, 242, 254, 0.05];
                     const cardDawn = [255, 255, 255, 0.15]; 
                     const cardDay = [255, 255, 255, 0.25];
+
+                    // .glass-panel 背景與邊框：由 JS 控制以消除日夜切換時的閃白跳變
+                    const glassNight      = [7, 19, 38, 0.65];
+                    const glassDawn       = [255, 255, 255, 0.40];
+                    const glassDay        = [255, 255, 255, 0.70];
+                    const glassBdNight    = [56, 189, 248, 0.20];
+                    const glassBdDawn     = [255, 255, 255, 0.40];
+                    const glassBdDay      = [255, 255, 255, 0.50];
 
                     function lerp(a, b, t) { return a + (b - a) * t; }
                     function lerpColor(c1, c2, t) {
@@ -979,9 +868,16 @@
                         root.style.setProperty('--title-grad-1', `rgb(${g1[0]}, ${g1[1]}, ${g1[2]})`);
                         root.style.setProperty('--title-grad-2', `rgb(${g2[0]}, ${g2[1]}, ${g2[2]})`);
                         
-                        // Glass Card Background
+                        // Glass Card Background (speaker-card)
                         const cBg = window.appLerpAlpha(cardNight, cardDawn, cardDay, curve);
                         root.style.setProperty('--card-bg', `rgba(${cBg[0]}, ${cBg[1]}, ${cBg[2]}, ${cBg[3].toFixed(3)})`);
+
+                        // Glass Panel Background & Border (.glass-panel 獎項頁)
+                        // 透過 CSS 變數平滑插值，避免 body.day-mode !important 拔掉時的閃白跳變
+                        const gBg = window.appLerpAlpha(glassNight, glassDawn, glassDay, curve);
+                        root.style.setProperty('--glass-bg', `rgba(${gBg[0]}, ${gBg[1]}, ${gBg[2]}, ${gBg[3].toFixed(3)})`);
+                        const gBd = window.appLerpAlpha(glassBdNight, glassBdDawn, glassBdDay, curve);
+                        root.style.setProperty('--glass-border', `rgba(${gBd[0]}, ${gBd[1]}, ${gBd[2]}, ${gBd[3].toFixed(3)})`);
 
                         // Day Image Background Opacity
                         const dayBgImg = document.getElementById('day-bg-image');
@@ -1010,7 +906,9 @@
                     function colorLoop() {
                         const diff = window.targetCurve - window.currentCurve;
                         if (Math.abs(diff) > 0.001) {
-                            window.currentCurve += diff * 0.05;
+                            // 0.12：約 0.7s 完成切換（原 0.05 需 ~2.2s），
+                            // 縮短日夜切換中間態（體色 vs. 文字樣式不一致）的可見時間
+                            window.currentCurve += diff * 0.12;
                             applyCurve(window.currentCurve);
                         }
                         requestAnimationFrame(colorLoop);
@@ -1370,8 +1268,6 @@
         window.addEventListener('resize', resizeStage);
         resizeStage();
 
-        // 預設進入時立刻執行一次 updateSlide 來初始化晝夜樣式
-        updateSlide(true);
     </script>
 </body>
 </html>
