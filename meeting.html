@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>屏東縣115學年度第一學期中小學校長行政會議</title>
+    <!-- 優先預載日間版底圖 -->
+    <link rel="preload" href="115principalday.jfif" as="image">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700;900&display=swap');
 
@@ -472,6 +474,23 @@
             color: #222 !important;
         }
 
+        /* 日間模式：第一頁的標題文字 */
+        body.day-mode .metallic-title {
+            background: linear-gradient(
+                -45deg, 
+                #0f172a 20%, 
+                #38bdf8 40%, 
+                #0f172a 50%, 
+                #38bdf8 60%, 
+                #0f172a 80%
+            ) !important;
+            background-size: 250% auto !important;
+            color: transparent !important;
+            -webkit-background-clip: text !important;
+            background-clip: text !important;
+            filter: drop-shadow(0 0 4px rgba(255,255,255,0.85)) !important;
+        }
+
         /* 日間模式：連結按鈕樣式 */
         body.day-mode .slide a[target="_blank"] {
             color: #111 !important;
@@ -932,58 +951,63 @@
                         return lerpAlpha(cDawn, cDay, (t - 0.5) * 2);
                     };
 
+                    function applyCurve(curve) {
+                        window.dawnRatio = curve; // Pass to Canvas
+
+                        // Background
+                        const rTop = window.appLerp(bgNight[0], bgDawn[0], bgDay[0], curve);
+                        const rMid = window.appLerp(bgNight[1], bgDawn[1], bgDay[1], curve);
+                        const rBot = window.appLerp(bgNight[2], bgDawn[2], bgDay[2], curve);
+                        document.body.style.background = `linear-gradient(180deg, rgb(${rTop}), rgb(${rMid}), rgb(${rBot}))`;
+                        
+                        // Text & Gradients
+                        const root = document.documentElement;
+                        const textMuted = window.appLerp(textNight, textDawn, textDay, curve);
+                        root.style.setProperty('--text-muted', `rgb(${textMuted[0]}, ${textMuted[1]}, ${textMuted[2]})`);
+                        
+                        const g1 = window.appLerp(grad1Night, grad1Dawn, grad1Day, curve);
+                        const g2 = window.appLerp(grad2Night, grad2Dawn, grad2Day, curve);
+                        root.style.setProperty('--title-grad-1', `rgb(${g1[0]}, ${g1[1]}, ${g1[2]})`);
+                        root.style.setProperty('--title-grad-2', `rgb(${g2[0]}, ${g2[1]}, ${g2[2]})`);
+                        
+                        // Glass Card Background
+                        const cBg = window.appLerpAlpha(cardNight, cardDawn, cardDay, curve);
+                        root.style.setProperty('--card-bg', `rgba(${cBg[0]}, ${cBg[1]}, ${cBg[2]}, ${cBg[3].toFixed(3)})`);
+
+                        // Day Image Background Opacity
+                        const dayBgImg = document.getElementById('day-bg-image');
+                        if (dayBgImg) {
+                            dayBgImg.style.opacity = curve > 0.5 ? 1 : 0;
+                        }
+                        
+                        // Toggle Day Mode CSS
+                        if (curve > 0.5) {
+                            document.body.classList.add('day-mode');
+                        } else {
+                            document.body.classList.remove('day-mode');
+                        }
+
+                        // Dynamic end-slide border removal
+                        const cards = document.querySelectorAll('.speaker-card');
+                        cards.forEach((c, idx) => {
+                            if (idx === cards.length - 1 && curve > 0.9) {
+                                c.style.border = 'none';
+                            } else {
+                                c.style.border = '1px solid var(--glass-border)';
+                            }
+                        });
+                    }
+
                     function colorLoop() {
                         const diff = window.targetCurve - window.currentCurve;
                         if (Math.abs(diff) > 0.001) {
                             window.currentCurve += diff * 0.05;
-                            let curve = window.currentCurve;
-                            window.dawnRatio = curve; // Pass to Canvas
-
-                            // Background
-                            const rTop = window.appLerp(bgNight[0], bgDawn[0], bgDay[0], curve);
-                            const rMid = window.appLerp(bgNight[1], bgDawn[1], bgDay[1], curve);
-                            const rBot = window.appLerp(bgNight[2], bgDawn[2], bgDay[2], curve);
-                            document.body.style.background = `linear-gradient(180deg, rgb(${rTop}), rgb(${rMid}), rgb(${rBot}))`;
-                            
-                            // Text & Gradients
-                            const root = document.documentElement;
-                            const textMuted = window.appLerp(textNight, textDawn, textDay, curve);
-                            root.style.setProperty('--text-muted', `rgb(${textMuted[0]}, ${textMuted[1]}, ${textMuted[2]})`);
-                            
-                            const g1 = window.appLerp(grad1Night, grad1Dawn, grad1Day, curve);
-                            const g2 = window.appLerp(grad2Night, grad2Dawn, grad2Day, curve);
-                            root.style.setProperty('--title-grad-1', `rgb(${g1[0]}, ${g1[1]}, ${g1[2]})`);
-                            root.style.setProperty('--title-grad-2', `rgb(${g2[0]}, ${g2[1]}, ${g2[2]})`);
-                            
-                            // Glass Card Background
-                            const cBg = window.appLerpAlpha(cardNight, cardDawn, cardDay, curve);
-                            root.style.setProperty('--card-bg', `rgba(${cBg[0]}, ${cBg[1]}, ${cBg[2]}, ${cBg[3].toFixed(3)})`);
-
-                            // Day Image Background Opacity
-                            const dayBgImg = document.getElementById('day-bg-image');
-                            if (dayBgImg) {
-                                dayBgImg.style.opacity = curve > 0.5 ? 1 : 0;
-                            }
-                            
-                            // Toggle Day Mode CSS
-                            if (curve > 0.5) {
-                                document.body.classList.add('day-mode');
-                            } else {
-                                document.body.classList.remove('day-mode');
-                            }
-
-                            // Dynamic end-slide border removal
-                            const cards = document.querySelectorAll('.speaker-card');
-                            cards.forEach((c, idx) => {
-                                if (idx === cards.length - 1 && curve > 0.9) {
-                                    c.style.border = 'none';
-                                } else {
-                                    c.style.border = '1px solid var(--glass-border)';
-                                }
-                            });
+                            applyCurve(window.currentCurve);
                         }
                         requestAnimationFrame(colorLoop);
                     }
+                    
+                    applyCurve(window.currentCurve); // Ensure immediately applied on load
                     colorLoop();
                 }
             } catch (err) {
