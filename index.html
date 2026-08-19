@@ -208,6 +208,7 @@
       <button class="btn-massive btn-nav" style="margin-top:15px; background: linear-gradient(135deg, #1E88E5, #1565C0);" onclick="window.location.href='meeting.html'" data-i18n="presentation">進入會議簡報</button>
       <button id="btn-status-main" class="btn-massive btn-nav" style="margin-top:15px; background: linear-gradient(135deg, #009688, #00796B);" onclick="renderStatusOverview()" disabled>資料載入中...</button>
       <button id="btn-search-main" class="btn-massive btn-nav" style="margin-top:15px; background: linear-gradient(135deg, #8E24AA, #6A1B9A);" onclick="setAction('查詢座位')" disabled>資料載入中...</button>
+      <button class="btn-massive btn-nav" style="margin-top:15px; background: linear-gradient(135deg, #E91E63, #C2185B);" onclick="window.open('https://drive.google.com/drive/folders/1YCLNetTD3MQFHgbqNxyw9S9fEPRski64?usp=drive_link', '_blank')">📸 活動相片 (另開視窗)</button>
       
       <div class="qr-container">
         <div class="qr-text" data-i18n="qrText">📱 掃描 QR Code，手機免網址直接簽到</div>
@@ -335,29 +336,45 @@
     <div class="glass-panel">
       <div class="admin-header">⚙️ 報到管理中心</div>
       
+      <!-- Toggles -->
+      <div style="display:flex; justify-content: space-around; margin-bottom:20px; background:white; padding:15px; border-radius:15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <label style="font-size:24px; font-weight:bold; display:flex; align-items:center; gap:10px; cursor:pointer; color: #4CAF50;">
+          <input type="checkbox" id="toggle-signin" style="width:25px; height:25px;" onchange="updateSystemToggle('signin', this.checked)"> 開放簽到
+        </label>
+        <label style="font-size:24px; font-weight:bold; display:flex; align-items:center; gap:10px; cursor:pointer; color: #E53935;">
+          <input type="checkbox" id="toggle-signout" style="width:25px; height:25px;" onchange="updateSystemToggle('signout', this.checked)"> 開放簽退
+        </label>
+      </div>
+
       <div class="admin-stat" style="background:#f0f4c3; cursor:default;">
-        <div>應到總人數</div><span id="stat-total" style="color:#555;">0</span>
+        <div>應到總人數 <span class="sub-hint">(含臨時新增人員)</span></div><span id="stat-total" style="color:#555;">0</span>
       </div>
       <div class="admin-stat" onclick="openAdminCategory('signed')">
         <div>已簽到人數 <span class="sub-hint">(點擊看分類)</span></div><span id="stat-signed">0</span>
       </div>
+      <div class="admin-stat" style="background:#ffebee;" onclick="openAdminCategory('missing')">
+        <div>尚未簽到人數 <span class="sub-hint">(點擊看分類)</span></div><span id="stat-missing" style="color:#D32F2F;">0</span>
+      </div>
       <div class="admin-stat" style="background:#E3F2FD;" onclick="openAdminCategory('signed_out')">
         <div>已簽退人數 <span class="sub-hint">(點擊看分類)</span></div><span id="stat-signedout" style="color:#1976D2;">0</span>
       </div>
-      <div class="admin-stat" style="background:#ffebee;" onclick="openAdminCategory('missing')">
-        <div>尚未簽到人數 <span class="sub-hint">(點擊看分類)</span></div><span id="stat-missing" style="color:#D32F2F;">0</span>
+      <div class="admin-stat" style="background:#ffebee;" onclick="openAdminCategory('missing_out')">
+        <div>尚未簽退人數 <span class="sub-hint">(點擊看分類)</span></div><span id="stat-missingout" style="color:#D32F2F;">0</span>
       </div>
       
       <hr style="margin: 20px 0; border: 1px solid #ddd;">
       
       <div class="admin-stat" onclick="openAdminCategory('meat')">
-        <div>葷食需求 (簽到) <span class="sub-hint">(點擊看分類)</span></div><span id="stat-meat" style="color:var(--pt-blue);">0</span>
+        <div>葷食需求 <span class="sub-hint">(點擊看分類)</span></div><span id="stat-meat" style="color:var(--pt-blue);">0</span>
       </div>
       <div class="admin-stat" onclick="openAdminCategory('veg')">
-        <div>素食需求 (簽到) <span class="sub-hint">(點擊看分類)</span></div><span id="stat-veg" style="color:#4CAF50;">0</span>
+        <div>素食需求 <span class="sub-hint">(點擊看分類)</span></div><span id="stat-veg" style="color:#4CAF50;">0</span>
       </div>
       <div class="admin-stat" onclick="openAdminCategory('none')">
-        <div>不用餐需求 (簽到) <span class="sub-hint">(點擊看分類)</span></div><span id="stat-none" style="color:#757575;">0</span>
+        <div>不用餐需求 <span class="sub-hint">(點擊看分類)</span></div><span id="stat-none" style="color:#757575;">0</span>
+      </div>
+      <div class="admin-stat" onclick="openAdminCategory('unknown')">
+        <div>未註明餐點 <span class="sub-hint">(點擊看分類)</span></div><span id="stat-unknown" style="color:#FF9800;">0</span>
       </div>
 
       <hr style="margin: 20px 0; border: 1px solid #ddd;">
@@ -1253,19 +1270,37 @@
       }
     }
 
+    let sysToggleSignIn = true;
+    let sysToggleSignOut = false;
+
     function listenToFirebase() {
-      // 只監聽「輕量狀態集合」(不含圖片)，避免大量簽名圖片拖慢每台裝置的即時同步速度
       db.collection(STATUS_PATH).onSnapshot((snapshot) => {
         firebaseRecords = [];
         snapshot.forEach((doc) => { firebaseRecords.push({ firebaseId: doc.id, ...doc.data() }); });
         if(currentScreenId.startsWith('screen-admin')) updateAdminDashboard();
       }, (error) => {
-        // Firestore 規則拒絕 or 網路問題，明確告知使用者
         console.error('Firestore 讀取失敗:', error);
-        alert('⚠️ 無法連接資料庫 (錯誤：' + error.code + ')。\n' +
-              '請到 Firebase 主控台 → Firestore Database → Rules，確認規則允許讀寫。\n' +
-              '（目前規則應開放到 2026/9/5，若已過期請重新設定）');
       });
+
+      db.collection('System_Config').doc('SwitchConfig').onSnapshot((doc) => {
+        if (doc.exists) {
+            const data = doc.data();
+            sysToggleSignIn = data.signInOpen !== false; // 預設開啟
+            sysToggleSignOut = data.signOutOpen === true; // 預設關閉
+            
+            const elIn = document.getElementById('toggle-signin');
+            if(elIn) elIn.checked = sysToggleSignIn;
+            
+            const elOut = document.getElementById('toggle-signout');
+            if(elOut) elOut.checked = sysToggleSignOut;
+        }
+      });
+    }
+
+    function updateSystemToggle(type, isOpen) {
+        const docRef = db.collection('System_Config').doc('SwitchConfig');
+        if (type === 'signin') docRef.set({ signInOpen: isOpen }, { merge: true });
+        if (type === 'signout') docRef.set({ signOutOpen: isOpen }, { merge: true });
     }
 
     // === 畫面切換邏輯 (嚴格控制上一頁歷史) ===
@@ -1516,16 +1551,13 @@ showScreen('screen-success');
         dummy.volume = 0;
         window.speechSynthesis.speak(dummy);
       }
-      if (action === '簽退') {
-        const now = new Date();
-        const disableStart = new Date('2026-08-20T00:00:00+08:00');
-        // User mentioned 2026/08/26 16:00, which might be a typo for 2026/08/20 16:00.
-        // We will disable it until the later date specified to be safe.
-        const disableEnd = new Date('2026-08-20T16:00:00+08:00');
-        if (now >= disableStart && now < disableEnd) {
-          alert('簽退時間尚未開始，請於16:00後簽退。');
+      if (action === '簽到' && !sysToggleSignIn) {
+          alert('目前尚未開放簽到。');
           return;
-        }
+      }
+      if (action === '簽退' && !sysToggleSignOut) {
+          alert('目前尚未開放簽退。');
+          return;
       }
       currentAction = action;
       document.getElementById('meal-section').style.display = (action === '簽退' || action === '查詢座位') ? 'none' : 'block';
@@ -1954,52 +1986,114 @@ showScreen('screen-success');
 
     let currentAdminFilterType = ''; 
 
+    function getExpectedPeopleList() {
+      const allExpected = [];
+      const otherRecords = firebaseRecords.filter(r => r.type === 'other');
+      const otherNames = [...new Set(otherRecords.map(r => r.name))];
+      
+      rawDataGov.forEach(p => allExpected.push({ ...p, type: 'gov' }));
+      rawDataSchool.forEach(p => allExpected.push({ ...p, type: 'school' }));
+      otherNames.forEach(name => {
+          const r = otherRecords.find(x => x.name === name);
+          allExpected.push({ agency: r.agency || '', unit: r.unit || r.school || '', title: r.title || '', name: name, type: 'other' });
+      });
+      return allExpected;
+    }
+
     function updateAdminDashboard() {
-      const expectedTotal = rawDataGov.length + rawDataSchool.length;
+      const allExpected = getExpectedPeopleList();
+      const expectedTotal = allExpected.length;
+      
       const signedInList = firebaseRecords.filter(d => d.action === '簽到');
       const signedOutList = firebaseRecords.filter(d => d.action === '簽退');
-      const officialSignedNames = signedInList.filter(d => d.type === 'gov' || d.type === 'school').map(d => d.name);
       
+      const signedInNames = [...new Set(signedInList.map(d => d.name))];
+      const signedOutNames = [...new Set(signedOutList.map(d => d.name))];
+      
+      const numSignedIn = signedInNames.length;
+      const numMissingIn = expectedTotal - numSignedIn;
+      
+      const numSignedOut = signedOutNames.length;
+      const numMissingOut = expectedTotal - numSignedOut;
+      
+      let meat = 0, veg = 0, none = 0, unknown = 0;
+      
+      allExpected.forEach(p => {
+          const inRecord = signedInList.find(r => r.name === p.name);
+          let pMeal = '';
+          if (inRecord && inRecord.meal) {
+              pMeal = inRecord.meal; 
+          } else if (prefillData[p.name] && prefillData[p.name].meal) {
+              pMeal = prefillData[p.name].meal; 
+          }
+          
+          if (pMeal.includes('葷')) meat++;
+          else if (pMeal.includes('素')) veg++;
+          else if (pMeal.includes('不用') || pMeal.includes('無')) none++;
+          else unknown++;
+      });
+
       document.getElementById('stat-total').innerText = expectedTotal;
-      document.getElementById('stat-signed').innerText = signedInList.length;
-      document.getElementById('stat-signedout').innerText = signedOutList.length;
-      document.getElementById('stat-missing').innerText = expectedTotal - officialSignedNames.length;
+      document.getElementById('stat-signed').innerText = numSignedIn;
+      document.getElementById('stat-missing').innerText = numMissingIn;
+      document.getElementById('stat-signedout').innerText = numSignedOut;
       
-      document.getElementById('stat-meat').innerText = signedInList.filter(d => d.meal === '葷食').length;
-      document.getElementById('stat-veg').innerText = signedInList.filter(d => d.meal === '素食').length;
-      document.getElementById('stat-none').innerText = signedInList.filter(d => d.meal === '不用餐').length;
+      const outMissingEl = document.getElementById('stat-missingout');
+      if(outMissingEl) outMissingEl.innerText = numMissingOut;
+      
+      document.getElementById('stat-meat').innerText = meat;
+      document.getElementById('stat-veg').innerText = veg;
+      document.getElementById('stat-none').innerText = none;
+      const statUnknownEl = document.getElementById('stat-unknown');
+      if(statUnknownEl) statUnknownEl.innerText = unknown;
     }
 
     function openAdminCategory(filterType) {
       currentAdminFilterType = filterType;
-      const signedInPeople = firebaseRecords.filter(d => d.action === '簽到');
-      const signedOutPeople = firebaseRecords.filter(d => d.action === '簽退');
-      const signedInNames = signedInPeople.map(d=>d.name);
+      const allExpected = getExpectedPeopleList();
+      const signedInList = firebaseRecords.filter(d => d.action === '簽到');
+      const signedOutList = firebaseRecords.filter(d => d.action === '簽退');
+      const signedInNames = signedInList.map(d=>d.name);
+      const signedOutNames = signedOutList.map(d=>d.name);
       
-      let govCount=0, schoolCount=0, otherCount=0;
-      let titleMap = { 'signed': '已簽到總人數', 'signed_out': '已簽退總人數', 'meat': '葷食需求', 'veg': '素食需求', 'none': '不用餐', 'missing': '尚未簽到人數' };
+      let filtered = [];
+      let titleMap = { 
+        'signed': '已簽到', 'missing': '尚未簽到', 
+        'signed_out': '已簽退', 'missing_out': '尚未簽退', 
+        'meat': '葷食需求', 'veg': '素食需求', 'none': '不用餐', 'unknown': '未註明餐點' 
+      };
       
       if (filterType === 'missing') {
-        govCount = rawDataGov.filter(p => !signedInNames.includes(p.name)).length;
-        schoolCount = rawDataSchool.filter(p => !signedInNames.includes(p.name)).length;
+          filtered = allExpected.filter(p => !signedInNames.includes(p.name));
+      } else if (filterType === 'signed') {
+          filtered = allExpected.filter(p => signedInNames.includes(p.name));
+      } else if (filterType === 'missing_out') {
+          filtered = allExpected.filter(p => !signedOutNames.includes(p.name));
       } else if (filterType === 'signed_out') {
-        govCount = signedOutPeople.filter(d => d.type === 'gov').length;
-        schoolCount = signedOutPeople.filter(d => d.type === 'school').length;
-        otherCount = signedOutPeople.filter(d => d.type === 'other').length;
+          filtered = allExpected.filter(p => signedOutNames.includes(p.name));
       } else {
-        let baseList = signedInPeople;
-        if (filterType === 'meat') baseList = signedInPeople.filter(d => d.meal === '葷食');
-        if (filterType === 'veg') baseList = signedInPeople.filter(d => d.meal === '素食');
-        if (filterType === 'none') baseList = signedInPeople.filter(d => d.meal === '不用餐');
-        govCount = baseList.filter(d => d.type === 'gov').length;
-        schoolCount = baseList.filter(d => d.type === 'school').length;
-        otherCount = baseList.filter(d => d.type === 'other').length;
+          filtered = allExpected.filter(p => {
+              const inRecord = signedInList.find(r => r.name === p.name);
+              let pMeal = '';
+              if (inRecord && inRecord.meal) pMeal = inRecord.meal;
+              else if (prefillData[p.name] && prefillData[p.name].meal) pMeal = prefillData[p.name].meal;
+              
+              if (filterType === 'meat') return pMeal.includes('葷');
+              if (filterType === 'veg') return pMeal.includes('素');
+              if (filterType === 'none') return pMeal.includes('不用') || pMeal.includes('無');
+              return !pMeal.includes('葷') && !pMeal.includes('素') && !pMeal.includes('不用') && !pMeal.includes('無');
+          });
       }
+
+      let govCount = filtered.filter(d => d.type === 'gov').length;
+      let schoolCount = filtered.filter(d => d.type === 'school').length;
+      let otherCount = filtered.filter(d => d.type === 'other').length;
 
       document.getElementById('admin-category-title').innerText = `分類列表 (${titleMap[filterType]})`;
       const container = document.getElementById('admin-category-list');
       
-      const otherBtnHTML = (filterType === 'missing') ? "" : `<button class="btn-list" style="border-left:8px solid #FF9800;" onclick="openAdminList('other')">✏️ 其他來賓 (${otherCount} 人)</button>`;
+      // "其他來賓" 永遠會出現在列表，除非是 0 也可以顯示 0。
+      const otherBtnHTML = `<button class="btn-list" style="border-left:8px solid #FF9800;" onclick="openAdminList('other')">✏️ 其他來賓 (${otherCount} 人)</button>`;
       
       container.innerHTML = `
         <button class="btn-list btn-dept" onclick="openAdminList('gov')">🏛️ 屏東縣政府 (${govCount} 人)</button>
@@ -2010,28 +2104,43 @@ showScreen('screen-success');
     }
 
     function openAdminList(userTypeFilter) {
-      const signedInPeople = firebaseRecords.filter(d => d.action === '簽到');
-      const signedOutPeople = firebaseRecords.filter(d => d.action === '簽退');
-      const signedInNames = signedInPeople.map(d=>d.name);
-      let finalList = [];
-      let isMissingMode = (currentAdminFilterType === 'missing');
+      const allExpected = getExpectedPeopleList();
+      const signedInList = firebaseRecords.filter(d => d.action === '簽到');
+      const signedOutList = firebaseRecords.filter(d => d.action === '簽退');
+      const signedInNames = signedInList.map(d=>d.name);
+      const signedOutNames = signedOutList.map(d=>d.name);
+      
+      let filtered = [];
+      let isMissingMode = (currentAdminFilterType === 'missing' || currentAdminFilterType === 'missing_out');
 
-      if (isMissingMode) {
-        if (userTypeFilter === 'gov') finalList = rawDataGov.filter(p => !signedInNames.includes(p.name));
-        if (userTypeFilter === 'school') finalList = rawDataSchool.filter(p => !signedInNames.includes(p.name));
-        document.getElementById('admin-list-hint').innerText = "提示：以下為尚未簽到名單，供大會查閱";
+      if (currentAdminFilterType === 'missing') {
+          filtered = allExpected.filter(p => !signedInNames.includes(p.name));
+          document.getElementById('admin-list-hint').innerText = "提示：以下為尚未簽到名單，無刪除按鈕";
+      } else if (currentAdminFilterType === 'signed') {
+          filtered = allExpected.filter(p => signedInNames.includes(p.name));
+          document.getElementById('admin-list-hint').innerText = "提示：點擊右側刪除可讓該員重新簽到/簽退";
+      } else if (currentAdminFilterType === 'missing_out') {
+          filtered = allExpected.filter(p => !signedOutNames.includes(p.name));
+          document.getElementById('admin-list-hint').innerText = "提示：以下為尚未簽退名單，無刪除按鈕";
       } else if (currentAdminFilterType === 'signed_out') {
-        finalList = signedOutPeople.filter(d => d.type === userTypeFilter);
-        document.getElementById('admin-list-hint').innerText = "提示：點擊右側刪除按鈕可讓該員重新簽退";
+          filtered = allExpected.filter(p => signedOutNames.includes(p.name));
+          document.getElementById('admin-list-hint').innerText = "提示：點擊右側刪除可讓該員重新簽到/簽退";
       } else {
-        let baseList = signedInPeople;
-        if (currentAdminFilterType === 'meat') baseList = signedInPeople.filter(d => d.meal === '葷食');
-        if (currentAdminFilterType === 'veg') baseList = signedInPeople.filter(d => d.meal === '素食');
-        if (currentAdminFilterType === 'none') baseList = signedInPeople.filter(d => d.meal === '不用餐');
-        finalList = baseList.filter(d => d.type === userTypeFilter);
-        document.getElementById('admin-list-hint').innerText = "提示：點擊右側刪除按鈕可讓該員重新簽到";
+          filtered = allExpected.filter(p => {
+              const inRecord = signedInList.find(r => r.name === p.name);
+              let pMeal = '';
+              if (inRecord && inRecord.meal) pMeal = inRecord.meal;
+              else if (prefillData[p.name] && prefillData[p.name].meal) pMeal = prefillData[p.name].meal;
+              
+              if (currentAdminFilterType === 'meat') return pMeal.includes('葷');
+              if (currentAdminFilterType === 'veg') return pMeal.includes('素');
+              if (currentAdminFilterType === 'none') return pMeal.includes('不用') || pMeal.includes('無');
+              return !pMeal.includes('葷') && !pMeal.includes('素') && !pMeal.includes('不用') && !pMeal.includes('無');
+          });
+          document.getElementById('admin-list-hint').innerText = "提示：點擊右側刪除可讓該員重新簽到/簽退";
       }
       
+      let finalList = filtered.filter(p => p.type === userTypeFilter);
       const typeName = userTypeFilter === 'gov' ? '屏東縣政府' : (userTypeFilter === 'school' ? '各級學校' : '其他來賓');
       document.getElementById('admin-list-title').innerText = `${typeName} (${finalList.length}人)`;
 
@@ -2042,17 +2151,25 @@ showScreen('screen-success');
         finalList.forEach(r => {
           const div = document.createElement('div'); div.className = 'record-item';
           
+          let pMeal = '';
+          const inRecord = signedInList.find(x => x.name === r.name);
+          if (inRecord && inRecord.meal) pMeal = inRecord.meal;
+          else if (prefillData[r.name] && prefillData[r.name].meal) pMeal = prefillData[r.name].meal;
+          
+          const mealText = pMeal ? `<span style="color:#E91E63; font-size:16px;">(${pMeal})</span>` : '';
+          
           if (isMissingMode) {
-            div.innerHTML = `<div>${r.agency || r.town || ''} ${r.school || r.unit || ''} <br><b style="font-size:22px; color:#D32F2F;">${r.name}</b> ${r.title}</div>`;
+            div.innerHTML = `
+              <div>${r.agency || r.town || ''} ${r.school || r.unit || ''} <br>
+              <b style="font-size:22px; color:#D32F2F;">${r.name}</b> ${r.title || ''} ${mealText}</div>
+            `;
           } else {
-            const mealText = (r.action === '簽到') ? `<span style="color:#E91E63;">(${r.meal})</span>` : '';
             div.innerHTML = `
               <div>
-                <span style="color:#1976D2; font-size:14px;">${r.timestamp} [${r.action}]</span><br>
-                ${r.agency || r.school || ''} ${r.unit || ''} <br>
-                <b style="font-size:22px;">${r.name}</b> ${mealText}
+                ${r.agency || r.town || ''} ${r.school || r.unit || ''} <br>
+                <b style="font-size:22px;">${r.name}</b> ${r.title || ''} ${mealText}
               </div>
-              <button class="btn-delete" onclick="deleteRecord('${r.firebaseId}')">刪除</button>
+              <button class="btn-delete" onclick="deleteRecordByName('${r.name}')">刪除紀錄</button>
             `;
           }
           container.appendChild(div);
@@ -2061,11 +2178,14 @@ showScreen('screen-success');
       showScreen('screen-admin-list');
     }
 
-    function deleteRecord(firebaseId) {
-      if(confirm("確定要刪除這筆紀錄嗎？\n刪除後該員可在前台重新進行操作。")) {
+    function deleteRecordByName(name) {
+      if(confirm(`確定要刪除「${name}」的所有紀錄嗎？\n刪除後該員可在前台重新進行操作。`)) {
+        const pRecords = firebaseRecords.filter(d => d.name === name);
         const batch = db.batch();
-        batch.delete(db.collection(DB_PATH).doc(firebaseId));
-        batch.delete(db.collection(STATUS_PATH).doc(firebaseId));
+        pRecords.forEach(r => {
+            batch.delete(db.collection(DB_PATH).doc(r.firebaseId));
+            batch.delete(db.collection(STATUS_PATH).doc(r.firebaseId));
+        });
         batch.commit().then(() => { alert("刪除成功！"); goBack(); })
           .catch(() => alert("刪除失敗，請檢查網路連線後再試一次。"));
       }
