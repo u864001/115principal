@@ -473,7 +473,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
-    <button style="position: absolute; top: 20px; left: 20px; z-index: 1000; background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.3); color: white; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 16px; backdrop-filter: blur(10px); transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.3);" onclick="window.location.href='index.html'" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">← 返回首頁</button>
+    <button style="position: absolute; top: 20px; left: 20px; z-index: 1000; background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.3); color: white; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 16px; backdrop-filter: blur(10px); transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.3);" onclick="event.stopPropagation(); window.location.href='index.html'" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">← 返回首頁</button>
     
     <button id="theme-toggle-btn" style="position: absolute; top: 20px; right: 20px; z-index: 1000; background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.3); color: white; padding: 10px; border-radius: 50%; cursor: pointer; backdrop-filter: blur(10px); transition: all 0.3s ease; box-shadow: 0 4px 6px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; width: 48px; height: 48px;" onclick="toggleTheme(event)" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">
         <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: block;"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
@@ -516,6 +516,13 @@
             </div>
         </div>
 
+        <!-- Slide 2-1: 介紹長官及來賓 -->
+        <div class="slide">
+            <div class="speaker-card" style="padding-top: 80px; padding-bottom: 80px; background: transparent; border: none; box-shadow: none; backdrop-filter: none; text-align: center; display: flex; align-items: center; justify-content: center; height: 100%;">
+                <div class="speaker-name day-gold-sweep trans-text" style="font-size: 4.5rem; letter-spacing: 10px; margin-left: 10px;">介紹長官及來賓</div>
+            </div>
+        </div>
+
         <!-- Slide 3: 長官致詞 -->
         <div class="slide">
             <div class="speaker-card" style="padding-top: 60px; padding-bottom: 60px;">
@@ -537,6 +544,13 @@
             <div class="speaker-card" style="padding-top: 60px; padding-bottom: 60px;">
                 <h2 style="margin-bottom:15px; color:#cbd5e1; font-weight:400;">來賓致詞</h2>
                 <div class="speaker-name day-gold-sweep" style="font-size: 3.2rem;">國立內埔農工 教務主任 謝炎和</div>
+            </div>
+        </div>
+
+        <!-- Slide 3-2: 頒獎 -->
+        <div class="slide">
+            <div class="speaker-card" style="padding-top: 80px; padding-bottom: 80px; background: transparent; border: none; box-shadow: none; backdrop-filter: none; text-align: center; display: flex; align-items: center; justify-content: center; height: 100%;">
+                <div class="speaker-name day-gold-sweep trans-text" style="font-size: 5.5rem; letter-spacing: 20px; margin-left: 20px;">頒獎</div>
             </div>
         </div>
 
@@ -620,15 +634,6 @@
             </div>
         </div>
 
-        <!-- Slide 11: 頒獎 9 -->
-        <div class="slide">
-            <div class="glass-panel">
-                <div class="award-badge">第10屆國家環境教育獎 ✦ 優等</div>
-                <div class="school-title day-gold-sweep">餉潭國小</div>
-                <p class="award-desc">餉潭國小積極推動「ECO餉潭學」校本課程，結合在地生態、台美生態學校認證與老幼共學繪本創作，展現永續教育成效，榮獲第10屆國家環境教育獎學校組優等獎殊榮。</p>
-            </div>
-        </div>
-
         <!-- Slide 12: 頒獎 10 -->
         <div class="slide">
             <div class="glass-panel">
@@ -640,13 +645,12 @@
             </div>
         </div>
 
-        <!-- Slide 13: 頒獎 11 -->
+        <!-- Slide 11: 頒獎 9 -->
         <div class="slide">
             <div class="glass-panel">
-                <div class="award-badge">115年閱讀磐石學校組</div>
-                <div class="school-title day-gold-sweep">滿州國中 ✦ 五溝國小 ✦ 仁和國小 ✦ 民和國小</div>
-                <p class="award-desc">教育部公布115年閱讀磐石獎，屏東縣推薦學校全數獲獎！</p>
-                <p class="award-desc">滿州國中、仁和國小、五溝國小及民和國小四校團隊將嚴苛的環境轉化為向上盤旋的動力，讓屏東的孩子們透過閱讀，讓閱讀的種子在家庭與學校扎根。</p>
+                <div class="award-badge">第10屆國家環境教育獎 ✦ 優等</div>
+                <div class="school-title day-gold-sweep">餉潭國小</div>
+                <p class="award-desc">餉潭國小積極推動「ECO餉潭學」校本課程，結合在地生態、台美生態學校認證與老幼共學繪本創作，展現永續教育成效，榮獲第10屆國家環境教育獎學校組優等獎殊榮。</p>
             </div>
         </div>
 
@@ -669,6 +673,23 @@
         </div>
 
         
+        <!-- Slide 13: 頒獎 11 -->
+        <div class="slide">
+            <div class="glass-panel">
+                <div class="award-badge">115年閱讀磐石學校組</div>
+                <div class="school-title day-gold-sweep">滿州國中 ✦ 五溝國小 ✦ 仁和國小 ✦ 民和國小</div>
+                <p class="award-desc">教育部公布115年閱讀磐石獎，屏東縣推薦學校全數獲獎！</p>
+                <p class="award-desc">滿州國中、仁和國小、五溝國小及民和國小四校團隊將嚴苛的環境轉化為向上盤旋的動力，讓屏東的孩子們透過閱讀，讓閱讀的種子在家庭與學校扎根。</p>
+            </div>
+        </div>
+
+        <!-- Slide 13-3: 大合照 -->
+        <div class="slide">
+            <div class="speaker-card" style="padding-top: 80px; padding-bottom: 80px; background: transparent; border: none; box-shadow: none; backdrop-filter: none; text-align: center; display: flex; align-items: center; justify-content: center; height: 100%;">
+                <div class="speaker-name day-gold-sweep trans-text" style="font-size: 5.5rem; letter-spacing: 15px; margin-left: 15px;">大合照</div>
+            </div>
+        </div>
+
         <!-- Slide 14: 人事處 -->
         <div class="slide">
             <div class="speaker-card">
@@ -1349,24 +1370,17 @@
         window.addEventListener('resize', resizeStage);
         resizeStage();
 
-        // === 最後一頁簽退 QR Code ===
-        // 指向同目錄下的 index.html，讓與會者掃描後直接進入簽退流程
-        (function generateSignoutQR() {
-            try {
-                const base = window.location.href.replace(/[^\/]*\.html[^\/]*$/, '');
-                const indexUrl = base + 'index.html';
-                new QRCode(document.getElementById('qrcode-signout'), {
-                    text: indexUrl,
-                    width: 380,
-                    height: 380,
-                    colorDark:  '#0c4a6e',   // 深藍，與日版講者頁同色系
-                    colorLight: '#ffffff',
-                    correctLevel: QRCode.CorrectLevel.M  // 中等容錯，密度適中易掃描
-                });
-            } catch (e) {
-                console.error('SignoutQR generation failed:', e);
-            }
-        })();
+        // 產生單一 QR Code
+        const base = window.location.href.replace(/[^/]*\.html[^/]*$/, '');
+        const indexUrl = base + 'index.html';
+        new QRCode(document.getElementById('qrcode-signout'), {
+            text: indexUrl,
+            width: 380,
+            height: 380,
+            colorDark: '#0c4a6e',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.M
+        });
 
     </script>
 </body>
