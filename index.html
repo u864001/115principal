@@ -1161,7 +1161,36 @@
     signaturePad.addEventListener('beginStroke', () => resetIdleTimer(currentScreenId));
     signaturePad.addEventListener('endStroke', () => resetIdleTimer(currentScreenId));
 
-    window.onload = () => { loadAllData(); listenToFirebase(); generateQRCode(); };
+    async function checkAndClearData() {
+      const targetTime = new Date('2026-08-19T23:00:00+08:00').getTime();
+      const now = Date.now();
+      
+      // 若超過目標時間，進行一次性清除
+      if (now >= targetTime) {
+        const flagRef = db.collection('System_Config').doc('Clear20260819_2300');
+        try {
+          const doc = await flagRef.get();
+          if (!doc.exists) {
+             // 標記已執行
+             await flagRef.set({ cleared: true, time: new Date().toISOString() });
+             
+             // 刪除所有 DB_PATH 的資料
+             const snap1 = await db.collection(DB_PATH).get();
+             snap1.forEach(d => d.ref.delete());
+             
+             // 刪除所有 STATUS_PATH 的資料
+             const snap2 = await db.collection(STATUS_PATH).get();
+             snap2.forEach(d => d.ref.delete());
+             
+             console.log("Auto-cleared all data at 23:00");
+          }
+        } catch(e) {
+          console.error("Auto-clear checking failed", e);
+        }
+      }
+    }
+
+    window.onload = () => { loadAllData(); listenToFirebase(); generateQRCode(); checkAndClearData(); };
 
     function generateQRCode() {
       new QRCode(document.getElementById("qrcode"), {
@@ -1195,13 +1224,19 @@
     function parsePrefillCSV(csv) {
       prefillData = {};
       const rows = csv.split('\n');
+      const now = new Date();
+      const cutoffTime = new Date('2026-08-19T23:00:00+08:00');
+
       for (let i = 1; i < rows.length; i++) {
         if (!rows[i].trim()) continue;
         const cols = rows[i].split(',').map(c => c.replace(/(^"|"$)/g, '').trim());
         if (cols.length >= 7) {
           const name = cols[5];
-          const meal = cols[6]; // 用餐意願
-          const seat = cols.length >= 10 ? cols[9] : ''; // 座位
+          
+          // 如果超過 2026/08/19 23:00，就忽略G欄的用餐意願，強制設為空字串
+          const meal = (now >= cutoffTime) ? "" : cols[6];
+          
+          const seat = cols.length >= 10 ? cols[9] : ''; // J 欄位依然保留
           if (name) {
              prefillData[name] = { meal: meal, seat: seat };
           }
@@ -1386,7 +1421,7 @@
 
     function resetIdleTimer(screenId) {
       clearTimeout(idleTimer);
-      if (screenId === 'screen-home' || screenId.startsWith('screen-admin')) return;
+      if (screenId === 'screen-home' || screenId.startsWith('screen-admin') || screenId === 'screen-status') return;
       idleTimer = setTimeout(() => { goHome(); }, (screenId === 'screen-sign') ? 60000 : 30000); 
     }
     document.addEventListener('touchstart', () => resetIdleTimer(currentScreenId));
