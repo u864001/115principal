@@ -354,83 +354,26 @@
         }
 
         body.day-mode .glass-panel {
-            box-shadow: 0 10px 30px rgba(15,23,42,0.14) !important;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important;
         }
-
-        /* ── 日版基礎：正文 p / li / .trans-text ── */
+        
+        body.day-mode .slide:not(.title-slide) h2,
+        body.day-mode .slide:not(.title-slide) .school-title,
+        body.day-mode .slide:not(.title-slide) .award-desc,
         body.day-mode .slide:not(.title-slide) p,
-        body.day-mode .slide:not(.title-slide) li,
+        body.day-mode .slide:not(.title-slide) .speaker-name,
+        body.day-mode .slide:not(.title-slide) .award-badge,
         body.day-mode .slide:not(.title-slide) .trans-text {
-            color: #1e293b !important;
-            text-shadow: none !important;
-            -webkit-text-fill-color: #1e293b !important;
-        }
-
-        /* ══════════════════════════════════════════════════════
-           日版 講者頁 (.speaker-card)：深藍調，專業・清晰・尊榮
-           ══════════════════════════════════════════════════════ */
-        body.day-mode .slide .speaker-card {
-            background: rgba(255, 255, 255, 0.55) !important;
-            border: 1px solid rgba(148, 163, 184, 0.45) !important;
-            box-shadow: 0 12px 40px rgba(15, 23, 42, 0.12),
-                        inset 0 1px 0 rgba(255,255,255,0.8) !important;
-        }
-        body.day-mode .slide .speaker-card h2 {
-            color: #475569 !important;
-            -webkit-text-fill-color: #475569 !important;
+            color: #111 !important;
             text-shadow: none !important;
             background: none !important;
-            border-color: rgba(71, 85, 105, 0.2) !important;
-        }
-        body.day-mode .slide .speaker-card .speaker-name {
-            background: linear-gradient(135deg,
-                #0c4a6e 0%, #1e40af 55%, #0369a1 100%) !important;
-            -webkit-background-clip: text !important;
-            background-clip: text !important;
-            -webkit-text-fill-color: transparent !important;
-            color: transparent !important;
-            text-shadow: none !important;
-            border: none !important;
+            -webkit-text-fill-color: #111 !important;
+            border-color: #111 !important;
         }
 
-        /* ══════════════════════════════════════════════════════
-           日版 頒獎頁 (.glass-panel)：琥珀金 × 海軍藍，典禮感・榮耀
-           ══════════════════════════════════════════════════════ */
-        body.day-mode .slide .glass-panel h2 {
-            color: #475569 !important;
-            -webkit-text-fill-color: #475569 !important;
-            text-shadow: none !important;
-            background: none !important;
-            border-color: rgba(71, 85, 105, 0.2) !important;
-        }
-        body.day-mode .slide .glass-panel h2::before {
-            background: linear-gradient(to bottom, #d97706, #92400e) !important;
-            box-shadow: 0 0 10px rgba(217, 119, 6, 0.45) !important;
-        }
-        body.day-mode .award-badge {
-            background: linear-gradient(135deg,
-                rgba(253, 224, 71, 0.22) 0%,
-                rgba(217, 119, 6, 0.18) 100%) !important;
-            border: 1.5px solid #b45309 !important;
-            color: #7c2d12 !important;
-            -webkit-text-fill-color: #7c2d12 !important;
-            box-shadow: 0 4px 16px rgba(180, 83, 9, 0.18),
-                        inset 0 1px 0 rgba(253, 224, 71, 0.45) !important;
-            text-shadow: none !important;
-        }
-        body.day-mode .school-title {
-            background: linear-gradient(135deg,
-                #0c4a6e 0%, #1e3a8a 50%, #1e40af 100%) !important;
-            -webkit-background-clip: text !important;
-            background-clip: text !important;
-            -webkit-text-fill-color: transparent !important;
-            color: transparent !important;
-            text-shadow: none !important;
-        }
-        body.day-mode .award-desc {
-            color: #1e293b !important;
-            -webkit-text-fill-color: #1e293b !important;
-            text-shadow: none !important;
+        body.day-mode .slide:not(.title-slide) h2::before {
+            background: #111 !important;
+            box-shadow: none !important;
         }
 
         body.day-mode .title-slide .school-title, 
@@ -454,20 +397,19 @@
             filter: drop-shadow(0 0 4px rgba(255,255,255,0.85)) !important;
         }
 
-        /* 連結按鈕：與講者名稱同色系深藍 */
         body.day-mode .slide a[target="_blank"] {
-            color: #1e40af !important;
-            border-color: rgba(30, 64, 175, 0.4) !important;
-            background: rgba(30, 64, 175, 0.08) !important;
+            color: #111 !important;
+            border-color: rgba(17, 17, 17, 0.4) !important;
+            background: rgba(17, 17, 17, 0.05) !important;
         }
         body.day-mode .slide a[target="_blank"]:hover {
-            background: rgba(30, 64, 175, 0.18) !important;
+            background: rgba(17, 17, 17, 0.15) !important;
         }
 
         body.day-mode > button {
-            color: #1e3a8a !important;
-            border-color: rgba(30, 58, 138, 0.3) !important;
-            background: rgba(255, 255, 255, 0.55) !important;
+            color: #111 !important;
+            border-color: rgba(17, 17, 17, 0.4) !important;
+            background: rgba(255, 255, 255, 0.5) !important;
         }
         body.day-mode > button:hover {
             background: rgba(255, 255, 255, 0.8) !important;
@@ -492,6 +434,27 @@
             font-weight: 900;
             margin-bottom: 25px;
             color: #ffffff;
+        }
+    
+        /* 日間模式：特別強調的金屬掃光效果 */
+        body.day-mode .day-gold-sweep {
+            background: linear-gradient(
+                -45deg, 
+                #854d0e 20%, 
+                #f59e0b 40%, 
+                #854d0e 50%, 
+                #f59e0b 60%, 
+                #854d0e 80%
+            ) !important;
+            background-size: 250% auto !important;
+            color: transparent !important;
+            -webkit-background-clip: text !important;
+            background-clip: text !important;
+            animation: metallic-shine 4s linear infinite !important;
+            -webkit-text-fill-color: transparent !important;
+            filter: drop-shadow(0 0 2px rgba(245,158,11,0.2)) !important;
+            text-shadow: none !important;
+            font-weight: 900 !important;
         }
     </style>
 </head>
@@ -534,7 +497,7 @@
             <div class="speaker-card">
                 <h2 style="margin-bottom:10px; color:#cbd5e1; font-weight:400;">業務宣導</h2>
                 <div class="speaker-name">政風處重點業務宣導</div>
-                <div style="font-size:1.8rem; color:#94a3b8; margin-top:20px;">政風處政風預防科 吳季璇科長</div>
+                <div style="font-size:1.8rem; color:#94a3b8; margin-top:20px;" class="day-gold-sweep">政風處政風預防科 吳季璇科長</div>
                 <a href="政風處.pptx" target="_blank" style="display: inline-block; margin-top: 30px; padding: 12px 24px; background: rgba(0,242,254,0.15); border: 1px solid rgba(0,242,254,0.4); color: #fff; text-decoration: none; border-radius: 8px; font-size: 1.5rem; transition: all 0.3s; backdrop-filter: blur(5px);" onmouseover="this.style.background='rgba(0,242,254,0.25)'" onmouseout="this.style.background='rgba(0,242,254,0.15)'">📄 點此閱讀簡報</a>
             </div>
         </div>
@@ -543,7 +506,7 @@
         <div class="slide">
             <div class="speaker-card" style="padding-top: 60px; padding-bottom: 60px;">
                 <h2 style="margin-bottom:15px; color:#cbd5e1; font-weight:400;">長官致詞</h2>
-                <div class="speaker-name" style="font-size: 3.2rem;">屏東縣 周春米 縣長</div>
+                <div class="speaker-name day-gold-sweep" style="font-size: 3.2rem;">屏東縣 周春米 縣長</div>
             </div>
         </div>
 
@@ -551,7 +514,7 @@
         <div class="slide">
             <div class="speaker-card" style="padding-top: 60px; padding-bottom: 60px;">
                 <h2 style="margin-bottom:15px; color:#cbd5e1; font-weight:400;">來賓致詞</h2>
-                <div class="speaker-name" style="font-size: 3.2rem;">霧臺鄉 巴正義 鄉長</div>
+                <div class="speaker-name day-gold-sweep" style="font-size: 3.2rem;">霧臺鄉 巴正義 鄉長</div>
             </div>
         </div>
 
@@ -559,7 +522,7 @@
         <div class="slide">
             <div class="glass-panel">
                 <div class="award-badge">視力保健績優學校 ✦ 特優</div>
-                <div class="school-title">瑞光國小</div>
+                <div class="school-title day-gold-sweep">瑞光國小</div>
                 <p class="award-desc">學校持續改善教室照明與課桌椅配置，打造明亮舒適的護眼環境。積極落實「3010護眼行動」、「戶外活動120分鐘」及下課教室淨空，培養學生良好護眼習慣。</p>
                 <p class="award-desc">同時推廣遠視儲備與戶外戴帽觀念，提升親師生對近視預防的重視。在全校共同努力下，學生視力不良率逐年穩定下降。</p>
             </div>
@@ -569,7 +532,7 @@
         <div class="slide">
             <div class="glass-panel">
                 <div class="award-badge">口腔保健績優學校 ✦ 優等</div>
-                <div class="school-title">青山國小</div>
+                <div class="school-title day-gold-sweep">青山國小</div>
                 <p class="award-desc">學校從幼兒園扎根口腔保健，落實早餐後潔牙，並由校長、護理師及「潔牙小天使」共同推動正確潔牙。另結合社區文健站辦理老幼共學，將健康理念延伸至家庭與社區。</p>
                 <p class="award-desc">學生齲齒率逐年下降，齲齒矯治率、窩溝封填率及塗氟率皆接近100%，成效卓著。</p>
             </div>
@@ -579,7 +542,7 @@
         <div class="slide">
             <div class="glass-panel">
                 <div class="award-badge">健康體位績優學校 ✦ 優良</div>
-                <div class="school-title">崇蘭國小</div>
+                <div class="school-title day-gold-sweep">崇蘭國小</div>
                 <p class="award-desc">學校以學生健康為核心，營造健康、活力且友善的校園環境。透過健康體位推動策略，將「五正四樂」融入課程與日常生活，引導學生建立正確飲食與運動觀念。</p>
                 <p class="award-desc">前後測顯示學生健康知能與行為均明顯進步，健康理念已深植校園。</p>
             </div>
@@ -589,7 +552,7 @@
         <div class="slide">
             <div class="glass-panel">
                 <div class="award-badge">菸檳防制教育推廣績優 ✦ 優良</div>
-                <div class="school-title">內埔國中</div>
+                <div class="school-title day-gold-sweep">內埔國中</div>
                 <p class="award-desc">學校結合衛生政策、健康教育、表演藝術及多元宣導，推動反菸拒檳與電子煙防制。課程著重危害認知、拒絕技巧及健康生活能力，協助學生做出自主選擇。</p>
                 <p class="award-desc">並整合家長、社區與衛生單位資源，共同營造無菸、無檳、安全友善的健康校園。</p>
             </div>
@@ -599,7 +562,7 @@
         <div class="slide">
             <div class="glass-panel">
                 <div class="award-badge">「前後測成效評價」成果評選 ✦ 特優</div>
-                <div class="school-title">惠農國小</div>
+                <div class="school-title day-gold-sweep">惠農國小</div>
                 <p class="award-desc">學校以「正向心理『惠』健康，『農』心戮力愛健保」為主題，推動正向心理健康、全民健保與正確用藥行動研究。透過問卷掌握學生及家長的認知與行為，據以規劃適切策略。</p>
                 <p class="award-desc">藉此提升親師生對健保與用藥安全的重視，建立正確就醫、用藥觀念及負責任的健康態度。</p>
             </div>
@@ -609,7 +572,7 @@
         <div class="slide">
             <div class="glass-panel">
                 <div class="award-badge">校園健康主播 ✦ 佳作</div>
-                <div class="school-title">滿州國中</div>
+                <div class="school-title day-gold-sweep">滿州國中</div>
                 <p class="award-desc">學校以「滿州韌性・健康起飛」為核心，結合自然生態、在地文化與產業，將健康促進融入校本課程及日常生活。</p>
                 <p class="award-desc">透過多元課程與實際行動，引導學生從生活中學習健康、從土地中認識家鄉。並培養學生守護自我、關懷在地與實踐健康生活的行動力。</p>
             </div>
@@ -619,7 +582,7 @@
         <div class="slide">
             <div class="glass-panel">
                 <div class="award-badge">校園珍惜健保AI創作實境秀 (國中組) ✦ 特優</div>
-                <div class="school-title">鶴聲國中</div>
+                <div class="school-title day-gold-sweep">鶴聲國中</div>
                 <p class="award-desc">學校企劃《校園健康守護特報》實境秀，將珍惜健保、正確用藥及分級醫療融入校園生活。影片結合親師宣誓、棒球隊情境演繹、童軍社區服務、AR桌遊及AI共創主題曲。</p>
                 <p class="award-desc">成功串聯校園、家庭與社區，將健保政策轉化為溫暖且具行動力的健康教育。</p>
             </div>
@@ -629,7 +592,7 @@
         <div class="slide">
             <div class="glass-panel">
                 <div class="award-badge">校園珍惜健保AI創作實境秀 (國小組) ✦ 佳作</div>
-                <div class="school-title">長榮百合國小</div>
+                <div class="school-title day-gold-sweep">長榮百合國小</div>
                 <p class="award-desc">學校以「珍惜健保、正確用藥」為主題，全片運用AI技術創作，突破傳統拍攝在場景、角色與表現形式上的限制。</p>
                 <p class="award-desc">活潑且富想像力的呈現方式提升影片吸引力，引發學生觀看、討論與分享。透過創新媒材深化健康知能，讓健保與用藥教育更貼近孩子。</p>
             </div>
@@ -639,7 +602,7 @@
         <div class="slide">
             <div class="glass-panel">
                 <div class="award-badge">第10屆國家環境教育獎 ✦ 優等</div>
-                <div class="school-title">餉潭國小</div>
+                <div class="school-title day-gold-sweep">餉潭國小</div>
                 <p class="award-desc">餉潭國小積極推動「ECO餉潭學」校本課程，結合在地生態、台美生態學校認證與老幼共學繪本創作，展現永續教育成效，榮獲第10屆國家環境教育獎學校組優等獎殊榮。</p>
             </div>
         </div>
@@ -648,7 +611,7 @@
         <div class="slide">
             <div class="glass-panel">
                 <div class="award-badge">115年度教育部戶外教育成效卓著獎 ✦ 學校績優獎</div>
-                <div class="school-title">石門國小 ✦ 恆春國小</div>
+                <div class="school-title day-gold-sweep">石門國小 ✦ 恆春國小</div>
                 <p class="award-desc">石門國小與恆春國小長期深耕戶外教育有成，本次榮獲115年度「教育部戶外教育成效卓著獎」學校績優獎</p>
                 <p class="award-desc"><b>石門國小：</b>以「跟著luli蝸牛遊學趣」為主題，將排灣族文化與山林智慧融入課程，帶領孩子「從土地出發、朝夢想長大」，培育具文化根基與行動力的下一代。</p>
                 <p class="award-desc"><b>恆春國小：</b>以「半島TOUR趣，行動永留續」為核心，結合古城、民謠與國家公園優勢，建構安全的螺旋式戶外學習，實踐「在地行動、永續共好」的素養教育！</p>
@@ -659,7 +622,7 @@
         <div class="slide">
             <div class="glass-panel">
                 <div class="award-badge">115年閱讀磐石學校組</div>
-                <div class="school-title">滿州國中 ✦ 五溝國小 ✦ 仁和國小 ✦ 民和國小</div>
+                <div class="school-title day-gold-sweep">滿州國中 ✦ 五溝國小 ✦ 仁和國小 ✦ 民和國小</div>
                 <p class="award-desc">教育部公布115年閱讀磐石獎，屏東縣推薦學校全數獲獎！</p>
                 <p class="award-desc">滿州國中、仁和國小、五溝國小及民和國小四校團隊將嚴苛的環境轉化為向上盤旋的動力，讓屏東的孩子們透過閱讀，讓閱讀的種子在家庭與學校扎根。</p>
             </div>
@@ -669,7 +632,7 @@
         <div class="slide">
             <div class="glass-panel">
                 <div class="award-badge">2026馬路好行評選 ✦ 教育宣導人本交通類整體優良</div>
-                <div class="school-title">長興國小</div>
+                <div class="school-title day-gold-sweep">長興國小</div>
                 <p class="award-desc">參加內政部國土署2026馬路好行評選，獲評「教育宣導人本交通類」整體優良，展現學校推動人本交通及交通安全教育的成果。</p>
             </div>
         </div>
@@ -678,7 +641,7 @@
         <div class="slide">
             <div class="glass-panel">
                 <div class="award-badge">114學年度各級學校交通安全教育訪視 ✦ 國小組特優</div>
-                <div class="school-title">勝利國小</div>
+                <div class="school-title day-gold-sweep">勝利國小</div>
                 <p class="award-desc">勝利國小榮獲教育部114學年度各級學校交通安全教育訪視「國小組特優」，展現學校推動交通安全教育的優良成果，值得肯定與鼓勵。</p>
             </div>
         </div>
@@ -689,7 +652,7 @@
             <div class="speaker-card">
                 <h2 style="margin-bottom:10px; color:var(--text-muted); font-weight:400;" class="trans-text">業務宣導</h2>
                 <div class="speaker-name trans-title">人事處重點業務宣導</div>
-                <div style="font-size:1.8rem; color:var(--text-muted); margin-top:20px;" class="trans-text">人事處 陳惠蓉處長</div>
+                <div style="font-size:1.8rem; color:var(--text-muted); margin-top:20px;" class="trans-text day-gold-sweep">人事處 陳惠蓉處長</div>
             </div>
         </div>
 
@@ -698,7 +661,7 @@
             <div class="speaker-card">
                 <h2 style="margin-bottom:10px; color:var(--text-muted); font-weight:400;" class="trans-text">業務宣導</h2>
                 <div class="speaker-name trans-title">教育處重點業務宣導</div>
-                <div style="font-size:1.8rem; color:var(--text-muted); margin-top:20px;" class="trans-text">教育處 陳國祥處長</div>
+                <div style="font-size:1.8rem; color:var(--text-muted); margin-top:20px;" class="trans-text day-gold-sweep">教育處 陳國祥處長</div>
                 <a href="handbook-ptc.pdf" target="_blank" style="display: inline-block; margin-top: 30px; padding: 12px 24px; background: rgba(0,242,254,0.15); border: 1px solid rgba(0,242,254,0.4); color: #fff; text-decoration: none; border-radius: 8px; font-size: 1.5rem; transition: all 0.3s; backdrop-filter: blur(5px);" onmouseover="this.style.background='rgba(0,242,254,0.25)'" onmouseout="this.style.background='rgba(0,242,254,0.15)'">📄 點此閱讀演講簡報</a>
             </div>
         </div>
@@ -716,7 +679,16 @@
             <div class="speaker-card">
                 <h2 style="margin-bottom:10px; color:var(--text-muted); font-weight:400;" class="trans-text">重點說明</h2>
                 <div class="speaker-name trans-title">本縣教育政策重點說明</div>
-                <div style="font-size:1.8rem; color:var(--text-muted); margin-top:20px;" class="trans-text">教育處科長、中心主任、督學</div>
+                <div style="font-size:1.6rem; color:var(--text-muted); margin-top:30px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px 30px; text-align: left; max-width: 800px; margin-left: auto; margin-right: auto;" class="trans-text day-gold-sweep">
+                    <div>國民教育科 <span style="font-size:1.2rem; opacity:0.8;">(手冊第105至121頁)</span></div>
+                    <div>學務管理科 <span style="font-size:1.2rem; opacity:0.8;">(手冊第122至135頁)</span></div>
+                    <div>特殊及學前教育科 <span style="font-size:1.2rem; opacity:0.8;">(手冊第136至147頁)</span></div>
+                    <div>教學發展科 <span style="font-size:1.2rem; opacity:0.8;">(手冊第148至161頁)</span></div>
+                    <div>學生事務科 <span style="font-size:1.2rem; opacity:0.8;">(手冊第162至185頁)</span></div>
+                    <div>終身教育科 <span style="font-size:1.2rem; opacity:0.8;">(手冊第186至195頁)</span></div>
+                    <div>體育發展中心 <span style="font-size:1.2rem; opacity:0.8;">(手冊第196至199頁)</span></div>
+                    <div>家庭教育中心 <span style="font-size:1.2rem; opacity:0.8;">(手冊第200至204頁)</span></div>
+                </div>
                 <a href="handbook-ptc.pdf" target="_blank" style="display: inline-block; margin-top: 30px; padding: 12px 24px; background: rgba(0,242,254,0.15); border: 1px solid rgba(0,242,254,0.4); color: #fff; text-decoration: none; border-radius: 8px; font-size: 1.5rem; transition: all 0.3s; backdrop-filter: blur(5px);" onmouseover="this.style.background='rgba(0,242,254,0.25)'" onmouseout="this.style.background='rgba(0,242,254,0.15)'">📄 點此閱讀手冊</a>
             </div>
         </div>
@@ -726,7 +698,7 @@
             <div class="speaker-card">
                 <h2 style="margin-bottom:10px; color:var(--text-muted); font-weight:400;" class="trans-text">專題演講</h2>
                 <div class="speaker-name trans-title" style="font-size:2.2rem; line-height: 1.4;">《把劣勢，精算成禮物<br>校園治理的系統思考》</div>
-                <div style="font-size:1.8rem; color:var(--text-muted); margin-top:20px;" class="trans-text">滿州國中 于福豪校長</div>
+                <div style="font-size:1.8rem; color:var(--text-muted); margin-top:20px;" class="trans-text day-gold-sweep">滿州國中 于福豪校長</div>
                 <a href="manzhou.html" target="_blank" style="display: inline-block; margin-top: 30px; padding: 12px 24px; background: rgba(0,242,254,0.15); border: 1px solid rgba(0,242,254,0.4); color: #fff; text-decoration: none; border-radius: 8px; font-size: 1.5rem; transition: all 0.3s; backdrop-filter: blur(5px);" onmouseover="this.style.background='rgba(0,242,254,0.25)'" onmouseout="this.style.background='rgba(0,242,254,0.15)'">📄 點此閱讀演講簡報</a>
             </div>
         </div>
@@ -744,7 +716,7 @@
             <div class="speaker-card">
                 <h2 style="margin-bottom:10px; color:var(--text-muted); font-weight:400;" class="trans-text neon-outline">法規宣導</h2>
                 <div class="speaker-name trans-title neon-outline" style="color: #fff; -webkit-text-fill-color: #fff;">職場霸凌法規宣導</div>
-                <div style="font-size:1.8rem; color:var(--text-muted); margin-top:20px;" class="trans-text neon-outline">南區職業安全衛生中心 趙懋勳技正</div>
+                <div style="font-size:1.8rem; color:var(--text-muted); margin-top:20px;" class="trans-text neon-outline day-gold-sweep">南區職業安全衛生中心 趙懋勳技正</div>
                 <a href="bullying.pdf" target="_blank" style="display: inline-block; margin-top: 30px; padding: 12px 24px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.4); color: #fff; text-decoration: none; border-radius: 8px; font-size: 1.5rem; transition: all 0.3s; backdrop-filter: blur(5px);" onmouseover="this.style.background='rgba(255,255,255,0.2)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'">📄 點此閱讀演講簡報</a>
             </div>
         </div>
@@ -762,7 +734,7 @@
             <div class="speaker-card">
                 <h2 style="margin-bottom:10px; color:var(--text-muted); font-weight:400;" class="trans-text">策略討論</h2>
                 <div class="speaker-name trans-title">教育議題推動及執行策略討論及分享</div>
-                <div style="font-size:1.8rem; color:var(--text-muted); margin-top:20px;" class="trans-text">教育處科長、中心主任、督學</div>
+                <div style="font-size:1.8rem; color:var(--text-muted); margin-top:20px;" class="trans-text day-gold-sweep">教育處科長、中心主任、督學</div>
             </div>
         </div>
 
@@ -771,7 +743,7 @@
             <div class="speaker-card">
                 <h2 style="margin-bottom:10px; color:var(--text-muted); font-weight:400;" class="trans-text">提案討論</h2>
                 <div class="speaker-name trans-title">綜合座談</div>
-                <div style="font-size:1.8rem; color:var(--text-muted); margin-top:20px;" class="trans-text">教育處 陳國祥處長</div>
+                <div style="font-size:1.8rem; color:var(--text-muted); margin-top:20px;" class="trans-text day-gold-sweep">教育處 陳國祥處長</div>
             </div>
         </div>
 
@@ -883,14 +855,12 @@
                     const cardDay = [255, 255, 255, 0.25];
 
                     // .glass-panel 背景與邊框：由 JS 控制以消除日夜切換時的閃白跳變
-                    // glassNight: 降至 0.30 讓燈塔/星星透出（原 0.65 太厚會蓋住背景動畫）
-                    // glassDay: 降至 0.58 讓底圖在日版依然可感知（原 0.70）
-                    const glassNight      = [7, 19, 38, 0.30];
-                    const glassDawn       = [255, 255, 255, 0.42];
-                    const glassDay        = [255, 255, 255, 0.58];
-                    const glassBdNight    = [56, 189, 248, 0.25];
+                    const glassNight      = [7, 19, 38, 0.65];
+                    const glassDawn       = [255, 255, 255, 0.40];
+                    const glassDay        = [255, 255, 255, 0.70];
+                    const glassBdNight    = [56, 189, 248, 0.20];
                     const glassBdDawn     = [255, 255, 255, 0.40];
-                    const glassBdDay      = [255, 255, 255, 0.55];
+                    const glassBdDay      = [255, 255, 255, 0.50];
 
                     function lerp(a, b, t) { return a + (b - a) * t; }
                     function lerpColor(c1, c2, t) {
