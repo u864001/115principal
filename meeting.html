@@ -354,26 +354,83 @@
         }
 
         body.day-mode .glass-panel {
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important;
-        }
-        
-        body.day-mode .slide:not(.title-slide) h2,
-        body.day-mode .slide:not(.title-slide) .school-title,
-        body.day-mode .slide:not(.title-slide) .award-desc,
-        body.day-mode .slide:not(.title-slide) p,
-        body.day-mode .slide:not(.title-slide) .speaker-name,
-        body.day-mode .slide:not(.title-slide) .award-badge,
-        body.day-mode .slide:not(.title-slide) .trans-text {
-            color: #111 !important;
-            text-shadow: none !important;
-            background: none !important;
-            -webkit-text-fill-color: #111 !important;
-            border-color: #111 !important;
+            box-shadow: 0 10px 30px rgba(15,23,42,0.14) !important;
         }
 
-        body.day-mode .slide:not(.title-slide) h2::before {
-            background: #111 !important;
-            box-shadow: none !important;
+        /* ── 日版基礎：正文 p / li / .trans-text ── */
+        body.day-mode .slide:not(.title-slide) p,
+        body.day-mode .slide:not(.title-slide) li,
+        body.day-mode .slide:not(.title-slide) .trans-text {
+            color: #1e293b !important;
+            text-shadow: none !important;
+            -webkit-text-fill-color: #1e293b !important;
+        }
+
+        /* ══════════════════════════════════════════════════════
+           日版 講者頁 (.speaker-card)：深藍調，專業・清晰・尊榮
+           ══════════════════════════════════════════════════════ */
+        body.day-mode .slide .speaker-card {
+            background: rgba(255, 255, 255, 0.55) !important;
+            border: 1px solid rgba(148, 163, 184, 0.45) !important;
+            box-shadow: 0 12px 40px rgba(15, 23, 42, 0.12),
+                        inset 0 1px 0 rgba(255,255,255,0.8) !important;
+        }
+        body.day-mode .slide .speaker-card h2 {
+            color: #475569 !important;
+            -webkit-text-fill-color: #475569 !important;
+            text-shadow: none !important;
+            background: none !important;
+            border-color: rgba(71, 85, 105, 0.2) !important;
+        }
+        body.day-mode .slide .speaker-card .speaker-name {
+            background: linear-gradient(135deg,
+                #0c4a6e 0%, #1e40af 55%, #0369a1 100%) !important;
+            -webkit-background-clip: text !important;
+            background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            color: transparent !important;
+            text-shadow: none !important;
+            border: none !important;
+        }
+
+        /* ══════════════════════════════════════════════════════
+           日版 頒獎頁 (.glass-panel)：琥珀金 × 海軍藍，典禮感・榮耀
+           ══════════════════════════════════════════════════════ */
+        body.day-mode .slide .glass-panel h2 {
+            color: #475569 !important;
+            -webkit-text-fill-color: #475569 !important;
+            text-shadow: none !important;
+            background: none !important;
+            border-color: rgba(71, 85, 105, 0.2) !important;
+        }
+        body.day-mode .slide .glass-panel h2::before {
+            background: linear-gradient(to bottom, #d97706, #92400e) !important;
+            box-shadow: 0 0 10px rgba(217, 119, 6, 0.45) !important;
+        }
+        body.day-mode .award-badge {
+            background: linear-gradient(135deg,
+                rgba(253, 224, 71, 0.22) 0%,
+                rgba(217, 119, 6, 0.18) 100%) !important;
+            border: 1.5px solid #b45309 !important;
+            color: #7c2d12 !important;
+            -webkit-text-fill-color: #7c2d12 !important;
+            box-shadow: 0 4px 16px rgba(180, 83, 9, 0.18),
+                        inset 0 1px 0 rgba(253, 224, 71, 0.45) !important;
+            text-shadow: none !important;
+        }
+        body.day-mode .school-title {
+            background: linear-gradient(135deg,
+                #0c4a6e 0%, #1e3a8a 50%, #1e40af 100%) !important;
+            -webkit-background-clip: text !important;
+            background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            color: transparent !important;
+            text-shadow: none !important;
+        }
+        body.day-mode .award-desc {
+            color: #1e293b !important;
+            -webkit-text-fill-color: #1e293b !important;
+            text-shadow: none !important;
         }
 
         body.day-mode .title-slide .school-title, 
@@ -397,19 +454,20 @@
             filter: drop-shadow(0 0 4px rgba(255,255,255,0.85)) !important;
         }
 
+        /* 連結按鈕：與講者名稱同色系深藍 */
         body.day-mode .slide a[target="_blank"] {
-            color: #111 !important;
-            border-color: rgba(17, 17, 17, 0.4) !important;
-            background: rgba(17, 17, 17, 0.05) !important;
+            color: #1e40af !important;
+            border-color: rgba(30, 64, 175, 0.4) !important;
+            background: rgba(30, 64, 175, 0.08) !important;
         }
         body.day-mode .slide a[target="_blank"]:hover {
-            background: rgba(17, 17, 17, 0.15) !important;
+            background: rgba(30, 64, 175, 0.18) !important;
         }
 
         body.day-mode > button {
-            color: #111 !important;
-            border-color: rgba(17, 17, 17, 0.4) !important;
-            background: rgba(255, 255, 255, 0.5) !important;
+            color: #1e3a8a !important;
+            border-color: rgba(30, 58, 138, 0.3) !important;
+            background: rgba(255, 255, 255, 0.55) !important;
         }
         body.day-mode > button:hover {
             background: rgba(255, 255, 255, 0.8) !important;
@@ -825,12 +883,14 @@
                     const cardDay = [255, 255, 255, 0.25];
 
                     // .glass-panel 背景與邊框：由 JS 控制以消除日夜切換時的閃白跳變
-                    const glassNight      = [7, 19, 38, 0.65];
-                    const glassDawn       = [255, 255, 255, 0.40];
-                    const glassDay        = [255, 255, 255, 0.70];
-                    const glassBdNight    = [56, 189, 248, 0.20];
+                    // glassNight: 降至 0.30 讓燈塔/星星透出（原 0.65 太厚會蓋住背景動畫）
+                    // glassDay: 降至 0.58 讓底圖在日版依然可感知（原 0.70）
+                    const glassNight      = [7, 19, 38, 0.30];
+                    const glassDawn       = [255, 255, 255, 0.42];
+                    const glassDay        = [255, 255, 255, 0.58];
+                    const glassBdNight    = [56, 189, 248, 0.25];
                     const glassBdDawn     = [255, 255, 255, 0.40];
-                    const glassBdDay      = [255, 255, 255, 0.50];
+                    const glassBdDay      = [255, 255, 255, 0.55];
 
                     function lerp(a, b, t) { return a + (b - a) * t; }
                     function lerpColor(c1, c2, t) {
