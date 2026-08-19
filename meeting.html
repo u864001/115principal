@@ -1349,6 +1349,25 @@
         window.addEventListener('resize', resizeStage);
         resizeStage();
 
+        // === 最後一頁簽退 QR Code ===
+        // 指向同目錄下的 index.html，讓與會者掃描後直接進入簽退流程
+        (function generateSignoutQR() {
+            try {
+                const base = window.location.href.replace(/[^\/]*\.html[^\/]*$/, '');
+                const indexUrl = base + 'index.html';
+                new QRCode(document.getElementById('qrcode-signout'), {
+                    text: indexUrl,
+                    width: 380,
+                    height: 380,
+                    colorDark:  '#0c4a6e',   // 深藍，與日版講者頁同色系
+                    colorLight: '#ffffff',
+                    correctLevel: QRCode.CorrectLevel.M  // 中等容錯，密度適中易掃描
+                });
+            } catch (e) {
+                console.error('SignoutQR generation failed:', e);
+            }
+        })();
+
     </script>
 </body>
 </html>
