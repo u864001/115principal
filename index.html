@@ -1242,6 +1242,17 @@
     }
 
     
+    function normalizeSeatCode(raw) {
+      const s = String(raw || '').trim();
+      if (!s) return '';
+      if (/^\d{1,2}-\d{1,2}$/.test(s)) return s;
+      const twDate = s.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
+      if (twDate) return `${twDate[2]}-${twDate[3]}`;
+      const usDate = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+      if (usDate) return `${usDate[1]}-${usDate[2]}`;
+      return s;
+    }
+
     function parsePrefillCSV(csv) {
       prefillData = {};
       const rows = csv.split('\n');
@@ -1257,7 +1268,7 @@
           // 如果超過 2026/08/19 23:00，就忽略G欄的用餐意願，強制設為空字串
           const meal = (now >= cutoffTime) ? "" : cols[6];
           
-          const seat = cols.length >= 10 ? cols[9] : ''; // J 欄位依然保留
+          const seat = cols.length >= 10 ? normalizeSeatCode(cols[9]) : ''; // J 欄位依然保留
           if (name) {
              prefillData[name] = { meal: meal, seat: seat };
           }
